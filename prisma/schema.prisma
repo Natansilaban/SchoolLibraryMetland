@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  password    String
+  role        Role         @default(SISWA)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  anggota     Anggota?
+  peminjaman  Peminjaman[] @relation("AdminPeminjaman")
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  SISWA
+}
+
+model Anggota {
+  id         Int          @id @default(autoincrement())
+  userId     Int          @unique @map("user_id")
+  nama       String
+  nis        String       @unique
+  kelas      String
+  alamat     String?
+  noHp       String?      @map("no_hp")
+  foto       String?
+  createdAt  DateTime     @default(now()) @map("created_at")
+  updatedAt  DateTime     @updatedAt @map("updated_at")
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  peminjaman Peminjaman[]
+
+  @@map("anggota")
+}
+
+model Kategori {
+  id        Int      @id @default(autoincrement())
+  nama      String   @unique
+  deskripsi String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  buku      Buku[]
+
+  @@map("kategori")
+}
+
+model Penulis {
+  id        Int      @id @default(autoincrement())
+  nama      String
+  bio       String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  buku      Buku[]
+
+  @@map("penulis")
+}
+
+model Penerbit {
+  id        Int      @id @default(autoincrement())
+  nama      String
+  kota      String?
+  website   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  buku      Buku[]
+
+  @@map("penerbit")
+}
+
+model Buku {
+  id          Int          @id @default(autoincrement())
+  judul       String
+  isbn        String?      @unique
+  kategoriId  Int?         @map("kategori_id")
+  penulisId   Int?         @map("penulis_id")
+  penerbitId  Int?         @map("penerbit_id")
+  tahunTerbit Int?         @map("tahun_terbit")
+  stok        Int          @default(1)
+  deskripsi   String?
+  cover       String?
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  kategori    Kategori?    @relation(fields: [kategoriId], references: [id])
+  penulis     Penulis?     @relation(fields: [penulisId], references: [id])
+  penerbit    Penerbit?    @relation(fields: [penerbitId], references: [id])
+  peminjaman  Peminjaman[]
+
+  @@map("buku")
+}
+
+model Peminjaman {
+  id                 Int              @id @default(autoincrement())
+  anggotaId          Int              @map("anggota_id")
+  bukuId             Int              @map("buku_id")
+  adminId            Int?             @map("admin_id")
+  tglPinjam          DateTime         @default(now()) @map("tgl_pinjam")
+  tglKembaliRencana  DateTime         @map("tgl_kembali_rencana")
+  tglKembaliAktual   DateTime?        @map("tgl_kembali_aktual")
+  status             StatusPeminjaman @default(MENUNGGU_KONFIRMASI)
+  denda              Float            @default(0)
+  catatan            String?
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  anggota            Anggota          @relation(fields: [anggotaId], references: [id])
+  buku               Buku             @relation(fields: [bukuId], references: [id])
+  admin              User?            @relation("AdminPeminjaman", fields: [adminId], references: [id])
+
+  @@map("peminjaman")
+}
+
+enum StatusPeminjaman {
+  MENUNGGU_KONFIRMASI
+  DIPINJAM
+  DIKEMBALIKAN
+  TERLAMBAT
+  DITOLAK
+}
