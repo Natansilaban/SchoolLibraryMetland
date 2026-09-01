@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // GET /api/buku
 export async function GET(req) {
@@ -49,22 +51,27 @@ export async function GET(req) {
 // POST /api/buku
 export async function POST(req) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Akses ditolak. Khusus Admin.' }, { status: 403 });
+    }
+
     const body = await req.json();
     const { judul, isbn, kategoriId, penulisId, penerbitId, tahunTerbit, stok, deskripsi, cover } = body;
 
-    if (!judul) {
+    if (!judul || !judul.trim()) {
       return NextResponse.json({ error: 'Judul buku wajib diisi' }, { status: 400 });
     }
 
     const buku = await prisma.buku.create({
       data: {
-        judul,
-        isbn: isbn || null,
+        judul: judul.trim(),
+        isbn: isbn ? isbn.trim() : null,
         kategoriId: kategoriId ? parseInt(kategoriId) : null,
         penulisId: penulisId ? parseInt(penulisId) : null,
         penerbitId: penerbitId ? parseInt(penerbitId) : null,
         tahunTerbit: tahunTerbit ? parseInt(tahunTerbit) : null,
-        stok: stok ? parseInt(stok) : 1,
+        stok: stok !== undefined && stok !== null ? Math.max(0, parseInt(stok)) : 1,
         deskripsi: deskripsi || null,
         cover: cover || null,
       },
@@ -83,3 +90,4 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

@@ -128,7 +128,6 @@ export default function AdminSidebar() {
                   >
                     <Icon size={16} />
                     <span className="flex-1">{item.label}</span>
-                    {isActive && <ChevronRight size={14} className="opacity-70" />}
                   </Link>
                 );
               })}

@@ -21,7 +21,15 @@ export default async function SiswaDashboardPage() {
     anggotaId ? Promise.all([
       prisma.peminjaman.count({ where: { anggotaId } }),
       prisma.peminjaman.count({ where: { anggotaId, status: 'DIPINJAM' } }),
-      prisma.peminjaman.count({ where: { anggotaId, status: 'TERLAMBAT' } }),
+      prisma.peminjaman.count({
+        where: {
+          anggotaId,
+          OR: [
+            { status: 'TERLAMBAT' },
+            { status: 'DIPINJAM', tglKembaliRencana: { lt: new Date() } },
+          ],
+        },
+      }),
     ]) : [0, 0, 0],
   ]);
 

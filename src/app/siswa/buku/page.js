@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight } from 'lucide-react';
+import Tilt3DCard from '@/components/ui/Tilt3DCard';
+
 
 export default function SiswaBukuPage() {
   const [buku, setBuku] = useState([]);
@@ -71,42 +73,67 @@ export default function SiswaBukuPage() {
           {search && <p className="text-xs mt-1 text-slate-500 font-medium">Coba kata kunci lain</p>}
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
           {buku.map(b => (
-            <Link
+            <Tilt3DCard
               key={b.id}
-              href={`/siswa/buku/${b.id}`}
-              id={`buku-card-${b.id}`}
-              className="glass-card p-3 sm:p-4 flex flex-col group border-l-4 border-l-blue-600 hover:border-l-blue-700"
+              maxTilt={12}
+              scale={1.03}
+              glare={true}
+              borderRadius="16px"
+              className="h-full"
             >
-              {/* Cover placeholder */}
-              <div
-                className="w-full rounded-xl mb-2.5 flex items-center justify-center shadow-inner"
-                style={{
-                  height: '110px',
-                  background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02))',
-                  border: '1px solid #e2e8f0',
-                }}
+              <Link
+                href={`/siswa/buku/${b.id}`}
+                id={`buku-card-${b.id}`}
+                className="glass-card p-3.5 sm:p-4 flex flex-col h-full group border-l-4 border-l-blue-600 hover:border-l-blue-700 transition-all block"
               >
-                <BookMarked size={32} color="#2563eb" className="opacity-70" />
-              </div>
+                {/* Cover */}
+                <div
+                  className="w-full rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 relative"
+                  style={{ height: '150px' }}
+                >
+                  {b.cover ? (
+                    <img
+                      src={b.cover}
+                      alt={b.judul}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center justify-center"
+                      style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02))' }}
+                    >
+                      <BookMarked size={38} color="#2563eb" className="opacity-60" />
+                    </div>
+                  )}
+                </div>
 
-              <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
-                  {b.judul}
-                </h3>
-                {b.penulis && <p className="text-[11px] sm:text-xs font-semibold text-slate-500 mb-1.5 truncate">{b.penulis.nama}</p>}
-                {b.kategori && <span className="badge badge-blue text-[10px] sm:text-xs">{b.kategori.nama}</span>}
-              </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 leading-snug mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">
+                    {b.judul}
+                  </h3>
+                  {b.penulis && (
+                    <p className="text-[11px] sm:text-xs font-semibold text-slate-500 mb-1.5 truncate">
+                      {b.penulis.nama}
+                    </p>
+                  )}
+                  {b.kategori && <span className="badge badge-blue text-[10px] sm:text-xs">{b.kategori.nama}</span>}
+                </div>
 
-              <div className="mt-2.5 flex items-center justify-between">
-                <span className={`badge text-[10px] sm:text-xs ${b.stok > 0 ? 'badge-green' : 'badge-red'}`}>
-                  {b.stok > 0 ? `${b.stok} stok` : 'Habis'}
-                </span>
-              </div>
-            </Link>
+                <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100">
+                  <span className={`badge text-[10px] sm:text-xs ${b.stok > 0 ? 'badge-green' : 'badge-red'}`}>
+                    {b.stok > 0 ? `${b.stok} stok` : 'Habis'}
+                  </span>
+                  <span className="text-[11px] font-bold text-blue-600 group-hover:translate-x-0.5 transition-transform">
+                    Detail →
+                  </span>
+                </div>
+              </Link>
+            </Tilt3DCard>
           ))}
         </div>
+
       )}
 
       {/* Pagination */}

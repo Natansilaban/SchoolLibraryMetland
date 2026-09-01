@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
-import { Plus, Pencil, Trash2, PenLine, X, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, PenLine, X, Search, BookMarked } from 'lucide-react';
 
 export default function PenulisPage() {
   const [data, setData] = useState([]);
@@ -16,41 +16,95 @@ export default function PenulisPage() {
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/penulis');
-    const json = await res.json();
-    setData(json);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/penulis');
+      const json = await res.json();
+      setData(Array.isArray(json) ? json : []);
+    } catch {
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { fetch_(); }, [fetch_]);
+  useEffect(() => {
+    fetch_();
+  }, [fetch_]);
 
   const filteredData = data.filter(d =>
     d.nama.toLowerCase().includes(search.toLowerCase()) ||
-    (d.bio && d.bio.toLowerCase().includes(search.toLowerCase()))
+    (d.bio && d.bio.toLowerCase().includes(search.toLowerCase())) ||
+    (d.buku && d.buku.some(b => b.judul.toLowerCase().includes(search.toLowerCase())))
   );
 
-  const openAdd = () => { setForm({ nama: '', bio: '' }); setError(''); setModal('add'); };
-  const openEdit = (d) => { setSelected(d); setForm({ nama: d.nama, bio: d.bio || '' }); setError(''); setModal('edit'); };
-  const openDelete = (d) => { setSelected(d); setModal('delete'); };
+  const openAdd = () => {
+    setForm({ nama: '', bio: '' });
+    setError('');
+    setModal('add');
+  };
+
+  const openEdit = (d) => {
+    setSelected(d);
+    setForm({ nama: d.nama, bio: d.bio || '' });
+    setError('');
+    setModal('edit');
+  };
+
+  const openDelete = (d) => {
+    setSelected(d);
+    setModal('delete');
+  };
 
   const handleSave = async () => {
-    if (!form.nama.trim()) { setError('Nama wajib diisi'); return; }
-    setSaving(true); setError('');
-    const url = modal === 'add' ? '/api/penulis' : `/api/penulis/${selected.id}`;
-    const res = await fetch(url, { method: modal === 'add' ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-    if (!res.ok) { const j = await res.json(); setError(j.error); setSaving(false); return; }
-    setModal(null); fetch_(); setSaving(false);
+    if (!form.nama.trim()) {
+      setError('Nama wajib diisi');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const url = modal === 'add' ? '/api/penulis' : `/api/penulis/${selected.id}`;
+      const res = await fetch(url, {
+        method: modal === 'add' ? 'POST' : 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const j = await res.json();
+        setError(j.error || 'Terjadi kesalahan');
+        setSaving(false);
+        return;
+      }
+      setModal(null);
+      fetch_();
+    } catch {
+      setError('Terjadi kesalahan koneksi');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     setSaving(true);
-    await fetch(`/api/penulis/${selected.id}`, { method: 'DELETE' });
-    setModal(null); fetch_(); setSaving(false);
+    try {
+      const res = await fetch(`/api/penulis/${selected.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const j = await res.json();
+        alert(j.error || 'Gagal menghapus penulis');
+      } else {
+        setModal(null);
+        fetch_();
+      }
+    } catch {
+      alert('Terjadi kesalahan saat menghapus');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <>
-      <TopBar title="Data Penulis" subtitle="Kelola data penulis buku" />
+      <TopBar title="Data Penulis" subtitle="Kelola data penulis dan daftar karya buku perpustakaan" />
       <div className="p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
           <div className="relative flex-1 max-w-none sm:max-w-xs">
@@ -58,32 +112,108 @@ export default function PenulisPage() {
             <input
               type="text"
               className="glass-input pl-9 w-full"
-              placeholder="Cari penulis..."
+              placeholder="Cari penulis atau judul buku..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button id="add-penulis" onClick={openAdd} className="btn-primary justify-center sm:flex-initial"><Plus size={16} /> Tambah Penulis</button>
+          <button id="add-penulis" onClick={openAdd} className="btn-primary justify-center sm:flex-initial">
+            <Plus size={16} /> Tambah Penulis
+          </button>
         </div>
 
         <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="glass-table min-w-[500px]">
-              <thead><tr><th>No</th><th>Nama Penulis</th><th>Bio</th><th>Aksi</th></tr></thead>
+            <table className="glass-table min-w-[650px]">
+              <thead>
+                <tr>
+                  <th>No</th>
+                  <th>Nama Penulis</th>
+                  <th>Daftar Buku / Karya</th>
+                  <th>Bio</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
               <tbody>
-                {loading ? Array.from({length:4}).map((_,i) => <tr key={i}>{[1,2,3,4].map(j=><td key={j}><div className="h-4 shimmer rounded"/></td>)}</tr>)
-                : filteredData.length === 0 ? <tr><td colSpan={4}><div className="text-center py-12 text-slate-400"><PenLine size={36} className="mx-auto mb-2 opacity-40"/><p className="font-medium">Belum ada penulis</p></div></td></tr>
-                : filteredData.map((d,i) => (
-                  <tr key={d.id}>
-                    <td className="text-slate-500 font-medium">{i+1}</td>
-                    <td className="font-bold text-slate-900">{d.nama}</td>
-                    <td className="text-slate-600 font-medium">{d.bio ? (d.bio.length > 60 ? d.bio.slice(0,60)+'...' : d.bio) : '—'}</td>
-                    <td><div className="flex gap-2">
-                      <button id={`edit-penulis-${d.id}`} onClick={() => openEdit(d)} className="btn-glass btn-sm"><Pencil size={13}/></button>
-                      <button id={`delete-penulis-${d.id}`} onClick={() => openDelete(d)} className="btn-danger btn-sm"><Trash2 size={13}/></button>
-                    </div></td>
+                {loading ? (
+                  Array.from({ length: 4 }).map((_, i) => (
+                    <tr key={i}>
+                      {[1, 2, 3, 4, 5].map(j => (
+                        <td key={j}><div className="h-4 shimmer rounded" /></td>
+                      ))}
+                    </tr>
+                  ))
+                ) : filteredData.length === 0 ? (
+                  <tr>
+                    <td colSpan={5}>
+                      <div className="text-center py-12 text-slate-400">
+                        <PenLine size={36} className="mx-auto mb-2 opacity-40" />
+                        <p className="font-medium">Belum ada penulis</p>
+                      </div>
+                    </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredData.map((d, i) => {
+                    const books = d.buku || [];
+                    const bookCount = d._count?.buku ?? books.length;
+
+                    return (
+                      <tr key={d.id}>
+                        <td className="text-slate-500 font-medium">{i + 1}</td>
+                        <td>
+                          <div className="font-bold text-slate-900">{d.nama}</div>
+                        </td>
+                        <td>
+                          <div className="flex flex-col gap-1 max-w-xs">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`badge ${bookCount > 0 ? 'badge-blue' : 'badge-gray'}`}>
+                                <BookMarked size={11} className="mr-0.5" />
+                                {bookCount} Buku
+                              </span>
+                            </div>
+                            {books.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-0.5">
+                                {books.slice(0, 3).map(b => (
+                                  <span key={b.id} className="text-[11px] bg-slate-100 text-slate-700 font-medium px-2 py-0.5 rounded-md border border-slate-200 truncate max-w-[150px]">
+                                    {b.judul}
+                                  </span>
+                                ))}
+                                {books.length > 3 && (
+                                  <span className="text-[10px] text-slate-500 font-bold self-center">
+                                    +{books.length - 3} lainnya
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-slate-600 font-medium">
+                          {d.bio ? (d.bio.length > 60 ? d.bio.slice(0, 60) + '...' : d.bio) : '—'}
+                        </td>
+                        <td>
+                          <div className="flex gap-2">
+                            <button
+                              id={`edit-penulis-${d.id}`}
+                              onClick={() => openEdit(d)}
+                              className="btn-glass btn-sm"
+                              title="Edit Penulis"
+                            >
+                              <Pencil size={13} />
+                            </button>
+                            <button
+                              id={`delete-penulis-${d.id}`}
+                              onClick={() => openDelete(d)}
+                              className="btn-danger btn-sm"
+                              title="Hapus Penulis"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
@@ -92,19 +222,55 @@ export default function PenulisPage() {
 
       {(modal === 'add' || modal === 'edit') && (
         <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{maxWidth:'440px'}}>
+          <div className="glass-modal p-6" style={{ maxWidth: '440px' }}>
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-900">{modal==='add'?'Tambah':'Edit'} Penulis</h2>
-              <button onClick={()=>setModal(null)} className="btn-glass" style={{padding:'6px'}}><X size={16}/></button>
+              <h2 className="text-lg font-bold text-slate-900">
+                {modal === 'add' ? 'Tambah' : 'Edit'} Penulis
+              </h2>
+              <button onClick={() => setModal(null)} className="btn-glass" style={{ padding: '6px' }}>
+                <X size={16} />
+              </button>
             </div>
-            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium" style={{background:'#fef2f2',border:'1px solid #fecaca',color:'#991b1b'}}>{error}</div>}
+            {error && (
+              <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">
+                {error}
+              </div>
+            )}
             <div className="space-y-4">
-              <div><label className="form-label">Nama *</label><input id="form-nama-penulis" className="glass-input" value={form.nama} onChange={e=>setForm({...form,nama:e.target.value})} placeholder="Nama lengkap penulis"/></div>
-              <div><label className="form-label">Bio</label><textarea className="glass-input" rows={3} value={form.bio} onChange={e=>setForm({...form,bio:e.target.value})} placeholder="Biografi singkat..." style={{resize:'vertical'}}/></div>
+              <div>
+                <label className="form-label">Nama Penulis *</label>
+                <input
+                  id="form-nama-penulis"
+                  className="glass-input"
+                  value={form.nama}
+                  onChange={e => setForm({ ...form, nama: e.target.value })}
+                  placeholder="Nama lengkap penulis"
+                />
+              </div>
+              <div>
+                <label className="form-label">Bio (Opsional)</label>
+                <textarea
+                  className="glass-input"
+                  rows={3}
+                  value={form.bio}
+                  onChange={e => setForm({ ...form, bio: e.target.value })}
+                  placeholder="Biografi singkat penulis..."
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
             </div>
             <div className="flex gap-3 mt-5">
-              <button onClick={()=>setModal(null)} className="btn-glass flex-1 justify-center">Batal</button>
-              <button id="save-penulis" onClick={handleSave} disabled={saving} className="btn-primary flex-1 justify-center">{saving?'Menyimpan...':'Simpan'}</button>
+              <button onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">
+                Batal
+              </button>
+              <button
+                id="save-penulis"
+                onClick={handleSave}
+                disabled={saving}
+                className="btn-primary flex-1 justify-center"
+              >
+                {saving ? 'Menyimpan...' : 'Simpan'}
+              </button>
             </div>
           </div>
         </div>
@@ -112,14 +278,27 @@ export default function PenulisPage() {
 
       {modal === 'delete' && (
         <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{maxWidth:'380px'}}>
+          <div className="glass-modal p-6" style={{ maxWidth: '380px' }}>
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200"><Trash2 size={22} className="text-rose-600"/></div>
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200">
+                <Trash2 size={22} className="text-rose-600" />
+              </div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Penulis?</h2>
-              <p className="text-sm text-slate-500 mb-6 font-medium">Penulis <strong className="text-slate-900">"{selected?.nama}"</strong> akan dihapus.</p>
+              <p className="text-sm text-slate-500 mb-6 font-medium">
+                Penulis <strong className="text-slate-900">"{selected?.nama}"</strong> akan dihapus.
+              </p>
               <div className="flex gap-3">
-                <button onClick={()=>setModal(null)} className="btn-glass flex-1 justify-center">Batal</button>
-                <button id="confirm-delete-penulis" onClick={handleDelete} disabled={saving} className="btn-danger flex-1 justify-center">{saving?'Menghapus...':'Hapus'}</button>
+                <button onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">
+                  Batal
+                </button>
+                <button
+                  id="confirm-delete-penulis"
+                  onClick={handleDelete}
+                  disabled={saving}
+                  className="btn-danger flex-1 justify-center"
+                >
+                  {saving ? 'Menghapus...' : 'Hapus'}
+                </button>
               </div>
             </div>
           </div>

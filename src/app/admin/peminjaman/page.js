@@ -39,12 +39,17 @@ export default function PeminjamanPage() {
   }, [search, page, statusFilter]);
 
   const fetchRefs = useCallback(async () => {
-    const [a, b] = await Promise.all([
-      fetch('/api/anggota?limit=200').then(r => r.json()),
-      fetch('/api/buku?limit=200').then(r => r.json()),
-    ]);
-    setAnggotaList(a.data || []);
-    setBukuList(b.data || []);
+    try {
+      const [a, b] = await Promise.all([
+        fetch('/api/anggota?limit=1000').then(r => r.json()),
+        fetch('/api/buku?limit=1000').then(r => r.json()),
+      ]);
+      setAnggotaList(a.data || []);
+      setBukuList(b.data || []);
+    } catch {
+      setAnggotaList([]);
+      setBukuList([]);
+    }
   }, []);
 
   useEffect(() => { fetch_(); }, [fetch_]);

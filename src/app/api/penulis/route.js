@@ -1,14 +1,37 @@
 import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function GET() {
-  const data = await prisma.penulis.findMany({ orderBy: { nama: 'asc' } });
-  return NextResponse.json(data);
+  try {
+    const data = await prisma.penulis.findMany({
+      orderBy: { nama: 'asc' },
+      include: {
+        buku: { select: { id: true, judul: true, isbn: true, stok: true } },
+        _count: { select: { buku: true } },
+      },
+    });
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
 
+
 export async function POST(req) {
-  const { nama, bio } = await req.json();
-  if (!nama) return NextResponse.json({ error: 'Nama wajib diisi' }, { status: 400 });
-  const data = await prisma.penulis.create({ data: { nama, bio } });
-  return NextResponse.json(data, { status: 201 });
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Akses ditolak. Khusus Admin.' }, { status: 403 });
+    }
+
+    const { nama, bio } = await req.json();
+    if (!nama || !nama.trim()) return NextResponse.json({ error: 'Nama penulis wajib diisi' }, { status: 400 });
+    const data = await prisma.penulis.create({ data: { nama: nama.trim(), bio: bio?.trim() || null } });
+    return NextResponse.json(data, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 }
+

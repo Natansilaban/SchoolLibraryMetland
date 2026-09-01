@@ -19,8 +19,17 @@ async function getDashboardStats() {
     prisma.buku.count(),
     prisma.anggota.count(),
     prisma.peminjaman.count(),
-    prisma.peminjaman.count({ where: { status: 'DIPINJAM' } }),
-    prisma.peminjaman.count({ where: { status: 'TERLAMBAT' } }),
+    prisma.peminjaman.count({
+      where: { status: 'DIPINJAM', tglKembaliRencana: { gte: new Date() } },
+    }),
+    prisma.peminjaman.count({
+      where: {
+        OR: [
+          { status: 'TERLAMBAT' },
+          { status: 'DIPINJAM', tglKembaliRencana: { lt: new Date() } },
+        ],
+      },
+    }),
     prisma.peminjaman.count({ where: { status: 'DIKEMBALIKAN' } }),
     prisma.peminjaman.findMany({
       take: 5,

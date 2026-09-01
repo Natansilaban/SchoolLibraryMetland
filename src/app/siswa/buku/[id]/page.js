@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import PinjamBukuButton from '@/components/siswa/PinjamBukuButton';
+import Tilt3DCard from '@/components/ui/Tilt3DCard';
+
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
@@ -61,16 +63,28 @@ export default async function DetailBukuPage({ params }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Cover */}
         <div className="lg:col-span-1">
-          <div
-            className="w-full rounded-2xl flex items-center justify-center shadow-inner"
-            style={{
-              height: '280px',
-              background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02))',
-              border: '1px solid #e2e8f0',
-            }}
+          <Tilt3DCard
+            maxTilt={16}
+            scale={1.04}
+            glare={true}
+            borderRadius="16px"
+            className="w-full shadow-lg"
           >
-            <BookMarked size={64} color="#2563eb" className="opacity-60" />
-          </div>
+            <div
+              className="w-full rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-md bg-slate-100 relative cursor-pointer"
+              style={{ height: '340px' }}
+            >
+              {buku.cover ? (
+                <img src={buku.cover} alt={buku.judul} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02))' }}>
+                  <BookMarked size={64} color="#2563eb" className="opacity-60" />
+                </div>
+              )}
+            </div>
+          </Tilt3DCard>
+
+
 
           <div className="mt-4 glass-card-sm p-4 text-center">
             <div className="text-3xl font-extrabold text-slate-900 mb-1">{buku.stok}</div>
