@@ -58,9 +58,8 @@ export default function AdminSidebar() {
 
       {/* Sidebar Container */}
       <aside
-        className={`glass-sidebar fixed top-0 left-0 bottom-0 z-50 w-64 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`glass-sidebar fixed top-0 left-0 bottom-0 z-50 w-64 transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         {/* Logo Header */}
         <div className="p-6 pb-4 flex items-center justify-between">
