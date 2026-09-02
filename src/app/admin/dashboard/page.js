@@ -6,50 +6,76 @@ import {
 } from 'lucide-react';
 
 async function getDashboardStats() {
+  const now = new Date();
+
   const [
     totalBuku,
     totalAnggota,
-    totalPeminjaman,
-    dipinjam,
-    terlambat,
-    dikembalikan,
+    statusCounts,
+    overdueActiveCount,
     recentPeminjaman,
     bukuTerpopuler,
   ] = await Promise.all([
     prisma.buku.count(),
     prisma.anggota.count(),
-    prisma.peminjaman.count(),
-    prisma.peminjaman.count({
-      where: { status: 'DIPINJAM', tglKembaliRencana: { gte: new Date() } },
+    prisma.peminjaman.groupBy({
+      by: ['status'],
+      _count: { _all: true },
     }),
     prisma.peminjaman.count({
       where: {
-        OR: [
-          { status: 'TERLAMBAT' },
-          { status: 'DIPINJAM', tglKembaliRencana: { lt: new Date() } },
-        ],
+        status: 'DIPINJAM',
+        tglKembaliRencana: { lt: now },
       },
     }),
-    prisma.peminjaman.count({ where: { status: 'DIKEMBALIKAN' } }),
     prisma.peminjaman.findMany({
       take: 5,
       orderBy: { createdAt: 'desc' },
-      include: {
-        anggota: true,
-        buku: true,
+      select: {
+        id: true,
+        status: true,
+        anggota: { select: { nama: true, kelas: true } },
+        buku: { select: { judul: true } },
       },
     }),
     prisma.buku.findMany({
       take: 5,
       orderBy: { peminjaman: { _count: 'desc' } },
-      include: { _count: { select: { peminjaman: true } } },
+      select: {
+        id: true,
+        judul: true,
+        stok: true,
+        _count: { select: { peminjaman: true } },
+      },
     }),
   ]);
 
+  let totalPeminjaman = 0;
+  let dipinjam = 0;
+  let terlambat = overdueActiveCount;
+  let dikembalikan = 0;
+
+  for (const item of statusCounts) {
+    const count = item._count._all;
+    totalPeminjaman += count;
+    if (item.status === 'DIPINJAM') {
+      dipinjam += count - overdueActiveCount;
+    } else if (item.status === 'TERLAMBAT') {
+      terlambat += count;
+    } else if (item.status === 'DIKEMBALIKAN') {
+      dikembalikan += count;
+    }
+  }
+
   return {
-    totalBuku, totalAnggota, totalPeminjaman,
-    dipinjam, terlambat, dikembalikan,
-    recentPeminjaman, bukuTerpopuler,
+    totalBuku,
+    totalAnggota,
+    totalPeminjaman,
+    dipinjam: Math.max(0, dipinjam),
+    terlambat,
+    dikembalikan,
+    recentPeminjaman,
+    bukuTerpopuler,
   };
 }
 

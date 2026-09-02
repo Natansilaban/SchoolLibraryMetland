@@ -14,6 +14,7 @@ export default function BukuPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null); // null | 'add' | 'edit' | 'delete'
   const [selected, setSelected] = useState(null);
@@ -31,10 +32,17 @@ export default function BukuPage() {
 
   const limit = 10;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const fetchBuku = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/buku?search=${encodeURIComponent(search)}&page=${page}&limit=${limit}`);
+      const res = await fetch(`/api/buku?search=${encodeURIComponent(debouncedSearch)}&page=${page}&limit=${limit}`);
       const data = await res.json();
       setBuku(data.data || []);
       setTotal(data.total || 0);
@@ -44,7 +52,7 @@ export default function BukuPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, page]);
+  }, [debouncedSearch, page]);
 
   const fetchReferensi = useCallback(async () => {
     try {

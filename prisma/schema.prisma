@@ -41,6 +41,9 @@ model Anggota {
   user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   peminjaman Peminjaman[]
 
+  @@index([userId])
+  @@index([kelas])
+  @@index([nama])
   @@map("anggota")
 }
 
@@ -96,6 +99,11 @@ model Buku {
   penerbit    Penerbit?    @relation(fields: [penerbitId], references: [id])
   peminjaman  Peminjaman[]
 
+  @@index([kategoriId])
+  @@index([penulisId])
+  @@index([penerbitId])
+  @@index([createdAt])
+  @@index([judul])
   @@map("buku")
 }
 
@@ -116,6 +124,12 @@ model Peminjaman {
   buku               Buku             @relation(fields: [bukuId], references: [id])
   admin              User?            @relation("AdminPeminjaman", fields: [adminId], references: [id])
 
+  @@index([anggotaId])
+  @@index([bukuId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([tglKembaliRencana])
+  @@index([anggotaId, status])
   @@map("peminjaman")
 }
 

@@ -17,6 +17,7 @@ export default function PeminjamanPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(false);
@@ -28,21 +29,28 @@ export default function PeminjamanPage() {
   const [error, setError] = useState('');
   const limit = 10;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ search, page, limit, ...(statusFilter ? { status: statusFilter } : {}) });
+    const params = new URLSearchParams({ search: debouncedSearch, page, limit, ...(statusFilter ? { status: statusFilter } : {}) });
     const res = await fetch(`/api/peminjaman?${params}`);
     const json = await res.json();
     setData(json.data || []);
     setTotal(json.total || 0);
     setLoading(false);
-  }, [search, page, statusFilter]);
+  }, [debouncedSearch, page, statusFilter]);
 
   const fetchRefs = useCallback(async () => {
     try {
       const [a, b] = await Promise.all([
-        fetch('/api/anggota?limit=1000').then(r => r.json()),
-        fetch('/api/buku?limit=1000').then(r => r.json()),
+        fetch('/api/anggota?limit=100').then(r => r.json()),
+        fetch('/api/buku?limit=100').then(r => r.json()),
       ]);
       setAnggotaList(a.data || []);
       setBukuList(b.data || []);
@@ -53,7 +61,6 @@ export default function PeminjamanPage() {
   }, []);
 
   useEffect(() => { fetch_(); }, [fetch_]);
-  useEffect(() => { fetchRefs(); }, [fetchRefs]);
 
   const defaultTglKembali = () => {
     const d = new Date();
@@ -62,6 +69,9 @@ export default function PeminjamanPage() {
   };
 
   const openAdd = () => {
+    if (anggotaList.length === 0 && bukuList.length === 0) {
+      fetchRefs();
+    }
     setForm({ anggotaId: '', bukuId: '', tglKembaliRencana: defaultTglKembali(), catatan: '', status: 'DIPINJAM' });
     setError('');
     setModal(true);

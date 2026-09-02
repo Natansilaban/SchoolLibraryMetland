@@ -11,20 +11,28 @@ export default function SiswaBukuPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [kategori, setKategori] = useState([]);
   const [kategoriFilter, setKategoriFilter] = useState('');
   const limit = 12;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ search, page, limit, ...(kategoriFilter ? { kategoriId: kategoriFilter } : {}) });
+    const params = new URLSearchParams({ search: debouncedSearch, page, limit, ...(kategoriFilter ? { kategoriId: kategoriFilter } : {}) });
     const res = await fetch(`/api/buku?${params}`);
     const json = await res.json();
     setBuku(json.data || []);
     setTotal(json.total || 0);
     setLoading(false);
-  }, [search, page, kategoriFilter]);
+  }, [debouncedSearch, page, kategoriFilter]);
 
   useEffect(() => { fetch_(); }, [fetch_]);
   useEffect(() => {

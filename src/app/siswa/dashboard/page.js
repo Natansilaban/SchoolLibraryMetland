@@ -10,30 +10,59 @@ export default async function SiswaDashboardPage() {
   const session = await getServerSession(authOptions);
   const anggotaId = session?.user?.anggotaId;
 
-  const [anggota, recentPeminjaman, stats] = await Promise.all([
-    anggotaId ? prisma.anggota.findUnique({ where: { id: anggotaId } }) : null,
-    anggotaId ? prisma.peminjaman.findMany({
-      where: { anggotaId },
-      take: 3,
-      orderBy: { createdAt: 'desc' },
-      include: { buku: { select: { judul: true, kategori: true } } },
-    }) : [],
-    anggotaId ? Promise.all([
-      prisma.peminjaman.count({ where: { anggotaId } }),
-      prisma.peminjaman.count({ where: { anggotaId, status: 'DIPINJAM' } }),
-      prisma.peminjaman.count({
-        where: {
-          anggotaId,
-          OR: [
-            { status: 'TERLAMBAT' },
-            { status: 'DIPINJAM', tglKembaliRencana: { lt: new Date() } },
-          ],
-        },
-      }),
-    ]) : [0, 0, 0],
+  const now = new Date();
+
+  const [anggota, recentPeminjaman, statusCounts, overdueActive] = await Promise.all([
+    anggotaId
+      ? prisma.anggota.findUnique({
+          where: { id: anggotaId },
+          select: { nama: true, nis: true, kelas: true },
+        })
+      : null,
+    anggotaId
+      ? prisma.peminjaman.findMany({
+          where: { anggotaId },
+          take: 3,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            status: true,
+            tglKembaliRencana: true,
+            buku: { select: { judul: true } },
+          },
+        })
+      : [],
+    anggotaId
+      ? prisma.peminjaman.groupBy({
+          by: ['status'],
+          where: { anggotaId },
+          _count: { _all: true },
+        })
+      : [],
+    anggotaId
+      ? prisma.peminjaman.count({
+          where: {
+            anggotaId,
+            status: 'DIPINJAM',
+            tglKembaliRencana: { lt: now },
+          },
+        })
+      : 0,
   ]);
 
-  const [totalPinjam, sedangPinjam, terlambat] = stats || [0, 0, 0];
+  let totalPinjam = 0;
+  let sedangPinjam = 0;
+  let terlambat = overdueActive;
+
+  for (const item of statusCounts) {
+    const count = item._count._all;
+    totalPinjam += count;
+    if (item.status === 'DIPINJAM') {
+      sedangPinjam += count;
+    } else if (item.status === 'TERLAMBAT') {
+      terlambat += count;
+    }
+  }
 
   const statusBadge = (status) => {
     if (status === 'MENUNGGU_KONFIRMASI') return <span className="badge badge-yellow text-[10px] sm:text-xs">Menunggu</span>;

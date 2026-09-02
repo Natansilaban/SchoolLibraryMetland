@@ -9,6 +9,7 @@ export default function AnggotaPage() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -17,14 +18,21 @@ export default function AnggotaPage() {
   const [error, setError] = useState('');
   const limit = 10;
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/anggota?search=${search}&page=${page}&limit=${limit}`);
+    const res = await fetch(`/api/anggota?search=${encodeURIComponent(debouncedSearch)}&page=${page}&limit=${limit}`);
     const json = await res.json();
     setData(json.data || []);
     setTotal(json.total || 0);
     setLoading(false);
-  }, [search, page]);
+  }, [debouncedSearch, page]);
 
   useEffect(() => { fetch_(); }, [fetch_]);
 

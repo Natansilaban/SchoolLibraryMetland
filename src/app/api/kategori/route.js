@@ -6,7 +6,11 @@ import { authOptions } from '@/lib/auth';
 export async function GET() {
   try {
     const data = await prisma.kategori.findMany({ orderBy: { nama: 'asc' } });
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=120',
+      },
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
