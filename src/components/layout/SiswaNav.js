@@ -31,7 +31,7 @@ export default function SiswaNav() {
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           {/* Logo & Title */}
-          <Link href="/siswa/dashboard" className="flex items-center gap-2.5 flex-shrink-0">
+          <Link href="/siswa/dashboard" className="flex items-center gap-2.5 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl" aria-label="Beranda Siswa Metland Library">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center p-1 flex-shrink-0"
               style={{
@@ -39,11 +39,16 @@ export default function SiswaNav() {
                 border: '1px solid rgba(37,99,235,0.2)',
               }}
             >
-              <img src="/logo.png" alt="Metland Logo" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
             </div>
-            <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
-              Metland Library
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+                Metland Library
+              </span>
+              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                Demo
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation Links */}
