@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, Sparkles, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeDemo, setActiveDemo] = useState(null);
   const [error, setError] = useState('');
 
   const executeLogin = async (email, password) => {
@@ -27,7 +26,6 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Email atau password salah. Silakan coba lagi.');
         setLoading(false);
-        setActiveDemo(null);
       } else {
         const target = (email && email.toLowerCase().includes('admin')) ? '/admin/dashboard' : '/siswa/dashboard';
         window.location.replace(target);
@@ -35,25 +33,12 @@ export default function LoginPage() {
     } catch {
       setError('Terjadi kendala saat menghubungkan ke server.');
       setLoading(false);
-      setActiveDemo(null);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await executeLogin(form.email, form.password);
-  };
-
-  const handleQuickDemo = async (role) => {
-    if (loading) return;
-    setActiveDemo(role);
-    if (role === 'admin') {
-      setForm({ email: 'admin@metland.sch.id', password: 'admin123' });
-      await executeLogin('admin@metland.sch.id', 'admin123');
-    } else {
-      setForm({ email: 'siswa@metland.sch.id', password: 'siswa123' });
-      await executeLogin('siswa@metland.sch.id', 'siswa123');
-    }
   };
 
   return (
@@ -78,13 +63,6 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative">
-        <div className="flex justify-center mb-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm animate-pulse">
-            <Sparkles size={13} className="text-blue-600" />
-            <span>Portfolio Live Demo</span>
-          </div>
-        </div>
-
         <div className="text-center mb-6">
           <div
             className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-3 p-2.5 shadow-sm"
@@ -104,48 +82,11 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <section
-          aria-labelledby="demo-access-title"
-          className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200/80 shadow-sm"
-        >
-          <div className="flex items-center gap-2 mb-2.5">
-            <Sparkles size={15} className="text-blue-600" />
-            <h2 id="demo-access-title" className="text-xs font-extrabold uppercase tracking-wider text-blue-900">
-              Akses Cepat Demo Portfolio
-            </h2>
-          </div>
-          <p className="text-xs text-slate-600 mb-3 font-medium leading-relaxed">
-            Pilih peran demo di bawah ini untuk langsung masuk otomatis tanpa perlu mengetik:
-          </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('admin')}
-              disabled={loading}
-              aria-label="Masuk otomatis sebagai Administrator Demo"
-              className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none disabled:opacity-60"
-            >
-              <ShieldCheck size={15} className="text-blue-600" />
-              <span>{activeDemo === 'admin' ? 'Memuat...' : 'Demo Admin'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('siswa')}
-              disabled={loading}
-              aria-label="Masuk otomatis sebagai Siswa Demo"
-              className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none disabled:opacity-60"
-            >
-              <GraduationCap size={15} className="text-indigo-600" />
-              <span>{activeDemo === 'siswa' ? 'Memuat...' : 'Demo Siswa'}</span>
-            </button>
-          </div>
-        </section>
-
         <div className="glass-card p-6 sm:p-8 shadow-lg">
           <div className="mb-5">
-            <h2 className="text-base font-bold text-slate-900">Atau Masuk Manual</h2>
+            <h2 className="text-base font-bold text-slate-900">Masuk ke akun Anda</h2>
             <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              Gunakan akun perpustakaan terdaftar Anda
+              Gunakan email dan password terdaftar Anda
             </p>
           </div>
 
@@ -251,7 +192,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs mt-5 text-slate-400 font-medium">
-          © 2026 Metland School Library System · Portfolio Live Demo
+          © 2026 Metland School Library System
         </p>
       </div>
     </main>

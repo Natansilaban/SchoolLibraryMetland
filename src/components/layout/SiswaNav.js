@@ -39,14 +39,9 @@ export default function SiswaNav() {
             >
               <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
-                Metland Library
-              </span>
-              <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                Demo
-              </span>
-            </div>
+            <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
+              Metland Library
+            </span>
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
