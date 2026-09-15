@@ -7,7 +7,7 @@ const globalForPrisma = globalThis;
 function getPgPool() {
   if (!globalForPrisma.pgPool) {
     globalForPrisma.pgPool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://casaos:casaos@100.92.251.18:5432/metschoo',
+      connectionString: process.env.DATABASE_URL || 'postgresql://casaos:casaos@172.17.0.1:5432/metschoo',
       max: 10,
       min: 0,
       idleTimeoutMillis: 10000,
