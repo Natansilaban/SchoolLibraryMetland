@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function GET() {
   try {
@@ -12,7 +13,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
@@ -25,11 +26,11 @@ export async function POST(req) {
 
     const { nama, deskripsi } = await req.json();
     if (!nama || !nama.trim()) return NextResponse.json({ error: 'Nama kategori wajib diisi' }, { status: 400 });
+    if (nama.length > 100) return NextResponse.json({ error: 'Nama kategori terlalu panjang (maks 100 karakter)' }, { status: 400 });
     const data = await prisma.kategori.create({ data: { nama: nama.trim(), deskripsi: deskripsi?.trim() || null } });
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
     if (error.code === 'P2002') return NextResponse.json({ error: 'Nama kategori sudah ada' }, { status: 409 });
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
-

@@ -1,7 +1,8 @@
-import { prisma } from '@/lib/prisma';
+                                                                                                                                                                                    import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function POST(req) {
   try {
@@ -46,9 +47,10 @@ export async function POST(req) {
         }
       }
 
-      const finalDenda = (customDenda !== undefined && customDenda !== null && !isNaN(Number(customDenda)))
+      const rawDenda = (customDenda !== undefined && customDenda !== null && !isNaN(Number(customDenda)))
         ? Number(customDenda)
         : calculatedDenda;
+      const finalDenda = Math.max(0, rawDenda);
 
       const updated = await tx.peminjaman.update({
         where: { id },
@@ -72,7 +74,7 @@ export async function POST(req) {
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
@@ -106,6 +108,6 @@ export async function GET(req) {
 
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }

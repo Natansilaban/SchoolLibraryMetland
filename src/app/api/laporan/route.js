@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function GET(req) {
   try {
@@ -79,6 +80,6 @@ export async function GET(req) {
       anggotaTerAktif,
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }

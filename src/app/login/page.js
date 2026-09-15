@@ -1,25 +1,24 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { signIn, getSession } from 'next-auth/react';
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const executeLogin = async (email, password) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
       const result = await signIn('credentials', {
-        email,
-        password,
+        email: form.email,
+        password: form.password,
         redirect: false,
       });
 
@@ -27,18 +26,14 @@ export default function LoginPage() {
         setError('Email atau password salah. Silakan coba lagi.');
         setLoading(false);
       } else {
-        const target = (email && email.toLowerCase().includes('admin')) ? '/admin/dashboard' : '/siswa/dashboard';
+        const session = await getSession();
+        const target = session?.user?.role === 'ADMIN' ? '/admin/dashboard' : '/siswa/dashboard';
         window.location.replace(target);
       }
     } catch {
       setError('Terjadi kendala saat menghubungkan ke server.');
       setLoading(false);
     }
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await executeLogin(form.email, form.password);
   };
 
   return (
@@ -123,7 +118,7 @@ export default function LoginPage() {
                   required
                   aria-required="true"
                   className="glass-input pl-10 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-                  placeholder="admin@metland.sch.id"
+                  placeholder="email@metland.sch.id"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -180,15 +175,6 @@ export default function LoginPage() {
               ) : 'Masuk'}
             </button>
           </form>
-
-          <hr className="glass-divider mt-5" />
-
-          <p className="text-center text-xs mt-4 text-slate-500 font-medium">
-            Belum punya akun?{' '}
-            <a href="/register" className="text-blue-600 font-bold hover:text-blue-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 rounded-sm">
-              Daftar sebagai siswa
-            </a>
-          </p>
         </div>
 
         <p className="text-center text-xs mt-5 text-slate-400 font-medium">

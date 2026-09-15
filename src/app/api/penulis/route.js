@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function GET() {
   try {
@@ -18,10 +19,9 @@ export async function GET() {
       },
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
-
 
 export async function POST(req) {
   try {
@@ -32,10 +32,10 @@ export async function POST(req) {
 
     const { nama, bio } = await req.json();
     if (!nama || !nama.trim()) return NextResponse.json({ error: 'Nama penulis wajib diisi' }, { status: 400 });
+    if (nama.length > 255) return NextResponse.json({ error: 'Nama penulis terlalu panjang (maks 255 karakter)' }, { status: 400 });
     const data = await prisma.penulis.create({ data: { nama: nama.trim(), bio: bio?.trim() || null } });
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
-

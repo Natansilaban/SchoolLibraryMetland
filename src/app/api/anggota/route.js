@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function GET(req) {
   try {
@@ -13,8 +14,10 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const rawPage = parseInt(searchParams.get('page') || '1');
+    const rawLimit = parseInt(searchParams.get('limit') || '20');
+    const page = Math.max(rawPage, 1);
+    const limit = Math.min(Math.max(rawLimit, 1), 100);
 
     const where = search ? {
       OR: [
@@ -40,15 +43,25 @@ export async function GET(req) {
 
     return NextResponse.json({ data, total, page, limit });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
 export async function POST(req) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Akses ditolak. Khusus Admin.' }, { status: 403 });
+    }
+
     const { nama, nis, kelas, email, password, alamat, noHp } = await req.json();
+
     if (!nama || !nis || !kelas || !email || !password) {
       return NextResponse.json({ error: 'Semua field wajib diisi' }, { status: 400 });
+    }
+
+    if (nama.length > 255 || nis.length > 50 || kelas.length > 50 || email.length > 255) {
+      return NextResponse.json({ error: 'Input melebihi panjang maksimum yang diizinkan' }, { status: 400 });
     }
 
     if (password.length < 6) {
@@ -72,6 +85,6 @@ export async function POST(req) {
     if (error.code === 'P2002') {
       return NextResponse.json({ error: 'Email atau NIS sudah terdaftar' }, { status: 409 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }

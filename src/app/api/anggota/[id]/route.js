@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function PUT(req, { params }) {
   try {
@@ -23,13 +24,18 @@ export async function PUT(req, { params }) {
     }
 
     const { nama, nis, kelas, alamat, noHp } = await req.json();
+
+    if (nama && nama.length > 255) {
+      return NextResponse.json({ error: 'Nama terlalu panjang (maks 255 karakter)' }, { status: 400 });
+    }
+
     const data = await prisma.anggota.update({
       where: { id: anggotaId },
       data: { nama, nis, kelas, alamat, noHp },
     });
     return NextResponse.json(data);
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(e) }, { status: 500 });
   }
 }
 
@@ -73,7 +79,6 @@ export async function DELETE(req, { params }) {
     await prisma.user.delete({ where: { id: anggota.userId } });
     return NextResponse.json({ message: 'Anggota berhasil dihapus' });
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(e) }, { status: 500 });
   }
 }
-

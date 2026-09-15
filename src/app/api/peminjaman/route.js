@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function GET(req) {
   try {
@@ -13,8 +14,10 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const rawPage = parseInt(searchParams.get('page') || '1');
+    const rawLimit = parseInt(searchParams.get('limit') || '20');
+    const page = Math.max(rawPage, 1);
+    const limit = Math.min(Math.max(rawLimit, 1), 100);
 
     const isStudent = session.user.role === 'SISWA';
     const rawAnggotaId = isStudent ? session.user.anggotaId : searchParams.get('anggotaId');
@@ -54,7 +57,7 @@ export async function GET(req) {
 
     return NextResponse.json({ data, total, page, limit });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
@@ -98,6 +101,13 @@ export async function POST(req) {
     const initialStatus = (isAdmin && statusDirect === 'DIPINJAM') ? 'DIPINJAM' : 'MENUNGGU_KONFIRMASI';
 
     const result = await prisma.$transaction(async (tx) => {
+      if (isAdmin) {
+        const anggotaExists = await tx.anggota.findUnique({ where: { id: targetAnggotaId }, select: { id: true } });
+        if (!anggotaExists) {
+          throw new Error('Anggota dengan ID tersebut tidak ditemukan');
+        }
+      }
+
       const activeCount = await tx.peminjaman.count({
         where: {
           anggotaId: targetAnggotaId,
@@ -156,6 +166,6 @@ export async function POST(req) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }

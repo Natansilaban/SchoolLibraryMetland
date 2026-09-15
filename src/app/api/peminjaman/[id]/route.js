@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function PATCH(req, { params }) {
   try {
@@ -148,7 +149,7 @@ export async function PATCH(req, { params }) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
@@ -193,6 +194,6 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ message: 'Pengajuan peminjaman berhasil dibatalkan dan dihapus' });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }

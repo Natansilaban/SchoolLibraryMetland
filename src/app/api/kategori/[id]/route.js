@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function PUT(req, { params }) {
   try {
@@ -23,7 +24,7 @@ export async function PUT(req, { params }) {
     });
     return NextResponse.json(data);
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(e) }, { status: 500 });
   }
 }
 
@@ -43,7 +44,6 @@ export async function DELETE(req, { params }) {
     await prisma.kategori.delete({ where: { id: kategoriId } });
     return NextResponse.json({ message: 'Kategori berhasil dihapus' });
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(e) }, { status: 500 });
   }
 }
-

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { serverErrMsg } from '@/lib/apiError';
 
 export async function GET(req, { params }) {
   try {
@@ -23,7 +24,7 @@ export async function GET(req, { params }) {
     if (!buku) return NextResponse.json({ error: 'Buku tidak ditemukan' }, { status: 404 });
     return NextResponse.json(buku);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
@@ -60,7 +61,7 @@ export async function PUT(req, { params }) {
     });
     return NextResponse.json(buku);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
 
@@ -94,6 +95,6 @@ export async function DELETE(req, { params }) {
     await prisma.buku.delete({ where: { id: bukuId } });
     return NextResponse.json({ message: 'Buku berhasil dihapus' });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }

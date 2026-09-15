@@ -2,6 +2,10 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from '@/lib/prisma';
 
+if (process.env.NEXTAUTH_SECRET?.length < 32) {
+  throw new Error('NEXTAUTH_SECRET must be at least 32 characters long. Generate one with: openssl rand -base64 32');
+}
+
 export const authOptions = {
   providers: [
     CredentialsProvider({
@@ -14,24 +18,16 @@ export const authOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          console.log('[AUTH] Checking user credentials for:', credentials.email);
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
             include: { anggota: true },
           });
 
-          if (!user) {
-            console.warn('[AUTH] User not found in database:', credentials.email);
-            return null;
-          }
+          if (!user) return null;
 
           const isValid = await bcrypt.compare(credentials.password, user.password);
-          if (!isValid) {
-            console.warn('[AUTH] Invalid password for:', credentials.email);
-            return null;
-          }
+          if (!isValid) return null;
 
-          console.log('[AUTH SUCCESS] User logged in:', user.email, 'Role:', user.role);
           return {
             id: user.id.toString(),
             email: user.email,
@@ -42,8 +38,8 @@ export const authOptions = {
             kelas: user.anggota?.kelas || null,
           };
         } catch (dbErr) {
-          console.error('[AUTH DATABASE ERROR]:', dbErr.message || dbErr);
-          throw new Error('Database connection error: ' + (dbErr.message || 'unknown'));
+          console.error('[AUTH] Database error during authorization');
+          throw new Error('Database connection error');
         }
       },
     }),
@@ -76,7 +72,7 @@ export const authOptions = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 8 * 60 * 60,
   },
   trustHost: true,
   useSecureCookies: process.env.NODE_ENV === 'production',
