@@ -9,11 +9,12 @@ function getPgPool() {
     globalForPrisma.pgPool = new Pool({
       connectionString: process.env.DATABASE_URL || 'postgresql://casaos:casaos@172.17.0.1:5432/metschoo',
       max: 10,
-      min: 0,
-      idleTimeoutMillis: 10000,
+      min: 2,
+      idleTimeoutMillis: 30000,
       connectionTimeoutMillis: 4000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
+      statement_timeout: 10000,
     });
 
     globalForPrisma.pgPool.on('error', (err) => {

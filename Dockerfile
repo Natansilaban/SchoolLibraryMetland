@@ -1,11 +1,12 @@
 # Multi-stage production build for Next.js 16 standalone
 FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM node:20-alpine AS builder
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -17,6 +18,7 @@ ENV NODE_ENV=production
 RUN npm run build
 
 FROM node:20-alpine AS runner
+RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -26,6 +28,7 @@ ENV AUTH_TRUST_HOST=true
 ENV NEXTAUTH_URL="https://librarymetland.r1fikri.dev"
 ENV NEXTAUTH_SECRET="856f477afaa0875905e2e991bec08af30feebda82af4dd0ce400c263d87f7ec6"
 ENV DATABASE_URL="postgresql://casaos:casaos@172.17.0.1:5432/metschoo"
+ENV NODE_OPTIONS="--max-old-space-size=512"
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
