@@ -5,6 +5,7 @@ import { BookPlus, Clock, BookCheck, AlertCircle, XCircle } from 'lucide-react';
 import AjukanPinjamModal from './AjukanPinjamModal';
 import { useRouter } from 'next/navigation';
 import { toast } from '@/components/ui/Toast';
+import { confirmModal } from '@/components/ui/ConfirmModal';
 
 export default function PinjamBukuButton({ buku, existingLoan, isStudent }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -14,7 +15,15 @@ export default function PinjamBukuButton({ buku, existingLoan, isStudent }) {
   if (!isStudent) return null;
 
   const handleCancel = async () => {
-    if (!existingLoan || !window.confirm('Yakin ingin membatalkan pengajuan peminjaman untuk buku ini?')) return;
+    if (!existingLoan) return;
+    const confirmed = await confirmModal({
+      title: 'Batalkan Pengajuan',
+      message: 'Yakin ingin membatalkan pengajuan peminjaman untuk buku ini?',
+      confirmText: 'Ya, Batalkan',
+      cancelText: 'Kembali',
+      type: 'danger',
+    });
+    if (!confirmed) return;
     setCancelling(true);
     try {
       const res = await fetch(`/api/peminjaman/${existingLoan.id}`, {

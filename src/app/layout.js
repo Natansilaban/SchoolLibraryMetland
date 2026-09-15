@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import AuthProvider from '@/components/providers/AuthProvider';
 import ToastContainer from '@/components/ui/Toast';
+import ConfirmModalContainer from '@/components/ui/ConfirmModal';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -36,6 +37,7 @@ export default async function RootLayout({ children }) {
       <body suppressHydrationWarning className="font-sans antialiased">
         <AuthProvider session={session}>
           <ToastContainer />
+          <ConfirmModalContainer />
           {children}
         </AuthProvider>
       </body>

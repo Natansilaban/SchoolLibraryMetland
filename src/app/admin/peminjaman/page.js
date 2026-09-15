@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Plus, Search, BookCopy, X, ChevronLeft, ChevronRight, Check, Ban } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
+import { confirmModal } from '@/components/ui/ConfirmModal';
 
 const STATUS_BADGE = {
   MENUNGGU_KONFIRMASI: <span className="badge badge-yellow">Menunggu Konfirmasi</span>,
@@ -102,11 +103,18 @@ export default function PeminjamanPage() {
   };
 
   const handleAction = async (id, action) => {
-    const confirmText = action === 'APPROVE' 
-      ? 'Setujui pengajuan peminjaman ini?' 
-      : 'Tolak pengajuan peminjaman ini?';
-    
-    if (!window.confirm(confirmText)) return;
+    const isApprove = action === 'APPROVE';
+    const confirmed = await confirmModal({
+      title: isApprove ? 'Setujui Peminjaman' : 'Tolak Peminjaman',
+      message: isApprove
+        ? 'Setujui pengajuan peminjaman ini? Stok buku akan otomatis berkurang 1.'
+        : 'Tolak pengajuan peminjaman ini?',
+      confirmText: isApprove ? 'Ya, Setujui' : 'Ya, Tolak',
+      cancelText: 'Batal',
+      type: isApprove ? 'primary' : 'danger',
+    });
+
+    if (!confirmed) return;
 
     setActionLoading(id);
     try {

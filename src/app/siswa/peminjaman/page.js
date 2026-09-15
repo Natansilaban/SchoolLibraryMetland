@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from '@/components/ui/Toast';
+import { confirmModal } from '@/components/ui/ConfirmModal';
 
 export default function SiswaPeminjamanPage() {
   const [data, setData] = useState([]);
@@ -36,9 +37,14 @@ export default function SiswaPeminjamanPage() {
   }, [fetchLoans]);
 
   const handleCancelApplication = async (id, bookTitle) => {
-    if (!window.confirm(`Yakin ingin membatalkan pengajuan peminjaman untuk "${bookTitle}"?`)) {
-      return;
-    }
+    const confirmed = await confirmModal({
+      title: 'Batalkan Pengajuan',
+      message: `Yakin ingin membatalkan pengajuan peminjaman untuk "${bookTitle}"?`,
+      confirmText: 'Ya, Batalkan',
+      cancelText: 'Kembali',
+      type: 'danger',
+    });
+    if (!confirmed) return;
 
     setCancellingId(id);
     try {
@@ -97,7 +103,14 @@ export default function SiswaPeminjamanPage() {
   };
 
   const handleCancelReturnRequest = async (id) => {
-    if (!window.confirm('Batalkan permintaan pengembalian untuk buku ini?')) return;
+    const confirmed = await confirmModal({
+      title: 'Batalkan Permintaan',
+      message: 'Batalkan permintaan pengembalian untuk buku ini?',
+      confirmText: 'Ya, Batalkan',
+      cancelText: 'Kembali',
+      type: 'danger',
+    });
+    if (!confirmed) return;
     try {
       const res = await fetch(`/api/peminjaman/${id}`, {
         method: 'PATCH',
