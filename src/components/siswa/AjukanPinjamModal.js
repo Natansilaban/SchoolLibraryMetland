@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { X, Calendar, BookMarked, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Calendar, BookMarked, CheckCircle2 } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) {
   const defaultTglKembali = () => {
@@ -14,6 +15,17 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
   const [catatan, setCatatan] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
 
   if (!isOpen || !buku) return null;
 
@@ -38,31 +50,36 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
         throw new Error(json.error || 'Gagal mengajukan peminjaman');
       }
 
+      toast.success('Pengajuan peminjaman berhasil diajukan!');
       if (onSuccess) onSuccess(json);
       onClose();
     } catch (err) {
       setError(err.message);
+      toast.error(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="glass-modal-overlay">
-      <div className="glass-modal p-6 max-w-md w-full">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <BookMarked size={20} className="text-blue-600" />
-            <h2 className="text-lg font-bold text-slate-900">Ajukan Peminjaman Buku</h2>
-          </div>
-          <button onClick={onClose} className="btn-glass p-1.5 rounded-lg text-slate-400 hover:text-slate-600">
-            <X size={18} />
-          </button>
+    <div
+      onClick={onClose}
+      className="glass-modal-overlay overscroll-contain touch-pan-y"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="glass-modal p-5 sm:p-6 max-w-md w-full overscroll-contain"
+      >
+        <div className="flex items-center gap-2.5 mb-4">
+          <BookMarked size={22} className="text-blue-600 flex-shrink-0" />
+          <h2 className="text-lg font-bold text-slate-900">Ajukan Peminjaman Buku</h2>
         </div>
 
         <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200">
           <div className="text-sm font-bold text-slate-900 line-clamp-1">{buku.judul}</div>
-          <div className="text-xs text-slate-500 font-medium mt-0.5">Stok Tersedia: <span className="font-bold text-emerald-600">{buku.stok} eksemplar</span></div>
+          <div className="text-xs text-slate-500 font-medium mt-0.5">
+            Stok Tersedia: <span className="font-bold text-emerald-600">{buku.stok}</span>
+          </div>
         </div>
 
         {error && (
@@ -91,12 +108,11 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
           <div>
             <label className="form-label">Catatan Tambahan (Opsional)</label>
             <textarea
-              className="glass-input w-full"
+              className="glass-input w-full resize-none"
               rows={2}
               placeholder="Contoh: Digunakan untuk keperluan tugas kelompok..."
               value={catatan}
               onChange={(e) => setCatatan(e.target.value)}
-              style={{ resize: 'vertical' }}
             />
           </div>
 

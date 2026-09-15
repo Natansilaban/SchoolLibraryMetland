@@ -44,7 +44,6 @@ export async function GET(req) {
         where: periodFilter,
         _sum: { denda: true },
       }),
-      // Buku terpopuler strictly within the selected period
       prisma.buku.findMany({
         where: { peminjaman: { some: periodFilter } },
         take: 10,
@@ -55,7 +54,6 @@ export async function GET(req) {
         },
         orderBy: { peminjaman: { _count: 'desc' } },
       }),
-      // Anggota teraktif strictly within the selected period
       prisma.anggota.findMany({
         where: { peminjaman: { some: periodFilter } },
         take: 10,
@@ -84,4 +82,3 @@ export async function GET(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

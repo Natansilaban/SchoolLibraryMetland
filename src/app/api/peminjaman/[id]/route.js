@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// PATCH /api/peminjaman/[id] - Konfirmasi/Tolak oleh Admin, Batalkan oleh Siswa, atau Ajukan Pengembalian Online oleh Siswa
 export async function PATCH(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -36,7 +35,6 @@ export async function PATCH(req, { params }) {
         throw new Error('Data peminjaman tidak ditemukan');
       }
 
-      // 1. Handle REQUEST_RETURN by student or admin (Pengembalian Buku Online / Lebih Awal)
       if (action === 'REQUEST_RETURN') {
         if (isStudent && peminjaman.anggotaId !== userAnggotaId) {
           throw new Error('Akses ditolak');
@@ -70,7 +68,6 @@ export async function PATCH(req, { params }) {
         });
       }
 
-      // 2. Handle CANCEL_RETURN_REQUEST
       if (action === 'CANCEL_RETURN_REQUEST') {
         if (isStudent && peminjaman.anggotaId !== userAnggotaId) {
           throw new Error('Akses ditolak');
@@ -87,7 +84,6 @@ export async function PATCH(req, { params }) {
         });
       }
 
-      // 3. Handle CANCEL loan application by student or admin
       if (action === 'CANCEL') {
         if (peminjaman.status !== 'MENUNGGU_KONFIRMASI') {
           throw new Error(`Hanya pengajuan dengan status MENUNGGU_KONFIRMASI yang dapat dibatalkan`);
@@ -107,7 +103,6 @@ export async function PATCH(req, { params }) {
         });
       }
 
-      // 4. APPROVE & REJECT only by Admin
       if (!isAdmin) {
         throw new Error('Aksi ini hanya dapat dilakukan oleh Admin');
       }
@@ -117,12 +112,10 @@ export async function PATCH(req, { params }) {
       }
 
       if (action === 'APPROVE') {
-        // Cek stok buku
         if (peminjaman.buku.stok < 1) {
           throw new Error('Stok buku sudah habis. Tidak dapat menyetujui peminjaman.');
         }
 
-        // Setujui peminjaman & kurangi stok
         const res = await tx.peminjaman.update({
           where: { id: peminjamanId },
           data: {
@@ -141,7 +134,6 @@ export async function PATCH(req, { params }) {
 
         return res;
       } else {
-        // Tolak peminjaman
         return await tx.peminjaman.update({
           where: { id: peminjamanId },
           data: {
@@ -160,8 +152,6 @@ export async function PATCH(req, { params }) {
   }
 }
 
-
-// DELETE /api/peminjaman/[id] - Hapus / Tarik pengajuan yang masih MENUNGGU_KONFIRMASI
 export async function DELETE(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -206,4 +196,3 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

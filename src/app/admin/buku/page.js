@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, RefreshCw, Upload, Image as ImageIcon, Check
 } from 'lucide-react';
 import Tilt3DCard from '@/components/ui/Tilt3DCard';
-
+import { toast } from '@/components/ui/Toast';
 
 export default function BukuPage() {
   const [buku, setBuku] = useState([]);
@@ -16,7 +16,7 @@ export default function BukuPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(null); // null | 'add' | 'edit' | 'delete'
+  const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
   const [kategori, setKategori] = useState([]);
   const [penulis, setPenulis] = useState([]);
@@ -118,11 +118,14 @@ export default function BukuPage() {
       const json = await res.json();
       if (!res.ok) {
         setError(json.error || 'Gagal mengupload foto');
+        toast.error(json.error || 'Gagal mengupload foto');
       } else {
         setForm(prev => ({ ...prev, cover: json.url }));
+        toast.success('Foto cover berhasil diupload');
       }
     } catch {
       setError('Terjadi kesalahan saat mengupload gambar');
+      toast.error('Terjadi kesalahan saat mengupload gambar');
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -139,20 +142,33 @@ export default function BukuPage() {
       const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
       const data = await res.json();
       if (!res.ok) { setError(data.error || 'Terjadi kesalahan'); setSaving(false); return; }
+      toast.success(modal === 'add' ? 'Buku berhasil ditambahkan' : 'Data buku berhasil diperbarui');
       setModal(null);
       fetchBuku();
-    } catch { setError('Terjadi kesalahan koneksi'); }
+    } catch {
+      setError('Terjadi kesalahan koneksi');
+      toast.error('Terjadi kesalahan koneksi');
+    }
     setSaving(false);
   };
 
   const handleDelete = async () => {
     setSaving(true);
-    const res = await fetch(`/api/buku/${selected.id}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (!res.ok) { alert(data.error); setSaving(false); return; }
-    setModal(null);
-    fetchBuku();
-    setSaving(false);
+    try {
+      const res = await fetch(`/api/buku/${selected.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || 'Gagal menghapus buku');
+      } else {
+        toast.success('Buku berhasil dihapus');
+        setModal(null);
+        fetchBuku();
+      }
+    } catch {
+      toast.error('Terjadi kesalahan saat menghapus buku');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -162,7 +178,6 @@ export default function BukuPage() {
       <TopBar title="Data Buku" subtitle="Kelola koleksi buku dan foto sampul perpustakaan" />
 
       <div className="p-4 sm:p-6">
-        {/* Header actions */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
           <div className="relative flex-1 max-w-none sm:max-w-sm">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -185,7 +200,6 @@ export default function BukuPage() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="glass-table min-w-[750px]">
@@ -261,7 +275,6 @@ export default function BukuPage() {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
               <span className="text-xs text-slate-500 font-medium">
@@ -280,10 +293,15 @@ export default function BukuPage() {
         </div>
       </div>
 
-      {/* Add/Edit Modal */}
       {(modal === 'add' || modal === 'edit') && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto">
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto overscroll-contain"
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">
                 {modal === 'add' ? 'Tambah Buku Baru' : 'Edit Data Buku'}
@@ -300,7 +318,6 @@ export default function BukuPage() {
             )}
 
             <div className="space-y-4">
-              {/* Cover Upload / URL */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
                 <label className="form-label mb-2 flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-bold text-slate-800">
@@ -319,7 +336,6 @@ export default function BukuPage() {
                 </label>
 
                 <div className="flex items-center gap-4">
-                  {/* Thumbnail Preview */}
                   <Tilt3DCard maxTilt={15} scale={1.05} glare={true} borderRadius="12px" className="w-16 h-22 flex-shrink-0">
                     <div className="w-16 h-22 rounded-xl overflow-hidden border-2 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center shadow-inner">
                       {form.cover ? (
@@ -329,7 +345,6 @@ export default function BukuPage() {
                       )}
                     </div>
                   </Tilt3DCard>
-
 
                   <div className="flex-1 space-y-2">
                     <div className="flex gap-2">
@@ -452,12 +467,11 @@ export default function BukuPage() {
                 <label className="form-label">Deskripsi & Sinopsis</label>
                 <textarea
                   id="form-deskripsi"
-                  className="glass-input w-full"
+                  className="glass-input w-full resize-none"
                   rows={3}
                   value={form.deskripsi}
                   onChange={e => setForm({ ...form, deskripsi: e.target.value })}
                   placeholder="Deskripsi atau sinopsis singkat buku..."
-                  style={{ resize: 'vertical' }}
                 />
               </div>
             </div>
@@ -479,10 +493,16 @@ export default function BukuPage() {
         </div>
       )}
 
-      {/* Delete Modal */}
       {modal === 'delete' && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '400px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '400px' }}
+          >
             <div className="text-center">
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200">
                 <Trash2 size={22} className="text-rose-600" />

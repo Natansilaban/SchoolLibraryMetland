@@ -32,7 +32,6 @@ export default function Tilt3DCard({
       const width = rect.width;
       const height = rect.height;
 
-      // Mouse coordinates relative to card center (-1 to 1)
       const mouseX = (e.clientX - rect.left - width / 2) / (width / 2);
       const mouseY = (e.clientY - rect.top - height / 2) / (height / 2);
 
@@ -100,12 +99,10 @@ export default function Tilt3DCard({
         ...style,
       }}
     >
-      {/* 3D Child container with subtle elevation */}
       <div style={{ transform: 'translateZ(10px)', height: '100%' }}>
         {children}
       </div>
 
-      {/* Dynamic Specular Glare / Shine layer */}
       {glare && (
         <div
           ref={glareRef}

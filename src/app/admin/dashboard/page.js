@@ -139,31 +139,29 @@ export default async function DashboardPage() {
       <TopBar title="Dashboard" subtitle="Selamat datang di Sistem Perpustakaan Metland School" />
 
       <div className="p-4 sm:p-6">
-        {/* Stat Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {statCards.map((card) => {
             const Icon = card.icon;
             return (
               <div
                 key={card.label}
-                className="stat-card relative pl-7"
+                className="stat-card relative pl-4 sm:pl-7 p-3.5 sm:p-5"
                 style={{ borderLeft: `4px solid ${card.spineColor}` }}
               >
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-2 sm:mb-3"
                   style={{ background: card.bg, border: `1px solid ${card.border}` }}
                 >
-                  <Icon size={20} color={card.color} />
+                  <Icon size={18} className="sm:w-5 sm:h-5" color={card.color} />
                 </div>
-                <div className="text-2xl font-extrabold text-slate-900 mb-0.5">{card.value}</div>
-                <div className="text-xs font-semibold text-slate-500">{card.label}</div>
+                <div className="text-xl sm:text-2xl font-extrabold text-slate-900 mb-0.5">{card.value}</div>
+                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 leading-tight">{card.label}</div>
               </div>
             );
           })}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Peminjaman */}
           <div className="glass-card p-5 sm:p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -207,7 +205,6 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Buku Terpopuler */}
           <div className="glass-card p-5 sm:p-6">
             <div className="flex items-center justify-between mb-5">
               <div>
@@ -252,7 +249,6 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Stats Row */}
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
             { label: 'Total Transaksi', value: stats.totalPeminjaman, icon: TrendingUp, color: '#059669', bg: '#d1fae5' },

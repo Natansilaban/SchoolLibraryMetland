@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
-// GET /api/anggota — Khusus Admin untuk melindungi data pribadi (PII) siswa
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -45,7 +44,6 @@ export async function GET(req) {
   }
 }
 
-// POST /api/anggota — create user + anggota (Pendaftaran Siswa Baru atau Tambah oleh Admin)
 export async function POST(req) {
   try {
     const { nama, nis, kelas, email, password, alamat, noHp } = await req.json();
@@ -77,4 +75,3 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

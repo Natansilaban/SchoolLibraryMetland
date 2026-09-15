@@ -7,7 +7,7 @@ import { LayoutDashboard, BookMarked, BookCopy, User, LogOut } from 'lucide-reac
 
 const navItems = [
   { href: '/siswa/dashboard', label: 'Beranda', icon: LayoutDashboard },
-  { href: '/siswa/buku', label: 'Katalog', icon: BookMarked },
+  { href: '/siswa/buku', label: 'Buku', icon: BookMarked },
   { href: '/siswa/peminjaman', label: 'Pinjaman', icon: BookCopy },
   { href: '/siswa/profil', label: 'Profil', icon: User },
 ];
@@ -18,7 +18,6 @@ export default function SiswaNav() {
 
   return (
     <>
-      {/* Top Header Navbar */}
       <header
         className="sticky top-0 z-40 w-full"
         style={{
@@ -30,7 +29,6 @@ export default function SiswaNav() {
         }}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-          {/* Logo & Title */}
           <Link href="/siswa/dashboard" className="flex items-center gap-2.5 flex-shrink-0 focus-visible:ring-2 focus-visible:ring-blue-600 rounded-xl" aria-label="Beranda Siswa Metland Library">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center p-1 flex-shrink-0"
@@ -51,7 +49,6 @@ export default function SiswaNav() {
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
           <div className="hidden md:flex items-center gap-1">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -72,7 +69,6 @@ export default function SiswaNav() {
             })}
           </div>
 
-          {/* User Profile & Logout */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             <Link
               href="/siswa/profil"
@@ -109,7 +105,6 @@ export default function SiswaNav() {
         </div>
       </header>
 
-      {/* Mobile Bottom Floating App Navigation */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-xl border-t border-slate-200/90 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] px-2 py-1.5"
       >

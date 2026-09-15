@@ -30,7 +30,6 @@ export default function LaporanPage() {
     <>
       <TopBar title="Laporan" subtitle="Laporan peminjaman per periode" />
       <div className="p-4 sm:p-6">
-        {/* Filter */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-6 no-print">
           <div className="flex items-center gap-3 flex-1">
             <select id="filter-bulan" className="glass-input flex-1 sm:flex-initial sm:w-40" value={bulan} onChange={e => setBulan(parseInt(e.target.value))}>
@@ -45,7 +44,6 @@ export default function LaporanPage() {
           </button>
         </div>
 
-        {/* Print Header */}
         <div className="hidden print:block mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Perpustakaan Metland School</h1>
           <h2 className="text-xl text-slate-700">Laporan Peminjaman — {MONTHS[bulan-1]} {tahun}</h2>
@@ -54,13 +52,12 @@ export default function LaporanPage() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
             {[1,2,3,4].map(i => <div key={i} className="h-28 shimmer rounded-2xl"/>)}
           </div>
         ) : data && (
           <>
-            {/* Ringkasan Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
               {[
                 { label: 'Total Peminjaman', value: data.ringkasan.totalPeminjaman, icon: BookCopy, color: '#2563eb', bg: 'rgba(37,99,235,0.08)', border: 'rgba(37,99,235,0.2)', spineColor: '#2563eb' },
                 { label: 'Dikembalikan', value: data.ringkasan.totalDikembalikan, icon: CheckCircle2, color: '#059669', bg: 'rgba(5,150,105,0.08)', border: 'rgba(5,150,105,0.2)', spineColor: '#059669' },
@@ -69,18 +66,17 @@ export default function LaporanPage() {
               ].map(c => {
                 const Icon = c.icon;
                 return (
-                  <div key={c.label} className="stat-card relative pl-7" style={{ borderLeft: `4px solid ${c.spineColor}` }}>
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-3" style={{background:c.bg,border:`1px solid ${c.border}`}}>
+                  <div key={c.label} className="stat-card relative pl-4 sm:pl-7 p-3.5 sm:p-5" style={{ borderLeft: `4px solid ${c.spineColor}` }}>
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center mb-2 sm:mb-3" style={{background:c.bg,border:`1px solid ${c.border}`}}>
                       <Icon size={18} color={c.color}/>
                     </div>
-                    <div className="text-xl font-extrabold text-slate-900">{c.value}</div>
-                    <div className="text-xs font-semibold text-slate-500 mt-0.5">{c.label}</div>
+                    <div className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">{c.value}</div>
+                    <div className="text-[11px] sm:text-xs font-semibold text-slate-500 mt-0.5 leading-tight">{c.label}</div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Tabel Peminjaman */}
             <div className="glass-card overflow-hidden mb-6">
               <div className="p-4 sm:p-5 border-b border-slate-200 bg-slate-50/50">
                 <h3 className="font-bold text-slate-900 text-sm sm:text-base">Detail Peminjaman — {MONTHS[bulan-1]} {tahun}</h3>
@@ -114,7 +110,6 @@ export default function LaporanPage() {
               </div>
             </div>
 
-            {/* Buku Terpopuler & Anggota Teraktif */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="glass-card p-5">
                 <h3 className="font-bold text-slate-900 text-sm sm:text-base mb-4">Buku Terpopuler</h3>

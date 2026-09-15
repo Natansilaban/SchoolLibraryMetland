@@ -6,6 +6,7 @@ import {
   XCircle, CheckCircle2, RotateCcw, X, Send, Sparkles, Coins
 } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from '@/components/ui/Toast';
 
 export default function SiswaPeminjamanPage() {
   const [data, setData] = useState([]);
@@ -14,7 +15,6 @@ export default function SiswaPeminjamanPage() {
   const [returnModal, setReturnModal] = useState(null);
   const [returnForm, setReturnForm] = useState({ catatan: '' });
   const [submittingReturn, setSubmittingReturn] = useState(false);
-  const [notification, setNotification] = useState(null);
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -35,7 +35,6 @@ export default function SiswaPeminjamanPage() {
     fetchLoans();
   }, [fetchLoans]);
 
-  // 1. Batalkan Pengajuan (MENUNGGU_KONFIRMASI)
   const handleCancelApplication = async (id, bookTitle) => {
     if (!window.confirm(`Yakin ingin membatalkan pengajuan peminjaman untuk "${bookTitle}"?`)) {
       return;
@@ -49,26 +48,23 @@ export default function SiswaPeminjamanPage() {
       const json = await res.json();
 
       if (!res.ok) {
-        alert(json.error || 'Gagal membatalkan pengajuan');
+        toast.error(json.error || 'Gagal membatalkan pengajuan');
       } else {
-        setNotification({ type: 'success', message: 'Pengajuan peminjaman berhasil dibatalkan.' });
-        setTimeout(() => setNotification(null), 4000);
+        toast.success('Pengajuan peminjaman berhasil dibatalkan');
         fetchLoans();
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setCancellingId(null);
     }
   };
 
-  // 2. Buka Modal Pengembalian Online (DIPINJAM / TERLAMBAT)
   const openReturnModal = (loan) => {
     setReturnModal(loan);
     setReturnForm({ catatan: '' });
   };
 
-  // 3. Submit Pengajuan Pengembalian Online
   const handleSubmitReturn = async (e) => {
     e.preventDefault();
     if (!returnModal) return;
@@ -87,24 +83,19 @@ export default function SiswaPeminjamanPage() {
 
       const json = await res.json();
       if (!res.ok) {
-        alert(json.error || 'Gagal mengajukan pengembalian');
+        toast.error(json.error || 'Gagal mengajukan pengembalian');
       } else {
         setReturnModal(null);
-        setNotification({
-          type: 'success',
-          message: 'Pengembalian berhasil diajukan! Silakan serahkan buku fisik ke meja perpustakaan untuk verifikasi.',
-        });
-        setTimeout(() => setNotification(null), 5000);
+        toast.success('Pengembalian berhasil diajukan! Silakan serahkan buku fisik ke meja perpustakaan.');
         fetchLoans();
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setSubmittingReturn(false);
     }
   };
 
-  // 4. Batalkan Permintaan Pengembalian
   const handleCancelReturnRequest = async (id) => {
     if (!window.confirm('Batalkan permintaan pengembalian untuk buku ini?')) return;
     try {
@@ -114,10 +105,11 @@ export default function SiswaPeminjamanPage() {
         body: JSON.stringify({ action: 'CANCEL_RETURN_REQUEST' }),
       });
       if (res.ok) {
+        toast.success('Permintaan pengembalian dibatalkan');
         fetchLoans();
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
@@ -150,13 +142,6 @@ export default function SiswaPeminjamanPage() {
           Kelola pinjaman aktif, ajukan pengembalian buku lebih awal, atau batalkan pengajuan
         </p>
       </div>
-
-      {notification && (
-        <div className="mb-5 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center gap-2 animate-fadeIn">
-          <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" />
-          {notification.message}
-        </div>
-      )}
 
       {loading ? (
         <div className="space-y-3">
@@ -219,7 +204,6 @@ export default function SiswaPeminjamanPage() {
                       )}
                     </div>
 
-                    {/* STATUS 1: MENUNGGU_KONFIRMASI (Tampilkan Tombol Batalkan Pengajuan) */}
                     {p.status === 'MENUNGGU_KONFIRMASI' && (
                       <div className="mt-3.5 p-3 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-medium">
                         <div className="flex items-center gap-2">
@@ -237,7 +221,6 @@ export default function SiswaPeminjamanPage() {
                       </div>
                     )}
 
-                    {/* STATUS 2: DIPINJAM / TERLAMBAT — Belum Mengajukan Kembali */}
                     {(p.status === 'DIPINJAM' || p.status === 'TERLAMBAT') && !hasRequestedReturn && (
                       <div className="mt-3.5 p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-blue-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-medium">
                         <div className="flex items-center gap-2">
@@ -261,7 +244,6 @@ export default function SiswaPeminjamanPage() {
                       </div>
                     )}
 
-                    {/* STATUS 3: DIPINJAM / TERLAMBAT — Sudah Mengajukan Kembali (Menunggu Verifikasi Admin) */}
                     {(p.status === 'DIPINJAM' || p.status === 'TERLAMBAT') && hasRequestedReturn && (
                       <div className="mt-3.5 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 font-medium">
                         <div className="flex items-center gap-2">
@@ -283,7 +265,6 @@ export default function SiswaPeminjamanPage() {
                       </div>
                     )}
 
-                    {/* STATUS 4: DITOLAK / DIBATALKAN */}
                     {p.status === 'DITOLAK' && (
                       <div className="mt-3.5 p-2.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-center gap-2 font-medium">
                         <Info size={14} className="text-slate-500 flex-shrink-0" />
@@ -322,18 +303,18 @@ export default function SiswaPeminjamanPage() {
         </div>
       )}
 
-      {/* MODAL AJUKAN PENGEMBALIAN BUKU OLEH SISWA */}
       {returnModal && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6 max-w-md w-full animate-fadeIn">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <RotateCcw size={20} className="text-emerald-600" />
-                <h2 className="text-lg font-bold text-slate-900">Ajukan Pengembalian Buku</h2>
-              </div>
-              <button onClick={() => setReturnModal(null)} className="btn-glass p-1.5 rounded-lg text-slate-400 hover:text-slate-600">
-                <X size={18} />
-              </button>
+        <div
+          onClick={() => setReturnModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 max-w-md w-full animate-fadeIn overscroll-contain"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <RotateCcw size={20} className="text-emerald-600" />
+              <h2 className="text-lg font-bold text-slate-900">Ajukan Pengembalian Buku</h2>
             </div>
 
             <div className="mb-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs">
@@ -342,7 +323,6 @@ export default function SiswaPeminjamanPage() {
               <div className="text-slate-500 font-medium">Batas Kembali: {fmt(returnModal.tglKembaliRencana)}</div>
             </div>
 
-            {/* Hitung Denda Estimasi */}
             {(() => {
               const { daysLate, estimatedFine } = getDaysLateAndFine(returnModal.tglKembaliRencana);
               const isLate = daysLate > 0;
@@ -376,12 +356,11 @@ export default function SiswaPeminjamanPage() {
               <div>
                 <label className="form-label">Catatan Kondisi Buku (Opsional)</label>
                 <textarea
-                  className="glass-input w-full"
+                  className="glass-input w-full resize-none"
                   rows={2}
                   placeholder="Contoh: Buku dalam kondisi rapi, siap diserahkan..."
                   value={returnForm.catatan}
                   onChange={(e) => setReturnForm({ catatan: e.target.value })}
-                  style={{ resize: 'vertical' }}
                 />
               </div>
 

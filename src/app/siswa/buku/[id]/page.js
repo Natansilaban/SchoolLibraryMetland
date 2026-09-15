@@ -7,7 +7,6 @@ import { authOptions } from '@/lib/auth';
 import PinjamBukuButton from '@/components/siswa/PinjamBukuButton';
 import Tilt3DCard from '@/components/ui/Tilt3DCard';
 
-
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const id = parseInt(resolvedParams?.id);
@@ -61,7 +60,6 @@ export default async function DetailBukuPage({ params }) {
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cover */}
         <div className="lg:col-span-1">
           <Tilt3DCard
             maxTilt={16}
@@ -84,8 +82,6 @@ export default async function DetailBukuPage({ params }) {
             </div>
           </Tilt3DCard>
 
-
-
           <div className="mt-4 glass-card-sm p-4 text-center">
             <div className="text-3xl font-extrabold text-slate-900 mb-1">{buku.stok}</div>
             <div className="text-xs font-semibold text-slate-500">Stok tersedia</div>
@@ -94,11 +90,9 @@ export default async function DetailBukuPage({ params }) {
             </div>
           </div>
 
-          {/* Tombol Ajukan Pinjam bagi Siswa */}
           <PinjamBukuButton buku={buku} existingLoan={existingLoan} isStudent={isStudent} />
         </div>
 
-        {/* Detail */}
         <div className="lg:col-span-2">
           <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-snug">{buku.judul}</h1>
 
@@ -106,7 +100,6 @@ export default async function DetailBukuPage({ params }) {
             <p className="text-slate-600 font-medium mb-4">oleh <span className="text-blue-600 font-bold">{buku.penulis.nama}</span></p>
           )}
 
-          {/* Info Grid */}
           <div className="glass-card-sm p-4 mb-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {info.map(item => {
@@ -124,7 +117,6 @@ export default async function DetailBukuPage({ params }) {
             </div>
           </div>
 
-          {/* Deskripsi */}
           {buku.deskripsi && (
             <div className="glass-card-sm p-4 mb-4">
               <h3 className="text-sm font-bold text-slate-900 mb-2">Deskripsi</h3>
@@ -132,7 +124,6 @@ export default async function DetailBukuPage({ params }) {
             </div>
           )}
 
-          {/* Statistik */}
           <div className="glass-card-sm p-4">
             <div className="text-sm text-slate-500 font-medium">
               Total dipinjam: <span className="text-slate-900 font-bold">{buku._count.peminjaman}×</span>

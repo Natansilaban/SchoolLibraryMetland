@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Plus, Pencil, Trash2, Building2, X, Search, BookMarked } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 export default function PenerbitPage() {
   const [data, setData] = useState([]);
@@ -76,10 +77,12 @@ export default function PenerbitPage() {
         setSaving(false);
         return;
       }
+      toast.success(modal === 'add' ? 'Penerbit berhasil ditambahkan' : 'Penerbit berhasil diperbarui');
       setModal(null);
       fetch_();
     } catch {
       setError('Terjadi kesalahan koneksi');
+      toast.error('Terjadi kesalahan koneksi');
     } finally {
       setSaving(false);
     }
@@ -91,13 +94,14 @@ export default function PenerbitPage() {
       const res = await fetch(`/api/penerbit/${selected.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const j = await res.json();
-        alert(j.error || 'Gagal menghapus penerbit');
+        toast.error(j.error || 'Gagal menghapus penerbit');
       } else {
+        toast.success('Penerbit berhasil dihapus');
         setModal(null);
         fetch_();
       }
     } catch {
-      alert('Terjadi kesalahan saat menghapus');
+      toast.error('Terjadi kesalahan saat menghapus');
     } finally {
       setSaving(false);
     }
@@ -131,8 +135,8 @@ export default function PenerbitPage() {
                   <th>No</th>
                   <th>Nama Penerbit</th>
                   <th>Kota</th>
-                  <th>Daftar Buku Terbitan</th>
                   <th>Website</th>
+                  <th>Daftar Buku</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -162,8 +166,22 @@ export default function PenerbitPage() {
                     return (
                       <tr key={d.id}>
                         <td className="text-slate-500 font-medium">{i + 1}</td>
-                        <td className="font-bold text-slate-900">{d.nama}</td>
+                        <td>
+                          <div className="font-bold text-slate-900">{d.nama}</div>
+                        </td>
                         <td className="text-slate-600 font-medium">{d.kota || '—'}</td>
+                        <td>
+                          {d.website ? (
+                            <a
+                              href={d.website.startsWith('http') ? d.website : `https://${d.website}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs text-blue-600 hover:underline truncate block max-w-[160px]"
+                            >
+                              {d.website}
+                            </a>
+                          ) : '—'}
+                        </td>
                         <td>
                           <div className="flex flex-col gap-1 max-w-xs">
                             <div className="flex items-center gap-1.5">
@@ -187,15 +205,6 @@ export default function PenerbitPage() {
                               </div>
                             )}
                           </div>
-                        </td>
-                        <td className="text-slate-600 font-medium">
-                          {d.website ? (
-                            <a href={d.website} target="_blank" rel="noreferrer" className="text-blue-600 hover:text-blue-700 font-bold underline text-xs">
-                              {d.website}
-                            </a>
-                          ) : (
-                            '—'
-                          )}
                         </td>
                         <td>
                           <div className="flex gap-2">
@@ -228,8 +237,15 @@ export default function PenerbitPage() {
       </div>
 
       {(modal === 'add' || modal === 'edit') && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '440px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '440px' }}
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">
                 {modal === 'add' ? 'Tambah' : 'Edit'} Penerbit
@@ -291,8 +307,15 @@ export default function PenerbitPage() {
       )}
 
       {modal === 'delete' && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '380px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '380px' }}
+          >
             <div className="text-center">
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200">
                 <Trash2 size={22} className="text-rose-600" />

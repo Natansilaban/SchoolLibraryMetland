@@ -51,7 +51,6 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      {/* Ambient background orbs */}
       <div className="fixed inset-0 pointer-events-none">
         <div
           className="absolute w-[500px] h-[500px] rounded-full opacity-40 blur-3xl"
@@ -76,7 +75,6 @@ export default function RegisterPage() {
           <ArrowLeft size={16} /> Kembali ke Login
         </Link>
 
-        {/* Logo & Branding */}
         <div className="text-center mb-6">
           <div
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 p-2 shadow-sm"
@@ -96,7 +94,6 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Register Card */}
         <div className="glass-card p-6 sm:p-8 shadow-lg">
           {success ? (
             <div className="text-center py-6">

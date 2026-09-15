@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// GET /api/buku/[id]
 export async function GET(req, { params }) {
   try {
     const { id } = await params;
@@ -28,7 +27,6 @@ export async function GET(req, { params }) {
   }
 }
 
-// PUT /api/buku/[id]
 export async function PUT(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -66,7 +64,6 @@ export async function PUT(req, { params }) {
   }
 }
 
-// DELETE /api/buku/[id]
 export async function DELETE(req, { params }) {
   try {
     const session = await getServerSession(authOptions);
@@ -80,7 +77,6 @@ export async function DELETE(req, { params }) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
 
-    // Check active peminjaman (including DIPINJAM, TERLAMBAT, and MENUNGGU_KONFIRMASI)
     const active = await prisma.peminjaman.count({
       where: {
         bukuId: bukuId,
@@ -101,4 +97,3 @@ export async function DELETE(req, { params }) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

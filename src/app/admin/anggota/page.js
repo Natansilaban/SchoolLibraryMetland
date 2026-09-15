@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Plus, Pencil, Trash2, Users, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 export default function AnggotaPage() {
   const [data, setData] = useState([]);
@@ -27,36 +28,61 @@ export default function AnggotaPage() {
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/anggota?search=${encodeURIComponent(debouncedSearch)}&page=${page}&limit=${limit}`);
-    const json = await res.json();
-    setData(json.data || []);
-    setTotal(json.total || 0);
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/anggota?search=${encodeURIComponent(debouncedSearch)}&page=${page}&limit=${limit}`);
+      const json = await res.json();
+      setData(json.data || []);
+      setTotal(json.total || 0);
+    } catch {
+      setData([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
   }, [debouncedSearch, page]);
 
   useEffect(() => { fetch_(); }, [fetch_]);
 
   const openAdd = () => { setForm({ nama: '', nis: '', kelas: '', email: '', password: '', alamat: '', noHp: '' }); setError(''); setModal('add'); };
-  const openEdit = (d) => { setSelected(d); setForm({ nama: d.nama, nis: d.nis, kelas: d.kelas, email: d.user.email, password: '', alamat: d.alamat || '', noHp: d.noHp || '' }); setError(''); setModal('edit'); };
+  const openEdit = (d) => { setSelected(d); setForm({ nama: d.nama, nis: d.nis, kelas: d.kelas, email: d.user?.email || '', password: '', alamat: d.alamat || '', noHp: d.noHp || '' }); setError(''); setModal('edit'); };
   const openDelete = (d) => { setSelected(d); setModal('delete'); };
 
   const handleSave = async () => {
     if (!form.nama || !form.nis || !form.kelas) { setError('Nama, NIS, dan kelas wajib diisi'); return; }
     if (modal === 'add' && (!form.email || !form.password)) { setError('Email dan password wajib untuk anggota baru'); return; }
     setSaving(true); setError('');
-    const url = modal === 'add' ? '/api/anggota' : `/api/anggota/${selected.id}`;
-    const res = await fetch(url, { method: modal === 'add' ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error); setSaving(false); return; }
-    setModal(null); fetch_(); setSaving(false);
+    try {
+      const url = modal === 'add' ? '/api/anggota' : `/api/anggota/${selected.id}`;
+      const res = await fetch(url, { method: modal === 'add' ? 'POST' : 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const json = await res.json();
+      if (!res.ok) { setError(json.error); setSaving(false); return; }
+      toast.success(modal === 'add' ? 'Anggota berhasil ditambahkan' : 'Anggota berhasil diperbarui');
+      setModal(null); fetch_();
+    } catch {
+      setError('Terjadi kesalahan koneksi');
+      toast.error('Terjadi kesalahan koneksi');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     setSaving(true);
-    const res = await fetch(`/api/anggota/${selected.id}`, { method: 'DELETE' });
-    const json = await res.json();
-    if (!res.ok) { alert(json.error); setSaving(false); return; }
-    setModal(null); fetch_(); setSaving(false);
+    try {
+      const res = await fetch(`/api/anggota/${selected.id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error || 'Gagal menghapus anggota');
+      } else {
+        toast.success('Anggota berhasil dihapus');
+        setModal(null);
+        fetch_();
+      }
+    } catch {
+      toast.error('Terjadi kesalahan saat menghapus');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const totalPages = Math.ceil(total / limit);
@@ -115,13 +141,19 @@ export default function AnggotaPage() {
       </div>
 
       {(modal === 'add' || modal === 'edit') && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6">
+        <div
+          onClick={()=>setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e)=>e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">{modal==='add'?'Tambah':'Edit'} Anggota</h2>
               <button onClick={()=>setModal(null)} className="btn-glass" style={{padding:'6px'}}><X size={16}/></button>
             </div>
-            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium" style={{background:'#fef2f2',border:'1px solid #fecaca',color:'#991b1b'}}>{error}</div>}
+            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">{error}</div>}
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><label className="form-label">Nama Lengkap *</label><input id="form-nama-anggota" className="glass-input" value={form.nama} onChange={e=>setForm({...form,nama:e.target.value})} placeholder="Nama lengkap"/></div>
@@ -144,8 +176,15 @@ export default function AnggotaPage() {
       )}
 
       {modal === 'delete' && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{maxWidth:'380px'}}>
+        <div
+          onClick={()=>setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e)=>e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{maxWidth:'380px'}}
+          >
             <div className="text-center">
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200"><Trash2 size={22} className="text-rose-600"/></div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Anggota?</h2>

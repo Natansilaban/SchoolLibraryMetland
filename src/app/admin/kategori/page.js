@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Plus, Pencil, Trash2, Tag, X, Search } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 export default function KategoriPage() {
   const [data, setData] = useState([]);
@@ -16,10 +17,15 @@ export default function KategoriPage() {
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/kategori');
-    const json = await res.json();
-    setData(json);
-    setLoading(false);
+    try {
+      const res = await fetch('/api/kategori');
+      const json = await res.json();
+      setData(json);
+    } catch {
+      setData([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { fetch_(); }, [fetch_]);
@@ -36,20 +42,38 @@ export default function KategoriPage() {
   const handleSave = async () => {
     if (!form.nama.trim()) { setError('Nama wajib diisi'); return; }
     setSaving(true); setError('');
-    const url = modal === 'add' ? '/api/kategori' : `/api/kategori/${selected.id}`;
-    const method = modal === 'add' ? 'POST' : 'PUT';
-    const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error); setSaving(false); return; }
-    setModal(null); fetch_();
-    setSaving(false);
+    try {
+      const url = modal === 'add' ? '/api/kategori' : `/api/kategori/${selected.id}`;
+      const method = modal === 'add' ? 'POST' : 'PUT';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const json = await res.json();
+      if (!res.ok) { setError(json.error); setSaving(false); return; }
+      toast.success(modal === 'add' ? 'Kategori berhasil ditambahkan' : 'Kategori berhasil diperbarui');
+      setModal(null); fetch_();
+    } catch {
+      setError('Terjadi kesalahan koneksi');
+      toast.error('Terjadi kesalahan koneksi');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async () => {
     setSaving(true);
-    const res = await fetch(`/api/kategori/${selected.id}`, { method: 'DELETE' });
-    if (!res.ok) { alert('Gagal menghapus'); setSaving(false); return; }
-    setModal(null); fetch_(); setSaving(false);
+    try {
+      const res = await fetch(`/api/kategori/${selected.id}`, { method: 'DELETE' });
+      if (!res.ok) {
+        toast.error('Gagal menghapus kategori');
+      } else {
+        toast.success('Kategori berhasil dihapus');
+        setModal(null);
+        fetch_();
+      }
+    } catch {
+      toast.error('Terjadi kesalahan saat menghapus');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -103,16 +127,23 @@ export default function KategoriPage() {
       </div>
 
       {(modal === 'add' || modal === 'edit') && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '440px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '440px' }}
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">{modal === 'add' ? 'Tambah' : 'Edit'} Kategori</h2>
               <button onClick={() => setModal(null)} className="btn-glass" style={{ padding: '6px' }}><X size={16} /></button>
             </div>
-            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>{error}</div>}
+            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">{error}</div>}
             <div className="space-y-4">
               <div><label className="form-label">Nama *</label><input id="form-nama-kategori" className="glass-input" value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} placeholder="Nama kategori" /></div>
-              <div><label className="form-label">Deskripsi</label><textarea className="glass-input" rows={3} value={form.deskripsi} onChange={e => setForm({ ...form, deskripsi: e.target.value })} placeholder="Deskripsi kategori..." style={{ resize: 'vertical' }} /></div>
+              <div><label className="form-label">Deskripsi</label><textarea className="glass-input resize-none" rows={3} value={form.deskripsi} onChange={e => setForm({ ...form, deskripsi: e.target.value })} placeholder="Deskripsi kategori..." /></div>
             </div>
             <div className="flex gap-3 mt-5">
               <button onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">Batal</button>
@@ -123,8 +154,15 @@ export default function KategoriPage() {
       )}
 
       {modal === 'delete' && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '380px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '380px' }}
+          >
             <div className="text-center">
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200"><Trash2 size={22} className="text-rose-600" /></div>
               <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Kategori?</h2>

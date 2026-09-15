@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import AuthProvider from '@/components/providers/AuthProvider';
+import ToastContainer from '@/components/ui/Toast';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
@@ -34,6 +35,7 @@ export default async function RootLayout({ children }) {
     <html lang="id" className={`${plusJakartaSans.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
       <body suppressHydrationWarning className="font-sans antialiased">
         <AuthProvider session={session}>
+          <ToastContainer />
           {children}
         </AuthProvider>
       </body>

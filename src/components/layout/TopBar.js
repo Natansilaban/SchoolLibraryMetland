@@ -11,7 +11,6 @@ export default function TopBar({ title, subtitle }) {
   return (
     <header className="glass-topbar sticky top-0 z-30 w-full flex items-center justify-between px-4 sm:px-6 py-3 border-b border-slate-200 bg-white/80 backdrop-blur-md">
       <div className="flex items-center gap-3 min-w-0">
-        {/* Hamburger Menu Toggle for Mobile & Tablet */}
         <button
           onClick={toggle}
           className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 lg:hidden flex-shrink-0"
@@ -29,13 +28,11 @@ export default function TopBar({ title, subtitle }) {
       </div>
 
       <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
-        {/* Live Demo Pill Badge */}
         <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-ping" />
           <span>Demo Mode</span>
         </div>
 
-        {/* User Avatar */}
         <div className="flex items-center gap-2.5 sm:gap-3" aria-label="Informasi pengguna aktif">
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shadow-sm flex-shrink-0"

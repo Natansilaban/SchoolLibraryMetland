@@ -6,14 +6,12 @@ export default withAuth(
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
 
-    // Admin routes protection
     if (pathname.startsWith('/admin')) {
       if (token?.role !== 'ADMIN') {
         return NextResponse.redirect(new URL('/login?error=unauthorized', req.url));
       }
     }
 
-    // Siswa routes protection
     if (pathname.startsWith('/siswa')) {
       if (!token) {
         return NextResponse.redirect(new URL('/login', req.url));

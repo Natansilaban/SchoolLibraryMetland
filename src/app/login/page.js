@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeDemo, setActiveDemo] = useState(null); // 'admin' | 'siswa' | null
+  const [activeDemo, setActiveDemo] = useState(null);
   const [error, setError] = useState('');
 
   const executeLogin = async (email, password) => {
@@ -58,7 +58,6 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden" role="main">
-      {/* Ambient background orbs for Light Mode */}
       <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
         <div
           className="absolute w-[500px] h-[500px] rounded-full opacity-40 blur-3xl"
@@ -79,7 +78,6 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-md relative">
-        {/* Live Demo Header Badge */}
         <div className="flex justify-center mb-3">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm animate-pulse">
             <Sparkles size={13} className="text-blue-600" />
@@ -87,7 +85,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Logo & Branding */}
         <div className="text-center mb-6">
           <div
             className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-3 p-2.5 shadow-sm"
@@ -107,7 +104,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* One-Click Accessible Demo Box */}
         <section
           aria-labelledby="demo-access-title"
           className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200/80 shadow-sm"
@@ -145,7 +141,6 @@ export default function LoginPage() {
           </div>
         </section>
 
-        {/* Login Card */}
         <div className="glass-card p-6 sm:p-8 shadow-lg">
           <div className="mb-5">
             <h2 className="text-base font-bold text-slate-900">Atau Masuk Manual</h2>

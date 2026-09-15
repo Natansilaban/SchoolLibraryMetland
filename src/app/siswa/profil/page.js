@@ -41,7 +41,6 @@ export default async function SiswaProfilPage() {
         <p className="section-subtitle text-xs sm:text-sm text-slate-500">Informasi akun dan statistik peminjaman</p>
       </div>
 
-      {/* Avatar Card */}
       <div className="glass-card p-4 sm:p-6 flex flex-row items-center text-left gap-4 sm:gap-5 border-l-4 border-l-blue-600">
         <div
           className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center text-xl sm:text-3xl font-extrabold flex-shrink-0 shadow-sm"
@@ -58,7 +57,6 @@ export default async function SiswaProfilPage() {
         </div>
       </div>
 
-      {/* Info */}
       <div className="glass-card p-4 sm:p-5">
         <h3 className="font-bold text-slate-900 mb-3 sm:mb-4 text-xs sm:text-base uppercase tracking-wider text-slate-500">Informasi Pribadi</h3>
         <div className="space-y-3">
@@ -79,7 +77,6 @@ export default async function SiswaProfilPage() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="glass-card p-4 sm:p-5">
         <h3 className="font-bold text-slate-900 mb-3 sm:mb-4 text-xs sm:text-base uppercase tracking-wider text-slate-500">Statistik Peminjaman</h3>
         <div className="grid grid-cols-3 gap-2.5 sm:gap-4 text-center">

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Plus, Search, BookCopy, X, ChevronLeft, ChevronRight, Check, Ban } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 const STATUS_BADGE = {
   MENUNGGU_KONFIRMASI: <span className="badge badge-yellow">Menunggu Konfirmasi</span>,
@@ -38,12 +39,18 @@ export default function PeminjamanPage() {
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
-    const params = new URLSearchParams({ search: debouncedSearch, page, limit, ...(statusFilter ? { status: statusFilter } : {}) });
-    const res = await fetch(`/api/peminjaman?${params}`);
-    const json = await res.json();
-    setData(json.data || []);
-    setTotal(json.total || 0);
-    setLoading(false);
+    try {
+      const params = new URLSearchParams({ search: debouncedSearch, page, limit, ...(statusFilter ? { status: statusFilter } : {}) });
+      const res = await fetch(`/api/peminjaman?${params}`);
+      const json = await res.json();
+      setData(json.data || []);
+      setTotal(json.total || 0);
+    } catch {
+      setData([]);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
   }, [debouncedSearch, page, statusFilter]);
 
   const fetchRefs = useCallback(async () => {
@@ -80,10 +87,18 @@ export default function PeminjamanPage() {
   const handleSave = async () => {
     if (!form.anggotaId || !form.bukuId || !form.tglKembaliRencana) { setError('Semua field wajib diisi'); return; }
     setSaving(true); setError('');
-    const res = await fetch('/api/peminjaman', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-    const json = await res.json();
-    if (!res.ok) { setError(json.error); setSaving(false); return; }
-    setModal(false); fetch_(); setSaving(false);
+    try {
+      const res = await fetch('/api/peminjaman', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const json = await res.json();
+      if (!res.ok) { setError(json.error); setSaving(false); return; }
+      toast.success('Peminjaman berhasil dicatat');
+      setModal(false); fetch_();
+    } catch {
+      setError('Terjadi kesalahan koneksi');
+      toast.error('Terjadi kesalahan koneksi');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleAction = async (id, action) => {
@@ -102,12 +117,13 @@ export default function PeminjamanPage() {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.error || 'Gagal memproses aksi');
+        toast.error(json.error || 'Gagal memproses aksi');
       } else {
+        toast.success(action === 'APPROVE' ? 'Peminjaman berhasil disetujui' : 'Peminjaman berhasil ditolak');
         fetch_();
       }
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setActionLoading(null);
     }
@@ -136,53 +152,61 @@ export default function PeminjamanPage() {
               <option value="DITOLAK">Ditolak</option>
             </select>
           </div>
-          <button id="add-peminjaman" onClick={openAdd} className="btn-primary justify-center sm:flex-initial"><Plus size={16}/> Pinjam Buku</button>
+          <button id="add-peminjaman" onClick={openAdd} className="btn-primary justify-center sm:flex-initial"><Plus size={16}/> Catat Pinjam</button>
         </div>
 
         <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
             <table className="glass-table min-w-[700px]">
-              <thead><tr><th>No</th><th>Anggota</th><th>Buku</th><th>Tgl Pinjam</th><th>Tgl Kembali</th><th>Status</th><th>Aksi</th></tr></thead>
+              <thead><tr><th>No</th><th>Anggota</th><th>Buku</th><th>Tgl Pinjam</th><th>Batas Kembali</th><th>Status</th><th>Aksi</th></tr></thead>
               <tbody>
                 {loading ? Array.from({length:5}).map((_,i)=><tr key={i}>{[1,2,3,4,5,6,7].map(j=><td key={j}><div className="h-4 shimmer rounded"/></td>)}</tr>)
-                : data.length === 0 ? <tr><td colSpan={7}><div className="text-center py-12 text-slate-400"><BookCopy size={36} className="mx-auto mb-2 opacity-40"/><p className="font-medium">Tidak ada data peminjaman</p></div></td></tr>
-                : data.map((d,i) => (
-                  <tr key={d.id}>
-                    <td className="text-slate-500 font-medium">{(page-1)*limit+i+1}</td>
-                    <td>
-                      <div className="font-bold text-slate-900">{d.anggota.nama}</div>
-                      <div className="text-xs text-slate-500 font-medium">{d.anggota.nis} · {d.anggota.kelas}</div>
-                    </td>
-                    <td className="font-bold text-slate-900">{d.buku.judul}</td>
-                    <td className="text-slate-600 font-medium">{d.status === 'MENUNGGU_KONFIRMASI' ? '—' : fmt(d.tglPinjam)}</td>
-                    <td className="text-slate-600 font-medium">{fmt(d.tglKembaliRencana)}</td>
-                    <td>{STATUS_BADGE[d.status] || d.status}</td>
-                    <td>
-                      {d.status === 'MENUNGGU_KONFIRMASI' ? (
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            onClick={() => handleAction(d.id, 'APPROVE')}
-                            disabled={actionLoading === d.id}
-                            className="btn-emerald py-1 px-2.5 text-xs font-bold flex items-center gap-1"
-                            title="Setujui Peminjaman"
-                          >
-                            <Check size={14} /> Setujui
-                          </button>
-                          <button
-                            onClick={() => handleAction(d.id, 'REJECT')}
-                            disabled={actionLoading === d.id}
-                            className="btn-rose py-1 px-2.5 text-xs font-bold flex items-center gap-1"
-                            title="Tolak Peminjaman"
-                          >
-                            <Ban size={14} /> Tolak
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs text-slate-400 font-medium">—</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                : data.length === 0 ? <tr><td colSpan={7}><div className="text-center py-12 text-slate-400"><BookCopy size={36} className="mx-auto mb-2 opacity-40"/><p className="font-medium">Belum ada peminjaman</p></div></td></tr>
+                : data.map((d,i) => {
+                  const isPending = d.status === 'MENUNGGU_KONFIRMASI';
+                  return (
+                    <tr key={d.id}>
+                      <td className="text-slate-500 font-medium">{(page-1)*limit+i+1}</td>
+                      <td>
+                        <div className="font-bold text-slate-900">{d.anggota.nama}</div>
+                        <div className="text-xs text-slate-500 font-medium">{d.anggota.nis} · {d.anggota.kelas}</div>
+                      </td>
+                      <td>
+                        <div className="font-bold text-slate-900">{d.buku.judul}</div>
+                        {d.buku.isbn && <div className="text-xs text-slate-500 font-medium">ISBN: {d.buku.isbn}</div>}
+                      </td>
+                      <td className="text-slate-600 font-medium">{fmt(d.tglPinjam)}</td>
+                      <td className="text-slate-600 font-medium">{fmt(d.tglKembaliRencana)}</td>
+                      <td>{STATUS_BADGE[d.status] || d.status}</td>
+                      <td>
+                        {isPending ? (
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              id={`approve-${d.id}`}
+                              onClick={() => handleAction(d.id, 'APPROVE')}
+                              disabled={actionLoading === d.id}
+                              className="btn-success btn-sm flex items-center gap-1"
+                              title="Setujui Peminjaman"
+                            >
+                              <Check size={12} /> Setujui
+                            </button>
+                            <button
+                              id={`reject-${d.id}`}
+                              onClick={() => handleAction(d.id, 'REJECT')}
+                              disabled={actionLoading === d.id}
+                              className="btn-danger btn-sm flex items-center gap-1"
+                              title="Tolak Peminjaman"
+                            >
+                              <Ban size={12} /> Tolak
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-slate-400 font-medium">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -199,13 +223,19 @@ export default function PeminjamanPage() {
       </div>
 
       {modal && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6">
+        <div
+          onClick={()=>setModal(false)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e)=>e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">Catat Peminjaman</h2>
               <button onClick={()=>setModal(false)} className="btn-glass" style={{padding:'6px'}}><X size={16}/></button>
             </div>
-            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium" style={{background:'#fef2f2',border:'1px solid #fecaca',color:'#991b1b'}}>{error}</div>}
+            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">{error}</div>}
             <div className="space-y-4">
               <div>
                 <label className="form-label">Anggota *</label>
@@ -227,7 +257,7 @@ export default function PeminjamanPage() {
               </div>
               <div>
                 <label className="form-label">Catatan</label>
-                <textarea className="glass-input" rows={2} value={form.catatan} onChange={e=>setForm({...form,catatan:e.target.value})} placeholder="Catatan opsional..." style={{resize:'vertical'}}/>
+                <textarea className="glass-input resize-none" rows={2} value={form.catatan} onChange={e=>setForm({...form,catatan:e.target.value})} placeholder="Catatan opsional..." />
               </div>
             </div>
             <div className="flex gap-3 mt-5">

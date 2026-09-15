@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Plus, Pencil, Trash2, PenLine, X, Search, BookMarked } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 export default function PenulisPage() {
   const [data, setData] = useState([]);
@@ -75,10 +76,12 @@ export default function PenulisPage() {
         setSaving(false);
         return;
       }
+      toast.success(modal === 'add' ? 'Penulis berhasil ditambahkan' : 'Penulis berhasil diperbarui');
       setModal(null);
       fetch_();
     } catch {
       setError('Terjadi kesalahan koneksi');
+      toast.error('Terjadi kesalahan koneksi');
     } finally {
       setSaving(false);
     }
@@ -90,13 +93,14 @@ export default function PenulisPage() {
       const res = await fetch(`/api/penulis/${selected.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const j = await res.json();
-        alert(j.error || 'Gagal menghapus penulis');
+        toast.error(j.error || 'Gagal menghapus penulis');
       } else {
+        toast.success('Penulis berhasil dihapus');
         setModal(null);
         fetch_();
       }
     } catch {
-      alert('Terjadi kesalahan saat menghapus');
+      toast.error('Terjadi kesalahan saat menghapus');
     } finally {
       setSaving(false);
     }
@@ -221,8 +225,15 @@ export default function PenulisPage() {
       </div>
 
       {(modal === 'add' || modal === 'edit') && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '440px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '440px' }}
+          >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-lg font-bold text-slate-900">
                 {modal === 'add' ? 'Tambah' : 'Edit'} Penulis
@@ -250,12 +261,11 @@ export default function PenulisPage() {
               <div>
                 <label className="form-label">Bio (Opsional)</label>
                 <textarea
-                  className="glass-input"
+                  className="glass-input resize-none"
                   rows={3}
                   value={form.bio}
                   onChange={e => setForm({ ...form, bio: e.target.value })}
                   placeholder="Biografi singkat penulis..."
-                  style={{ resize: 'vertical' }}
                 />
               </div>
             </div>
@@ -277,8 +287,15 @@ export default function PenulisPage() {
       )}
 
       {modal === 'delete' && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6" style={{ maxWidth: '380px' }}>
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 overscroll-contain"
+            style={{ maxWidth: '380px' }}
+          >
             <div className="text-center">
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200">
                 <Trash2 size={22} className="text-rose-600" />

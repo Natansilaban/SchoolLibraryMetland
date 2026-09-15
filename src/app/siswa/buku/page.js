@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight } from 'lucide-react';
 import Tilt3DCard from '@/components/ui/Tilt3DCard';
 
-
 export default function SiswaBukuPage() {
   const [buku, setBuku] = useState([]);
   const [total, setTotal] = useState(0);
@@ -48,7 +47,6 @@ export default function SiswaBukuPage() {
         <p className="section-subtitle text-xs sm:text-sm text-slate-500">Temukan koleksi buku perpustakaan sekolah</p>
       </div>
 
-      {/* Search & Filter */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 mb-5">
         <div className="relative flex-1">
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -67,7 +65,6 @@ export default function SiswaBukuPage() {
         </select>
       </div>
 
-      {/* Book Grid */}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -96,7 +93,6 @@ export default function SiswaBukuPage() {
                 id={`buku-card-${b.id}`}
                 className="glass-card p-3.5 sm:p-4 flex flex-col h-full group border-l-4 border-l-blue-600 hover:border-l-blue-700 transition-all block"
               >
-                {/* Cover */}
                 <div
                   className="w-full rounded-xl mb-3 flex items-center justify-center overflow-hidden border border-slate-200/80 shadow-sm bg-slate-100 relative"
                   style={{ height: '150px' }}
@@ -141,10 +137,8 @@ export default function SiswaBukuPage() {
             </Tilt3DCard>
           ))}
         </div>
-
       )}
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-6 sm:mt-8">
           <button disabled={page === 1} onClick={() => setPage(p => p - 1)} className="btn-glass p-2" style={{ opacity: page === 1 ? 0.4 : 1 }}>

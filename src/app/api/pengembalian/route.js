@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// POST /api/pengembalian — proses verifikasi pengembalian buku oleh Admin
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -31,7 +30,6 @@ export async function POST(req) {
         throw new Error('Buku ini sudah berstatus dikembalikan');
       }
 
-      // CRITICAL FIX: Only loans currently active (DIPINJAM or TERLAMBAT) can be returned and have stock incremented
       if (!['DIPINJAM', 'TERLAMBAT'].includes(peminjaman.status)) {
         throw new Error(`Peminjaman berstatus ${peminjaman.status} tidak dapat diproses untuk pengembalian.`);
       }
@@ -39,7 +37,6 @@ export async function POST(req) {
       const tglAktual = tglKembali ? new Date(tglKembali) : new Date();
       const tglRencana = new Date(peminjaman.tglKembaliRencana);
 
-      // Hitung denda standar (Rp 500/hari keterlambatan)
       let calculatedDenda = 0;
       if (tglAktual > tglRencana) {
         const diffMs = tglAktual.setHours(0, 0, 0, 0) - tglRencana.setHours(0, 0, 0, 0);
@@ -49,7 +46,6 @@ export async function POST(req) {
         }
       }
 
-      // Allow admin to override denda if specified (e.g. damages or penalty waiver)
       const finalDenda = (customDenda !== undefined && customDenda !== null && !isNaN(Number(customDenda)))
         ? Number(customDenda)
         : calculatedDenda;
@@ -66,7 +62,6 @@ export async function POST(req) {
         include: { anggota: true, buku: true },
       });
 
-      // Restore stok buku secara aman
       await tx.buku.update({
         where: { id: peminjaman.bukuId },
         data: { stok: { increment: 1 } },
@@ -81,7 +76,6 @@ export async function POST(req) {
   }
 }
 
-// GET /api/pengembalian — list peminjaman aktif yang perlu/bisa dikembalikan
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -115,4 +109,3 @@ export async function GET(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

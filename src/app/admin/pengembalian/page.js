@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
 import { Search, RotateCcw, X, CheckCircle2, AlertTriangle, Sparkles, Coins } from 'lucide-react';
+import { toast } from '@/components/ui/Toast';
 
 export default function PengembalianPage() {
   const [data, setData] = useState([]);
@@ -85,13 +86,16 @@ export default function PengembalianPage() {
       const json = await res.json();
       if (!res.ok) {
         setError(json.error || 'Gagal memproses pengembalian');
+        toast.error(json.error || 'Gagal memproses pengembalian');
         setSaving(false);
         return;
       }
+      toast.success('Buku berhasil diverifikasi dan dikembalikan');
       setModal(null);
       fetch_();
     } catch {
       setError('Terjadi kesalahan saat memproses pengembalian');
+      toast.error('Terjadi kesalahan saat memproses pengembalian');
     } finally {
       setSaving(false);
     }
@@ -109,26 +113,25 @@ export default function PengembalianPage() {
   };
 
   const isEarlyReturn = () => {
-    if (!selected || !form.tglKembali) return false;
+    if (!form.tglKembali || !selected) return false;
     const planned = new Date(selected.tglKembaliRencana);
     const actual = new Date(form.tglKembali);
-    planned.setHours(0, 0, 0, 0);
-    actual.setHours(0, 0, 0, 0);
+    planned.setHours(0,0,0,0);
+    actual.setHours(0,0,0,0);
     return actual < planned;
   };
 
   return (
     <>
-      <TopBar title="Kelola Pengembalian" subtitle="Verifikasi penerimaan fisik buku dan denda dari anggota" />
+      <TopBar title="Verifikasi Pengembalian" subtitle="Verifikasi pengembalian buku, hitung denda, dan perbarui stok otomatis" />
       <div className="p-4 sm:p-6">
-        <div className="mb-6 max-w-none sm:max-w-sm">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
+          <div className="relative flex-1 max-w-none sm:max-w-xs">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              id="search-pengembalian"
               type="text"
               className="glass-input pl-9 w-full"
-              placeholder="Cari nama anggota, NIS, judul buku..."
+              placeholder="Cari peminjam, buku, atau NIS..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -137,21 +140,21 @@ export default function PengembalianPage() {
 
         <div className="glass-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="glass-table min-w-[650px]">
+            <table className="glass-table min-w-[750px]">
               <thead>
                 <tr>
                   <th>No</th>
-                  <th>Anggota</th>
-                  <th>Buku</th>
+                  <th>Peminjam</th>
+                  <th>Buku Dipinjam</th>
                   <th>Tgl Pinjam</th>
-                  <th>Tgl Harus Kembali</th>
-                  <th>Status</th>
+                  <th>Jatuh Tempo</th>
+                  <th>Status & Notif</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
+                  Array.from({ length: 4 }).map((_, i) => (
                     <tr key={i}>
                       {[1, 2, 3, 4, 5, 6, 7].map(j => (
                         <td key={j}><div className="h-4 shimmer rounded" /></td>
@@ -162,48 +165,58 @@ export default function PengembalianPage() {
                   <tr>
                     <td colSpan={7}>
                       <div className="text-center py-12 text-slate-400">
-                        <RotateCcw size={36} className="mx-auto mb-2 opacity-40" />
-                        <p className="font-medium">Tidak ada buku aktif yang perlu dikembalikan</p>
+                        <CheckCircle2 size={36} className="mx-auto mb-2 text-emerald-500 opacity-60" />
+                        <p className="font-bold text-slate-700">Semua Buku Telah Kembali</p>
+                        <p className="text-xs text-slate-500 mt-0.5">Tidak ada peminjaman aktif yang menunggu pengembalian saat ini.</p>
                       </div>
                     </td>
                   </tr>
                 ) : (
                   data.map((d, i) => {
-                    const late = isOverdue(d.tglKembaliRencana);
+                    const overdue = isOverdue(d.tglKembaliRencana);
+                    const isReturnRequested = d.catatan && d.catatan.includes('[Pengajuan Pengembalian Siswa]');
+
                     return (
-                      <tr key={d.id}>
+                      <tr key={d.id} className={isReturnRequested ? 'bg-emerald-50/40' : ''}>
                         <td className="text-slate-500 font-medium">{i + 1}</td>
                         <td>
                           <div className="font-bold text-slate-900">{d.anggota.nama}</div>
                           <div className="text-xs text-slate-500 font-medium">{d.anggota.nis} · {d.anggota.kelas}</div>
                         </td>
-                        <td className="font-bold text-slate-900">{d.buku.judul}</td>
+                        <td>
+                          <div className="font-bold text-slate-900">{d.buku.judul}</div>
+                        </td>
                         <td className="text-slate-600 font-medium">{fmt(d.tglPinjam)}</td>
                         <td>
-                          <span className={late ? 'text-rose-600 font-bold' : 'text-slate-600 font-medium'}>
+                          <span className={overdue ? 'text-rose-600 font-bold' : 'text-slate-700 font-medium'}>
                             {fmt(d.tglKembaliRencana)}
                           </span>
                         </td>
                         <td>
-                          {d.catatan && d.catatan.includes('[Pengajuan Pengembalian Siswa]') ? (
-                            <span className="badge badge-green flex items-center gap-1">
-                              <Sparkles size={11} /> Diajukan Siswa
-                            </span>
-                          ) : late ? (
-                            <span className="badge badge-red flex items-center gap-1">
-                              <AlertTriangle size={11} /> Terlambat
-                            </span>
-                          ) : (
-                            <span className="badge badge-blue">Dipinjam</span>
-                          )}
+                          <div className="flex flex-col gap-1 items-start">
+                            {isReturnRequested ? (
+                              <span className="badge badge-green flex items-center gap-1">
+                                <Sparkles size={11} /> Siswa Mengajukan Kembali
+                              </span>
+                            ) : overdue ? (
+                              <span className="badge badge-red flex items-center gap-1">
+                                <AlertTriangle size={11} /> Terlambat
+                              </span>
+                            ) : (
+                              <span className="badge badge-blue">Sedang Dipinjam</span>
+                            )}
+                          </div>
                         </td>
                         <td>
                           <button
                             id={`process-return-${d.id}`}
                             onClick={() => openProcess(d)}
-                            className="btn-success btn-sm flex items-center gap-1 font-bold"
+                            className={`btn-sm font-bold flex items-center gap-1.5 ${
+                              isReturnRequested ? 'btn-success' : 'btn-primary'
+                            }`}
                           >
-                            <RotateCcw size={13} /> Proses Kembali
+                            <RotateCcw size={13} />
+                            Verifikasi Kembali
                           </button>
                         </td>
                       </tr>
@@ -217,8 +230,14 @@ export default function PengembalianPage() {
       </div>
 
       {modal && selected && (
-        <div className="glass-modal-overlay">
-          <div className="glass-modal p-6 max-w-lg w-full">
+        <div
+          onClick={() => setModal(null)}
+          className="glass-modal-overlay overscroll-contain touch-pan-y"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-modal p-6 max-w-lg w-full overscroll-contain"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <RotateCcw size={20} className="text-emerald-600" />
@@ -229,7 +248,6 @@ export default function PengembalianPage() {
               </button>
             </div>
 
-            {/* Info buku */}
             <div className="p-4 rounded-xl mb-4 bg-slate-50 border border-slate-200">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                 <div>
@@ -321,12 +339,11 @@ export default function PengembalianPage() {
               <div>
                 <label className="form-label">Catatan Kondisi / Pengembalian</label>
                 <textarea
-                  className="glass-input w-full"
+                  className="glass-input w-full resize-none"
                   rows={2}
                   value={form.catatan}
                   onChange={e => setForm({ ...form, catatan: e.target.value })}
                   placeholder="Kondisi buku baik, denda lunas dibayar, dll..."
-                  style={{ resize: 'vertical' }}
                 />
               </div>
             </div>

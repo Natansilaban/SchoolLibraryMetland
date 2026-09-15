@@ -77,7 +77,6 @@ export default async function SiswaDashboardPage() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Welcome Header */}
       <div
         className="glass-card p-4 sm:p-6 relative overflow-hidden"
         style={{
@@ -104,7 +103,6 @@ export default async function SiswaDashboardPage() {
         </div>
       </div>
 
-      {/* Stats - Grid 3 Columns on all screens for clean compact look */}
       <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
         {[
           { label: 'Total Pinjam', value: totalPinjam, icon: BookCopy, color: '#2563eb', bg: 'rgba(37,99,235,0.08)', spineColor: '#2563eb' },
@@ -124,7 +122,6 @@ export default async function SiswaDashboardPage() {
         })}
       </div>
 
-      {/* Quick Access */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <Link href="/siswa/buku" className="glass-card p-4 sm:p-5 flex items-center justify-between gap-3 group hover:border-blue-300">
           <div className="flex items-center gap-3 min-w-0">
@@ -152,7 +149,6 @@ export default async function SiswaDashboardPage() {
         </Link>
       </div>
 
-      {/* Recent Peminjaman */}
       {recentPeminjaman.length > 0 && (
         <div className="glass-card p-4 sm:p-5">
           <div className="flex items-center justify-between mb-3.5">

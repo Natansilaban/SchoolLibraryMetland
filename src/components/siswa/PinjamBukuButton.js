@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { BookPlus, Clock, BookCheck, AlertCircle, XCircle } from 'lucide-react';
 import AjukanPinjamModal from './AjukanPinjamModal';
 import { useRouter } from 'next/navigation';
+import { toast } from '@/components/ui/Toast';
 
 export default function PinjamBukuButton({ buku, existingLoan, isStudent }) {
   const [modalOpen, setModalOpen] = useState(false);
@@ -21,12 +22,13 @@ export default function PinjamBukuButton({ buku, existingLoan, isStudent }) {
       });
       const json = await res.json();
       if (!res.ok) {
-        alert(json.error || 'Gagal membatalkan pengajuan');
+        toast.error(json.error || 'Gagal membatalkan pengajuan');
       } else {
+        toast.success('Pengajuan peminjaman berhasil dibatalkan');
         router.refresh();
       }
     } catch (e) {
-      alert(e.message);
+      toast.error(e.message);
     } finally {
       setCancelling(false);
     }
@@ -101,4 +103,3 @@ export default function PinjamBukuButton({ buku, existingLoan, isStudent }) {
     </>
   );
 }
-

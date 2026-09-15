@@ -48,7 +48,6 @@ export default function AdminSidebar() {
 
   return (
     <>
-      {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 lg:hidden transition-opacity"
@@ -56,12 +55,11 @@ export default function AdminSidebar() {
         />
       )}
 
-      {/* Sidebar Container */}
       <aside
-        className={`glass-sidebar fixed top-0 left-0 bottom-0 z-50 w-64 transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={`glass-sidebar fixed top-0 left-0 bottom-0 z-50 w-64 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
-        {/* Logo Header */}
         <div className="p-6 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div
@@ -79,7 +77,6 @@ export default function AdminSidebar() {
             </div>
           </div>
 
-          {/* Close button for Mobile */}
           <button
             onClick={close}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 lg:hidden"
@@ -89,7 +86,6 @@ export default function AdminSidebar() {
           </button>
         </div>
 
-        {/* Admin Badge */}
         <div className="px-6 pb-4">
           <div
             className="flex items-center gap-2 px-3 py-2 rounded-lg"
@@ -107,7 +103,6 @@ export default function AdminSidebar() {
 
         <hr className="glass-divider mx-4" />
 
-        {/* Navigation List */}
         <nav className="flex-1 px-4 pb-4 overflow-y-auto">
           {navItems.map((group) => (
             <div key={group.section} className="mb-4">
@@ -134,7 +129,6 @@ export default function AdminSidebar() {
           ))}
         </nav>
 
-        {/* Logout Button */}
         <div className="p-4 border-t border-slate-200">
           <button
             id="sidebar-logout"

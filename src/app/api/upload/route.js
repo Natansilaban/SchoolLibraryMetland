@@ -18,7 +18,6 @@ export async function POST(req) {
       return NextResponse.json({ error: 'File tidak ditemukan' }, { status: 400 });
     }
 
-    // Validasi tipe file
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg', 'image/gif'];
     if (!validTypes.includes(file.type)) {
       return NextResponse.json(
@@ -27,7 +26,6 @@ export async function POST(req) {
       );
     }
 
-    // Maksimal 5MB
     if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json({ error: 'Ukuran file gambar maksimal 5MB' }, { status: 400 });
     }
@@ -35,7 +33,6 @@ export async function POST(req) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Verifikasi magic bytes gambar untuk mencegah file executable / script berbahaya
     const isJpeg = buffer.length > 3 && buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
     const isPng = buffer.length > 4 && buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
     const isGif = buffer.length > 3 && buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;

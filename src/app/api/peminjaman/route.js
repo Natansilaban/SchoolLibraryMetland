@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// GET /api/peminjaman
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,7 +16,6 @@ export async function GET(req) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
 
-    // Siswa only sees their own loans, Admin can view all or filter by anggotaId
     const isStudent = session.user.role === 'SISWA';
     const rawAnggotaId = isStudent ? session.user.anggotaId : searchParams.get('anggotaId');
     const targetAnggotaId = rawAnggotaId ? parseInt(rawAnggotaId) : null;
@@ -60,7 +58,6 @@ export async function GET(req) {
   }
 }
 
-// POST /api/peminjaman
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -73,7 +70,6 @@ export async function POST(req) {
 
     const isAdmin = session.user?.role === 'ADMIN';
 
-    // Enforce targetAnggotaId: Students CANNOT spoof another student's anggotaId
     const targetAnggotaId = isAdmin
       ? (anggotaId ? parseInt(anggotaId) : null)
       : (session.user?.anggotaId ? parseInt(session.user.anggotaId) : null);
@@ -82,7 +78,6 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Data peminjaman tidak lengkap' }, { status: 400 });
     }
 
-    // Validate return date
     const parsedDate = new Date(tglKembaliRencana);
     if (isNaN(parsedDate.getTime())) {
       return NextResponse.json({ error: 'Format tanggal rencana pengembalian tidak valid' }, { status: 400 });
@@ -103,7 +98,6 @@ export async function POST(req) {
     const initialStatus = (isAdmin && statusDirect === 'DIPINJAM') ? 'DIPINJAM' : 'MENUNGGU_KONFIRMASI';
 
     const result = await prisma.$transaction(async (tx) => {
-      // Check active loan quota (max 3 active loans)
       const activeCount = await tx.peminjaman.count({
         where: {
           anggotaId: targetAnggotaId,
@@ -115,13 +109,11 @@ export async function POST(req) {
         throw new Error('Batas kuota peminjaman aktif tercapai (maksimal 3 buku). Kembalikan buku yang dipinjam terlebih dahulu.');
       }
 
-      // Check stock
       const buku = await tx.buku.findUnique({ where: { id: parseInt(bukuId) } });
       if (!buku || buku.stok < 1) {
         throw new Error('Stok buku tidak tersedia');
       }
 
-      // Check if already has active or pending loan for this specific book
       const existing = await tx.peminjaman.findFirst({
         where: {
           anggotaId: targetAnggotaId,
@@ -137,7 +129,6 @@ export async function POST(req) {
         throw new Error('Buku ini masih sedang dipinjam oleh anggota');
       }
 
-      // Create peminjaman
       const peminjaman = await tx.peminjaman.create({
         data: {
           anggotaId: targetAnggotaId,
@@ -153,7 +144,6 @@ export async function POST(req) {
         },
       });
 
-      // If status is DIPINJAM (direct admin loan), reduce stock immediately
       if (initialStatus === 'DIPINJAM') {
         await tx.buku.update({
           where: { id: parseInt(bukuId) },
@@ -169,4 +159,3 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-

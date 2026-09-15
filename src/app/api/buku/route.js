@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-// GET /api/buku
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
@@ -48,7 +47,6 @@ export async function GET(req) {
   }
 }
 
-// POST /api/buku
 export async function POST(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -90,4 +88,3 @@ export async function POST(req) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
-
