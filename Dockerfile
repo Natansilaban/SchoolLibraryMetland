@@ -22,6 +22,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+ENV AUTH_TRUST_HOST=true
+ENV NEXTAUTH_SECRET="856f477afaa0875905e2e991bec08af30feebda82af4dd0ce400c263d87f7ec6"
+ENV DATABASE_URL="postgresql://casaos:casaos@100.92.251.18:5432/metschoo"
 
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
