@@ -1,108 +1,113 @@
 # 📚 School Library Management System (Metland Library)
 
-Sistem Informasi Manajemen Perpustakaan Sekolah modern berbasis web yang dirancang untuk mendigitalkan dan mengoptimalkan seluruh operasional perpustakaan sekolah—mulai dari katalogisasi buku, manajemen sirkulasi peminjaman, pelacakan denda keterlambatan, hingga portal interaktif bagi siswa untuk mencari dan mengajukan pinjaman buku secara mandiri.
+> **Disclaimer**: This project and its documentation are intended for **educational and testing purposes only**.
 
-Dibangun dengan teknologi modern **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS**, **Prisma ORM 7**, dan **PostgreSQL**.
+A modern web-based School Library Management System designed to digitize and streamline library operations—from book cataloging, circulation workflows, automated overdue fines calculation, to an interactive student portal for browsing books and requesting loans independently.
+
+Built with modern web technologies: **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS**, **Prisma ORM 7**, and **PostgreSQL**.
 
 ---
 
-## ✨ Fitur Unggulan
+## ✨ Key Features
 
-### 👨‍💼 Portal Administrator & Pustakawan
-* **Dashboard Statistik Interaktif**: Ringkasan total judul buku, anggota terdaftar, peminjaman aktif, keterlambatan, serta grafik analitik sirkulasi berbasis **Recharts**.
-* **Manajemen Katalog Lengkap**:
-  * Pengelolaan data **Buku** (judul, nomor ISBN, kategori, penulis, penerbit, tahun terbit, stok, serta upload file cover buku).
-  * Manajemen master data **Kategori**, **Penulis**, dan **Penerbit**.
-* **Sirkulasi & Transaksi**:
-  * Verifikasi & persetujuan pengajuan peminjaman online dari siswa.
-  * Pencatatan pengembalian buku dengan kalkulasi **denda keterlambatan otomatis**.
-* **Manajemen Data Anggota**: Pendataan profil siswa (NIS, nama, kelas, kontak).
-* **Laporan Perpustakaan**: Riwayat sirkulasi dan aktivitas peminjaman buku.
+### 👨‍💼 Administrator & Librarian Portal
+* **Interactive Statistics Dashboard**: Real-time overview of total book titles, registered members, active loans, overdue returns, and circulation analytics charts powered by **Recharts**.
+* **Comprehensive Catalog Management**:
+  * Book management (title, ISBN, category, author, publisher, publication year, inventory stock, and book cover file uploads).
+  * Master data management for **Categories**, **Authors**, and **Publishers**.
+* **Circulation & Transactions**:
+  * Review and approve/reject online book loan requests submitted by students.
+  * Book return processing with **automated overdue fine calculation**.
+* **Member Management**: Student membership directory and records (Student ID/NIS, name, class, contact information).
+* **Library Reports**: Comprehensive history and reporting for book loans and circulation activities.
 
-### 👨‍🎓 Portal Siswa
-* **Katalog Digital Interaktif**: Eksplorasi koleksi buku dengan pencarian instan dan filter kategori.
-* **Tampilan Modern 3D Book Cover**: Tampilan visual buku yang menarik dan interaktif.
-* **Pengajuan Pinjaman Online**: Siswa dapat mengajukan peminjaman buku langsung melalui portal tanpa antre.
-* **Dashboard Riwayat & Status Peminjaman**: Memantau status pengajuan (*Menunggu Konfirmasi*, *Dipinjam*, *Dikembalikan*, atau *Terlambat*) beserta rincian denda jika ada.
-* **Profil Siswa**: Manajemen data diri dan informasi keanggotaan.
+### 👨‍🎓 Student Portal
+* **Interactive Digital Catalog**: Browse school book collections with real-time search and category filtering.
+* **Modern 3D Book Cards**: Engaging and interactive visual presentation of book covers.
+* **Online Loan Requests**: Students can request book loans directly from the web portal without queuing.
+* **Dashboard & Loan History**: Track loan request statuses (*Pending Confirmation*, *Borrowed*, *Returned*, or *Overdue*) along with detailed fine breakdowns if applicable.
+* **Student Profile**: Manage personal contact details and view library membership information.
 
-### 🛡️ Keamanan & Antarmuka
-* **Role-Based Access Control (RBAC)**: Pemisahan hak akses antara akun `ADMIN` dan `SISWA` melalui **NextAuth.js**.
-* **Enkripsi Password**: Pengamanan kredensial menggunakan algoritma hashing **bcryptjs**.
+### 🛡️ Security & Interface
+* **Role-Based Access Control (RBAC)**: Secure access separation between `ADMIN` and `SISWA` (Student) roles powered by **NextAuth.js**.
+* **Password Encryption**: Industry-standard password hashing using **bcryptjs**.
 * **Modern UI & Responsive Design**:
-  * Tampilan bersih berkonsep glassmorphism dengan Tailwind CSS.
-  * Form input ramah layar sentuh / mobile (*grid 2x2*).
-  * Sistem notifikasi kustom (*Toast popup notification*) dan dialog modal interaktif menggantikan alert bawaan browser.
+  * Clean, elegant glassmorphism aesthetic built with Tailwind CSS.
+  * Mobile-friendly touch layouts (adaptive 2x2 form grid).
+  * Custom Toast notification popups and interactive confirmation modal dialogs (eliminating disruptive native browser alerts).
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Komponen | Teknologi |
+| Component | Technology |
 | :--- | :--- |
-| **Framework Utama** | [Next.js 16](https://nextjs.org/) (App Router, Server Components & Server Actions) |
+| **Framework** | [Next.js 16](https://nextjs.org/) (App Router, Server Components & Server Actions) |
 | **User Interface** | [React 19](https://react.dev/) & [Tailwind CSS](https://tailwindcss.com/) |
 | **Database & ORM** | [PostgreSQL](https://www.postgresql.org/) & [Prisma ORM 7](https://www.prisma.io/) |
-| **Autentikasi** | [NextAuth.js](https://next-auth.js.org/) |
-| **Komponen & Ikon** | [Lucide React](https://lucide.dev/) |
-| **Grafik & Visualisasi** | [Recharts](https://recharts.org/) |
-| **Kontainerisasi** | [Docker](https://www.docker.com/) (Multi-stage build, Node 22 Alpine) |
+| **Authentication** | [NextAuth.js](https://next-auth.js.org/) |
+| **Icons** | [Lucide React](https://lucide.dev/) |
+| **Data Visualization** | [Recharts](https://recharts.org/) |
+| **Containerization** | [Docker](https://www.docker.com/) (Multi-stage build, Node 22 Alpine) |
 
 ---
 
-## 📁 Struktur Direktori Proyek
+## 📁 Directory Structure
 
 ```plaintext
 SchoolLibraryMetland/
 ├── prisma/
-│   ├── schema.prisma       # Skema database relasional (PostgreSQL)
-│   └── seed.js             # Skrip data awal (Admin, Siswa, Kategori, Buku dummy)
+│   ├── schema.prisma       # Relational database schema (PostgreSQL)
+│   └── seed.js             # Initial database seed (Admin, Student, Categories, Sample books)
 ├── public/
-│   └── uploads/            # Direktori penyimpanan file cover buku yang diunggah
+│   └── uploads/            # Directory for uploaded book cover images
 ├── src/
 │   ├── app/
-│   │   ├── admin/          # Halaman & fitur portal Administrator
-│   │   │   ├── anggota/    # Manajemen data anggota perpustakaan
-│   │   │   ├── buku/       # Katalog & penambahan buku + upload cover
-│   │   │   ├── dashboard/  # Dashboard metrik & statistik
-│   │   │   ├── kategori/   # Manajemen kategori buku
-│   │   │   ├── laporan/    # Laporan sirkulasi
-│   │   │   ├── peminjaman/ # Verifikasi transaksi peminjaman
-│   │   │   └── pengembalian/ # Proses pengembalian & hitung denda
-│   │   ├── siswa/          # Halaman & fitur portal Siswa
-│   │   │   ├── buku/       # Pencarian buku & pengajuan pinjam
-│   │   │   ├── dashboard/  # Dashboard & riwayat siswa
-│   │   │   ├── peminjaman/ # Status pinjaman aktif
-│   │   │   └── profil/     # Profil siswa
-│   │   ├── api/            # API Route handlers & NextAuth endpoint
-│   │   ├── login/          # Halaman login
-│   │   └── register/       # Halaman registrasi akun siswa
-│   ├── components/         # Komponen UI (Navbar, Sidebar, Toast, Modal, dsb.)
-│   └── lib/                # Konfigurasi Prisma client & NextAuth
+│   │   ├── admin/          # Admin portal routes & pages
+│   │   │   ├── anggota/    # Member / student management
+│   │   │   ├── buku/       # Book catalog & cover upload
+│   │   │   ├── dashboard/  # Analytics dashboard & metrics
+│   │   │   ├── kategori/   # Category management
+│   │   │   ├── laporan/    # Circulation reports
+│   │   │   ├── peminjaman/ # Loan requests verification
+│   │   │   └── pengembalian/ # Book return & fine calculation
+│   │   ├── siswa/          # Student portal routes & pages
+│   │   │   ├── buku/       # Book search & loan request
+│   │   │   ├── dashboard/  # Student dashboard & history
+│   │   │   ├── peminjaman/ # Active loan tracking
+│   │   │   └── profil/     # Student profile
+│   │   ├── api/            # API Route handlers & NextAuth endpoints
+│   │   ├── login/          # Authentication login page
+│   │   └── register/       # Student registration page
+│   ├── components/         # Reusable UI components (Navbar, Sidebar, Toast, Modal, etc.)
+│   └── lib/                # Database client (Prisma) & NextAuth configuration
 ├── .dockerignore
-├── .env.example            # Template variabel lingkungan
-├── Dockerfile              # Multi-stage production build container
-├── docker-compose.yml      # Template orkestrasi aplikasi + database
+├── .env.example            # Environment variables template
+├── Dockerfile              # Multi-stage production container build
+├── docker-compose.yml      # Orchestration template (App + Database)
 └── package.json
 ```
 
 ---
 
-## 💻 Panduan Instalasi Lokal (Local Development)
+## 💻 Local Installation Tutorial
 
-Ikuti langkah-langkah berikut untuk menjalankan aplikasi di komputer lokal.
+> [!NOTE]
+> This tutorial, the local setup guide, and default seed credentials are provided for **education and testing purposes only**.
 
-### 1. Prasyarat Sistem
-Pastikan perangkat Anda telah terpasang:
-* **Node.js**: Versi `>= 20.x` (disarankan Node.js 22 LTS)
-* **npm**: Versi `>= 10.x`
-* **PostgreSQL**: Server PostgreSQL aktif lokal atau cloud (misalnya Supabase, Neon, atau Docker PostgreSQL)
+Follow the steps below to run the application locally in your development environment.
+
+### 1. System Prerequisites
+Ensure your system has the following installed:
+* **Node.js**: Version `>= 20.x` (Node.js 22 LTS recommended)
+* **npm**: Version `>= 10.x`
+* **PostgreSQL**: A running local or remote PostgreSQL database instance (e.g., local PostgreSQL service, Docker container, Supabase, or Neon)
 * **Git**
 
 ---
 
 ### 2. Clone Repository
-Buka terminal dan unduh repositori:
+Clone the repository to your local machine:
 ```bash
 git clone https://github.com/Natansilaban/SchoolLibraryMetland.git
 cd SchoolLibraryMetland
@@ -110,174 +115,174 @@ cd SchoolLibraryMetland
 
 ---
 
-### 3. Instalasi Dependensi
-Install seluruh paket dependensi yang dibutuhkan:
+### 3. Install Dependencies
+Install all required package dependencies:
 ```bash
 npm install
 ```
 
 ---
 
-### 4. Konfigurasi File Environment (`.env`)
-Salin file `.env.example` menjadi `.env`:
+### 4. Configure Environment Variables (`.env`)
+Create your `.env` file by copying the template:
 ```bash
 cp .env.example .env
 ```
-Buka file `.env` dengan text editor Anda dan sesuaikan isinya:
+Open `.env` in your editor and configure your database and authentication settings:
 
 ```env
-# URL koneksi ke database PostgreSQL
-DATABASE_URL="postgresql://postgres:password_anda@localhost:5432/school_library?schema=public"
+# PostgreSQL connection string
+DATABASE_URL="postgresql://postgres:your_password@localhost:5432/school_library?schema=public"
 
-# URL lokal aplikasi
+# Canonical application URL
 NEXTAUTH_URL="http://localhost:3000"
 
-# Kunci rahasia session NextAuth (minimal 32 karakter)
-# Buat string acak dengan perintah: openssl rand -base64 32
-NEXTAUTH_SECRET="kunci_rahasia_acak_minimal_32_karakter_bebas_diisi"
+# NextAuth session encryption secret (minimum 32 characters)
+# Generate a secure string using: openssl rand -base64 32
+NEXTAUTH_SECRET="your_random_secret_string_min_32_characters"
 ```
 
-> **Catatan Database**: Pastikan database bernama `school_library` (atau nama lain yang Anda tentukan) sudah dibuat di PostgreSQL Anda.
+> **Database Setup**: Ensure a database named `school_library` (or your chosen database name) has been created in your PostgreSQL server.
 
 ---
 
-### 5. Setup Database & Seeding Data Awal
-Jalankan perintah berikut untuk membuat tabel database dan mengisi data awal (akun default, kategori, penulis, dan buku contoh):
+### 5. Database Setup & Seeding
+Run the following commands to initialize the schema and populate initial test data (categories, authors, publishers, sample books, and default accounts):
 
 ```bash
 # 1. Generate Prisma Client
 npx prisma generate
 
-# 2. Sinkronkan skema ke database PostgreSQL
+# 2. Push schema to PostgreSQL database
 npx prisma db push
 
-# 3. Jalankan seeding data awal
+# 3. Seed initial data
 node prisma/seed.js
 ```
 
 ---
 
-### 6. Jalankan Development Server
-Mulai server development Next.js:
+### 6. Run the Development Server
+Start the Next.js local development server:
 ```bash
 npm run dev
 ```
 
-Buka browser Anda dan akses:
+Open your browser and navigate to:
 👉 **`http://localhost:3000`**
 
 ---
 
-### 🔑 Akun Default untuk Pengujian
+### 🔑 Default Credentials (Education & Testing Only)
 
-Setelah menjalankan `node prisma/seed.js`, Anda dapat login menggunakan akun berikut:
+After running `node prisma/seed.js`, you can sign in using these default test accounts:
 
-| Peran (Role) | Email | Password | Hak Akses |
+| Role | Email | Password | Access Privileges |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@metland.sch.id` | `admin123` | Akses penuh dashboard admin, kelola buku, anggota, dan sirkulasi |
-| **Siswa (Contoh)** | `siswa@metland.sch.id` | `siswa123` | Akses portal siswa, pinjam buku, dan melihat riwayat pinjaman |
+| **Administrator** | `admin@metland.sch.id` | `admin123` | Full access to admin dashboard, catalog management, member records, and circulation |
+| **Student (Sample)** | `siswa@metland.sch.id` | `siswa123` | Student portal access, book loan requests, and loan history tracking |
 
-> Anda juga dapat mendaftarkan akun siswa baru melalui halaman `/register`.
-
----
-
-## 🚀 Panduan Deployment ke Server (Production)
-
-Berikut adalah beberapa pilihan metode deployment ke server produksi (VPS Ubuntu/Debian, ZimaOS, CasaOS, dll).
+> New student accounts can also be registered directly through the `/register` page.
 
 ---
 
-### Metode 1: Menggunakan Docker Compose (Paling Direkomendasikan)
+## 🚀 Deployment Tutorial (Production)
 
-Metode ini otomatis menyiapkan container aplikasi Next.js sekaligus container database PostgreSQL secara terisolasi.
+> [!IMPORTANT]
+> The deployment guides and sample configurations below are provided for **education, testing, and staging purposes only**. Ensure you change all default passwords, secrets, and database credentials before deploying to any production environment.
 
-1. **Clone repositori di server Anda:**
+---
+
+### Option 1: Docker Compose (Recommended)
+
+This method deploys both the Next.js application and an isolated PostgreSQL database container together.
+
+1. **Clone the repository on your server:**
    ```bash
    git clone https://github.com/Natansilaban/SchoolLibraryMetland.git
    cd SchoolLibraryMetland
    ```
 
-2. **Periksa & Sesuaikan `docker-compose.yml`:**
-   Pastikan variabel `NEXTAUTH_URL` diarahkan ke domain publik Anda (misal `https://perpus.sekolah.sch.id`) dan ganti `NEXTAUTH_SECRET` dengan string acak:
+2. **Configure `docker-compose.yml`:**
+   Ensure `NEXTAUTH_URL` points to your public domain (e.g., `https://perpus.sekolah.sch.id`) and generate a secure random string for `NEXTAUTH_SECRET`:
    ```yaml
    environment:
      - NODE_ENV=production
      - DATABASE_URL=postgresql://perpus_user:perpus_password@db:5432/school_library?schema=public
      - NEXTAUTH_URL=https://perpus.sekolah.sch.id
-     - NEXTAUTH_SECRET=rahasia_super_aman_minimal_32_karakter
+     - NEXTAUTH_SECRET=generate_a_secure_random_key_using_openssl
      - AUTH_TRUST_HOST=true
    ```
 
-3. **Jalankan container:**
+3. **Start the containers:**
    ```bash
    docker compose up -d --build
    ```
 
-4. **Inisialisasi Database (Push Schema & Seed) di dalam container:**
+4. **Initialize Database inside the container:**
    ```bash
-   # Sinkronisasi tabel
+   # Push schema to database
    docker compose exec app npx prisma db push
 
-   # Seed data awal
+   # Seed initial data
    docker compose exec app node prisma/seed.js
    ```
 
-Aplikasi kini aktif dan berjalan di port `3000`.
+The application is now running and reachable on port `3000`.
 
 ---
 
-### Metode 2: Standalone Docker Run (Cocok untuk ZimaOS / CasaOS)
+### Option 2: Standalone Docker Run (ZimaOS / CasaOS / Existing Database)
 
-Jika Anda sudah memiliki database PostgreSQL yang berjalan terpisah di host / server Anda:
+If you are using an external PostgreSQL server or running on a home server OS (ZimaOS / CasaOS):
 
 1. **Build Docker image:**
    ```bash
    docker build -t perpus-app:latest .
    ```
 
-2. **Jalankan container dengan persistent volume untuk folder upload:**
+2. **Run container with a persistent volume for uploaded covers:**
    ```bash
    docker run -d \
      --name perpus-app \
      --restart always \
      -p 3000:3000 \
      -e NODE_ENV=production \
-     -e DATABASE_URL="postgresql://user:password@IP_DATABASE:5432/school_library?schema=public" \
+     -e DATABASE_URL="postgresql://user:password@DB_HOST:5432/school_library?schema=public" \
      -e NEXTAUTH_URL="https://perpus.sekolah.sch.id" \
-     -e NEXTAUTH_SECRET="kunci_rahasia_anda" \
+     -e NEXTAUTH_SECRET="your_secure_secret" \
      -e AUTH_TRUST_HOST="true" \
      -v perpus_uploads:/app/public/uploads \
      perpus-app:latest
    ```
 
-3. **Jalankan migrasi skema:**
+3. **Initialize schema:**
    ```bash
    docker exec -it perpus-app npx prisma db push
    docker exec -it perpus-app node prisma/seed.js
    ```
 
-> **Penting untuk Upload Cover Buku**: Penambahan parameter `-v perpus_uploads:/app/public/uploads` memastikan file gambar cover buku yang diunggah tidak hilang saat container diperbarui atau di-restart.
+> **Persistent Uploads**: The volume mount `-v perpus_uploads:/app/public/uploads` guarantees that uploaded book cover images persist across container updates and restarts.
 
 ---
 
-### Metode 3: VPS Standar Tanpa Docker (Node.js & PM2)
+### Option 3: VPS Deployment without Docker (Node.js & PM2)
 
-1. **Pastikan Node.js 22 LTS, PostgreSQL, dan PM2 terpasang:**
+1. **Ensure Node.js 22 LTS, PostgreSQL, and PM2 are installed:**
    ```bash
    sudo npm install -g pm2
    ```
 
-2. **Setup repositori & environment:**
+2. **Clone & install dependencies:**
    ```bash
    git clone https://github.com/Natansilaban/SchoolLibraryMetland.git
    cd SchoolLibraryMetland
    npm ci
    cp .env.example .env
-   # Edit .env dengan kredensial produksi Anda
-   nano .env
+   nano .env # Configure your production environment variables
    ```
 
-3. **Migrasi Database & Build Aplikasi:**
+3. **Database initialization & application build:**
    ```bash
    npx prisma generate
    npx prisma db push
@@ -285,7 +290,7 @@ Jika Anda sudah memiliki database PostgreSQL yang berjalan terpisah di host / se
    npm run build
    ```
 
-4. **Jalankan aplikasi dengan PM2:**
+4. **Start and manage with PM2:**
    ```bash
    pm2 start npm --name "school-library" -- start
    pm2 save
@@ -294,19 +299,17 @@ Jika Anda sudah memiliki database PostgreSQL yang berjalan terpisah di host / se
 
 ---
 
-## 🌐 Konfigurasi Reverse Proxy & Domain Publik
+## 🌐 Reverse Proxy & Domain Configuration
 
-Jika Anda menggunakan domain dan reverse proxy seperti **Nginx** atau **Cloudflare Tunnel**:
+When deploying behind **Nginx** or **Cloudflare Tunnel**:
 
-### Pengaturan Nginx Reverse Proxy
-Tambahkan blok konfigurasi Nginx berikut:
+### Nginx Reverse Proxy
+Add the following server block configuration:
 
 ```nginx
 server {
     listen 80;
     server_name perpus.sekolah.sch.id;
-
-    # Redirect ke HTTPS (opsional jika menggunakan SSL certbot)
     return 301 https://$host$request_uri;
 }
 
@@ -317,7 +320,7 @@ server {
     ssl_certificate /etc/letsencrypt/live/perpus.sekolah.sch.id/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/perpus.sekolah.sch.id/privkey.pem;
 
-    # Ukuran maksimal upload file (cover buku)
+    # Maximum file upload size for book covers
     client_max_body_size 10M;
 
     location / {
@@ -334,11 +337,11 @@ server {
 }
 ```
 
-### Pengaturan Cloudflare Tunnel
-Jika menggunakan Cloudflare Zero Trust Tunnel:
+### Cloudflare Zero Trust Tunnel
+If routing traffic through Cloudflare Tunnel:
 * **Service Type**: `HTTP`
-* **URL**: `localhost:3000` atau `IP_SERVER:3000`
-* Pastikan di environment container/server diset:
+* **URL**: `localhost:3000` (or `CONTAINER_IP:3000`)
+* Set environment variables in your app container:
   ```env
   NEXTAUTH_URL=https://perpus.sekolah.sch.id
   AUTH_TRUST_HOST=true
@@ -346,27 +349,30 @@ Jika menggunakan Cloudflare Zero Trust Tunnel:
 
 ---
 
-## 🔧 Perintah Pemeliharaan (Maintenance)
+## 🔧 Maintenance & Handy Commands
 
-* **Melihat & Mengedit Database via GUI (Prisma Studio)**:
+* **Launch Prisma Studio Database GUI**:
   ```bash
   npx prisma studio
   ```
-  *(Akses via browser di `http://localhost:5555`)*
+  *(Access via web browser at `http://localhost:5555`)*
 
-* **Memperbarui Skema Database**:
-  Setelah mengubah file `prisma/schema.prisma`:
+* **Update Database Schema**:
+  After modifying `prisma/schema.prisma`:
   ```bash
   npx prisma generate
   npx prisma db push
   ```
 
-* **Melihat Log Container Docker**:
+* **Inspect Docker Logs**:
   ```bash
   docker logs -f school-library-app
   ```
 
 ---
 
-## 📄 Lisensi
-Proyek ini dibuat untuk keperluan manajemen perpustakaan sekolah SMK Metland. Bebas digunakan dan dikembangkan untuk institusi pendidikan.
+## 📄 License & Proprietary Notice
+
+**Copyright © SMK Metland. All Rights Reserved.**
+
+This software and its source code are proprietary and confidential to **SMK Metland**. Exclusively developed for Metland School internal library operations. Unauthorized copying, distribution, modification, public display, or commercial use of this codebase, via any medium, is strictly prohibited without explicit written permission from SMK Metland.
