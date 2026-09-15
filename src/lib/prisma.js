@@ -11,7 +11,7 @@ function getPgPool() {
       max: 10,
       min: 0,
       idleTimeoutMillis: 10000,
-      connectionTimeoutMillis: 5000,
+      connectionTimeoutMillis: 4000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
     });

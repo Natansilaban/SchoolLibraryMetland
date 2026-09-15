@@ -29,13 +29,8 @@ export default function LoginPage() {
         setLoading(false);
         setActiveDemo(null);
       } else {
-        const res = await fetch('/api/auth/session');
-        const session = await res.json();
-        if (session?.user?.role === 'ADMIN') {
-          router.push('/admin/dashboard');
-        } else {
-          router.push('/siswa/dashboard');
-        }
+        const target = (email && email.toLowerCase().includes('admin')) ? '/admin/dashboard' : '/siswa/dashboard';
+        window.location.replace(target);
       }
     } catch {
       setError('Terjadi kendala saat menghubungkan ke server.');

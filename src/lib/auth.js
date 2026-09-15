@@ -13,25 +13,38 @@ export const authOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-          include: { anggota: true },
-        });
+        try {
+          console.log('[AUTH] Checking user credentials for:', credentials.email);
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+            include: { anggota: true },
+          });
 
-        if (!user) return null;
+          if (!user) {
+            console.warn('[AUTH] User not found in database:', credentials.email);
+            return null;
+          }
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) return null;
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+          if (!isValid) {
+            console.warn('[AUTH] Invalid password for:', credentials.email);
+            return null;
+          }
 
-        return {
-          id: user.id.toString(),
-          email: user.email,
-          role: user.role,
-          name: user.anggota?.nama || user.email,
-          anggotaId: user.anggota?.id || null,
-          nis: user.anggota?.nis || null,
-          kelas: user.anggota?.kelas || null,
-        };
+          console.log('[AUTH SUCCESS] User logged in:', user.email, 'Role:', user.role);
+          return {
+            id: user.id.toString(),
+            email: user.email,
+            role: user.role,
+            name: user.anggota?.nama || user.email,
+            anggotaId: user.anggota?.id || null,
+            nis: user.anggota?.nis || null,
+            kelas: user.anggota?.kelas || null,
+          };
+        } catch (dbErr) {
+          console.error('[AUTH DATABASE ERROR]:', dbErr.message || dbErr);
+          throw new Error('Database connection error: ' + (dbErr.message || 'unknown'));
+        }
       },
     }),
   ],
