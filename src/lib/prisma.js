@@ -8,9 +8,9 @@ function getPgPool() {
   if (!globalForPrisma.pgPool) {
     globalForPrisma.pgPool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      max: 20,
-      min: 2,
-      idleTimeoutMillis: 30000,
+      max: 10,
+      min: 0,
+      idleTimeoutMillis: 10000,
       connectionTimeoutMillis: 5000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
@@ -33,7 +33,4 @@ function createPrismaClient() {
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient();
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+globalForPrisma.prisma = prisma;

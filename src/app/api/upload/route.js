@@ -35,10 +35,25 @@ export async function POST(req) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // Verifikasi magic bytes gambar untuk mencegah file executable / script berbahaya
+    const isJpeg = buffer.length > 3 && buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+    const isPng = buffer.length > 4 && buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47;
+    const isGif = buffer.length > 3 && buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46;
+    const isWebp = buffer.length > 12 && buffer.toString('ascii', 0, 4) === 'RIFF' && buffer.toString('ascii', 8, 12) === 'WEBP';
+
+    if (!isJpeg && !isPng && !isGif && !isWebp) {
+      return NextResponse.json(
+        { error: 'Header file tidak valid sebagai gambar yang didukung' },
+        { status: 400 }
+      );
+    }
+
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadsDir, { recursive: true });
 
-    const ext = path.extname(file.name) || '.jpg';
+    const rawExt = path.extname(file.name || '').toLowerCase();
+    const allowedExts = ['.jpg', '.jpeg', '.png', '.webp', '.gif'];
+    const ext = allowedExts.includes(rawExt) ? rawExt : (isPng ? '.png' : isWebp ? '.webp' : isGif ? '.gif' : '.jpg');
     const filename = `cover_${Date.now()}_${Math.random().toString(36).substring(2, 8)}${ext}`;
     const filePath = path.join(uploadsDir, filename);
 

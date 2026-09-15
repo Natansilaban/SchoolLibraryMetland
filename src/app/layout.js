@@ -1,7 +1,22 @@
 import './globals.css';
+import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import AuthProvider from '@/components/providers/AuthProvider';
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700'],
+});
 
 export const metadata = {
   title: {
@@ -16,16 +31,8 @@ export default async function RootLayout({ children }) {
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="id" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body suppressHydrationWarning>
+    <html lang="id" className={`${plusJakartaSans.variable} ${inter.variable}`} data-scroll-behavior="smooth" suppressHydrationWarning>
+      <body suppressHydrationWarning className="font-sans antialiased">
         <AuthProvider session={session}>
           {children}
         </AuthProvider>
