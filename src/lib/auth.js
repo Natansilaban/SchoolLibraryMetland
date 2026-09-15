@@ -79,5 +79,6 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   trustHost: true,
+  useSecureCookies: process.env.NODE_ENV === 'production',
   secret: process.env.NEXTAUTH_SECRET || '856f477afaa0875905e2e991bec08af30feebda82af4dd0ce400c263d87f7ec6',
 };
