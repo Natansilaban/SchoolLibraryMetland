@@ -182,7 +182,7 @@ After running `node prisma/seed.js`, you can sign in using these default test ac
 | **Administrator** | `admin@metland.sch.id` | `admin123` | Full access to admin dashboard, catalog management, member records, and circulation |
 | **Student (Sample)** | `siswa@metland.sch.id` | `siswa123` | Student portal access, book loan requests, and loan history tracking |
 
-> New student accounts can also be registered directly through the `/register` page.
+> Student and staff accounts are created and managed directly by Administrators via the Admin Dashboard (`/admin/anggota`).
 
 ---
 
@@ -262,7 +262,10 @@ If you are using an external PostgreSQL server or running on a home server OS (Z
    docker exec -it perpus-app node prisma/seed.js
    ```
 
-> **Persistent Uploads**: The volume mount `-v perpus_uploads:/app/public/uploads` guarantees that uploaded book cover images persist across container updates and restarts.
+> **Persistent Uploads & Permissions**: The container automatically manages permissions for `/app/public/uploads` on boot using `su-exec`. If you ever encounter an `EACCES: permission denied` error on a manually mounted host volume, run:
+> ```bash
+> docker exec -u 0 -it <container_name> chown -R 1001:1001 /app/public/uploads
+> ```
 
 ---
 

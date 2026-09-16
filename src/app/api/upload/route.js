@@ -60,6 +60,13 @@ export async function POST(req) {
     const url = `/uploads/${filename}`;
     return NextResponse.json({ url });
   } catch (error) {
+    if (error?.code === 'EACCES') {
+      console.error('[Upload Error] EACCES permission denied on uploads directory:', error.message);
+      return NextResponse.json(
+        { error: 'Izin penyimpanan server ditolak (EACCES). Folder uploads tidak memiliki izin tulis.' },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ error: serverErrMsg(error) }, { status: 500 });
   }
 }
