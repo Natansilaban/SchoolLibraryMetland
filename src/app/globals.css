@@ -2,11 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ==========================================================================
-   METLAND SCHOOL LIBRARY SYSTEM — CONTEMPORARY SCHOLASTIC DESIGN SYSTEM
-   Standard: Academic Clarity, High Scannability, Zero AI-Slop Gimmicks
-   ========================================================================== */
-
 @layer base {
   * {
     box-sizing: border-box;
@@ -28,7 +23,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Scholastic Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -47,7 +41,6 @@
     background: #94A3B8;
   }
 
-  /* Selection */
   ::selection {
     background: rgba(37, 99, 235, 0.15);
     color: #1E3A8A;
@@ -55,7 +48,6 @@
 }
 
 @layer components {
-  /* ===== SCHOLASTIC CARDS ===== */
   .library-card,
   .glass-card {
     background: #FFFFFF;
@@ -79,7 +71,6 @@
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   }
 
-  /* ===== INPUTS & CONTROLS ===== */
   .library-input,
   .glass-input {
     background: #FFFFFF;
@@ -105,7 +96,6 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
   }
 
-  /* ===== BUTTONS (SOLID, CONTRAST-CERTIFIED, 44px ACCESSIBLE) ===== */
   .btn-primary {
     background-color: #1D4ED8;
     color: #FFFFFF;
@@ -270,7 +260,6 @@
     font-size: 13px !important;
   }
 
-  /* ===== SCHOLASTIC DATA TABLES ===== */
   .library-table,
   .glass-table {
     width: 100%;
@@ -319,7 +308,6 @@
     border-bottom: none;
   }
 
-  /* ===== ACCESSIBLE STATUS BADGES (WCAG AA Certified) ===== */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -362,7 +350,6 @@
     border-color: #CBD5E1;
   }
 
-  /* ===== SCHOLASTIC STAT CARD ===== */
   .stat-card {
     background-color: #FFFFFF;
     border: 1px solid #E2E8F0;
@@ -377,7 +364,6 @@
     box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
   }
 
-  /* ===== HEADINGS ===== */
   .section-title {
     font-size: 20px;
     font-weight: 800;
@@ -397,7 +383,6 @@
     letter-spacing: -0.01em;
   }
 
-  /* ===== MODAL & DIALOG ===== */
   .glass-modal-overlay {
     position: fixed;
     inset: 0;
@@ -422,7 +407,6 @@
     animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* ===== SIDEBAR & TOPBAR ===== */
   .glass-sidebar {
     background: #FFFFFF;
     border-right: 1px solid #E2E8F0;
@@ -488,7 +472,6 @@
     margin-bottom: 6px;
   }
 
-  /* ===== BOOK COVER ELEVATION (CLEAN CSS ONLY, NO JAVASCRIPT GIMMICK) ===== */
   .book-cover-wrap {
     position: relative;
     border-radius: 8px;
@@ -504,7 +487,6 @@
     box-shadow: 4px 8px 18px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
   }
 
-  /* Subtle book spine left crease */
   .book-cover-wrap::before {
     content: '';
     position: absolute;
@@ -517,7 +499,6 @@
     pointer-events: none;
   }
 
-  /* Shimmer placeholder */
   .shimmer {
     background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
     background-size: 200% 100%;
@@ -546,7 +527,6 @@
   100% { background-position: 200% 0; }
 }
 
-/* Print styles for official library reports */
 @media print {
   .no-print { display: none !important; }
   body { background: white !important; color: black !important; }
