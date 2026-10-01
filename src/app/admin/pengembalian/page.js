@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import TopBar from '@/components/layout/TopBar';
-import { Search, RotateCcw, X, CheckCircle2, AlertTriangle, Sparkles, Coins } from 'lucide-react';
+import { Search, RotateCcw, X, CheckCircle2, AlertTriangle, Coins } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
 
 export default function PengembalianPage() {
@@ -90,18 +90,18 @@ export default function PengembalianPage() {
         setSaving(false);
         return;
       }
-      toast.success('Buku berhasil diverifikasi dan dikembalikan');
+      toast.success('Buku berhasil diverifikasi dan stok fisik diperbarui');
       setModal(null);
       fetch_();
     } catch {
-      setError('Terjadi kesalahan saat memproses pengembalian');
-      toast.error('Terjadi kesalahan saat memproses pengembalian');
+      setError('Terjadi kendala koneksi saat memproses pengembalian');
+      toast.error('Terjadi kendala koneksi saat memproses pengembalian');
     } finally {
       setSaving(false);
     }
   };
 
-  const fmt = (d) => d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+  const fmt = (d) => d ? new Date(d).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
   
   const isOverdue = (d) => {
     if (!d) return false;
@@ -123,24 +123,24 @@ export default function PengembalianPage() {
 
   return (
     <>
-      <TopBar title="Verifikasi Pengembalian" subtitle="Verifikasi pengembalian buku, hitung denda, dan perbarui stok otomatis" />
-      <div className="p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
-          <div className="relative flex-1 max-w-none sm:max-w-xs">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+      <TopBar title="Verifikasi Pengembalian Buku" subtitle="Pemeriksaan kondisi buku, hitung denda, dan pengembalian stok" />
+      <div className="p-4 sm:p-6 space-y-5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+          <div className="relative flex-1 max-w-none sm:max-w-md">
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              className="glass-input pl-9 w-full"
-              placeholder="Cari peminjam, buku, atau NIS..."
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-blue-600 rounded-lg outline-none transition-colors"
+              placeholder="Cari nama peminjam, judul buku, atau NIS..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="glass-card overflow-hidden">
+        <div className="library-card overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="glass-table min-w-[750px]">
+            <table className="library-table min-w-[750px]">
               <thead>
                 <tr>
                   <th>No</th>
@@ -148,7 +148,7 @@ export default function PengembalianPage() {
                   <th>Buku Dipinjam</th>
                   <th>Tgl Pinjam</th>
                   <th>Jatuh Tempo</th>
-                  <th>Status & Notif</th>
+                  <th>Status Buku</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -165,7 +165,7 @@ export default function PengembalianPage() {
                   <tr>
                     <td colSpan={7}>
                       <div className="text-center py-12 text-slate-400">
-                        <CheckCircle2 size={36} className="mx-auto mb-2 text-emerald-500 opacity-60" />
+                        <CheckCircle2 size={36} className="mx-auto mb-2 text-emerald-600 opacity-60" />
                         <p className="font-bold text-slate-700">Semua Buku Telah Kembali</p>
                         <p className="text-xs text-slate-500 mt-0.5">Tidak ada peminjaman aktif yang menunggu pengembalian saat ini.</p>
                       </div>
@@ -177,11 +177,11 @@ export default function PengembalianPage() {
                     const isReturnRequested = d.catatan && d.catatan.includes('[Pengajuan Pengembalian Siswa]');
 
                     return (
-                      <tr key={d.id} className={isReturnRequested ? 'bg-emerald-50/40' : ''}>
+                      <tr key={d.id} className={isReturnRequested ? 'bg-emerald-50/30' : ''}>
                         <td className="text-slate-500 font-medium">{i + 1}</td>
                         <td>
                           <div className="font-bold text-slate-900">{d.anggota.nama}</div>
-                          <div className="text-xs text-slate-500 font-medium">{d.anggota.nis} · {d.anggota.kelas}</div>
+                          <div className="text-xs text-slate-500 font-medium">NIS: {d.anggota.nis} · Kelas {d.anggota.kelas}</div>
                         </td>
                         <td>
                           <div className="font-bold text-slate-900">{d.buku.judul}</div>
@@ -195,11 +195,11 @@ export default function PengembalianPage() {
                         <td>
                           <div className="flex flex-col gap-1 items-start">
                             {isReturnRequested ? (
-                              <span className="badge badge-green flex items-center gap-1">
-                                <Sparkles size={11} /> Siswa Mengajukan Kembali
+                              <span className="badge badge-green">
+                                <CheckCircle2 size={11} /> Siswa Mengajukan
                               </span>
                             ) : overdue ? (
-                              <span className="badge badge-red flex items-center gap-1">
+                              <span className="badge badge-red">
                                 <AlertTriangle size={11} /> Terlambat
                               </span>
                             ) : (
@@ -211,12 +211,12 @@ export default function PengembalianPage() {
                           <button
                             id={`process-return-${d.id}`}
                             onClick={() => openProcess(d)}
-                            className={`btn-sm font-bold flex items-center gap-1.5 ${
+                            className={`btn-sm font-semibold flex items-center gap-1.5 ${
                               isReturnRequested ? 'btn-success' : 'btn-primary'
                             }`}
                           >
                             <RotateCcw size={13} />
-                            Verifikasi Kembali
+                            Verifikasi
                           </button>
                         </td>
                       </tr>
@@ -231,43 +231,45 @@ export default function PengembalianPage() {
 
       {modal && selected && (
         <div
+          role="dialog"
+          aria-modal="true"
           onClick={() => setModal(null)}
-          className="glass-modal-overlay overscroll-contain touch-pan-y"
+          className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="glass-modal p-6 max-w-lg w-full overscroll-contain"
+            className="bg-white rounded-xl border border-slate-200 p-6 max-w-lg w-full shadow-xl space-y-4"
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <RotateCcw size={20} className="text-emerald-600" />
-                <h2 className="text-lg font-bold text-slate-900">Verifikasi Pengembalian Buku</h2>
+                <RotateCcw size={18} className="text-emerald-600" />
+                <h2 className="text-base font-bold text-slate-900">Verifikasi Pengembalian Buku</h2>
               </div>
-              <button onClick={() => setModal(null)} className="btn-glass" style={{ padding: '6px' }}>
+              <button onClick={() => setModal(null)} className="p-1 rounded text-slate-400 hover:text-slate-600">
                 <X size={16} />
               </button>
             </div>
 
-            <div className="p-4 rounded-xl mb-4 bg-slate-50 border border-slate-200">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                 <div>
-                  <span className="text-slate-500 block text-xs mb-0.5 font-semibold">Peminjam</span>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Peminjam</span>
                   <span className="text-slate-900 font-bold">{selected.anggota.nama} ({selected.anggota.kelas})</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-xs mb-0.5 font-semibold">NIS</span>
+                  <span className="text-slate-500 block text-[11px] font-semibold">NIS</span>
                   <span className="text-slate-900 font-bold">{selected.anggota.nis}</span>
                 </div>
                 <div className="sm:col-span-2">
-                  <span className="text-slate-500 block text-xs mb-0.5 font-semibold">Judul Buku</span>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Judul Buku</span>
                   <span className="text-slate-900 font-bold">{selected.buku.judul}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-xs mb-0.5 font-semibold">Tgl Pinjam</span>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Tgl Pinjam</span>
                   <span className="text-slate-700 font-medium">{fmt(selected.tglPinjam)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-xs mb-0.5 font-semibold">Jadwal Jatuh Tempo</span>
+                  <span className="text-slate-500 block text-[11px] font-semibold">Jadwal Jatuh Tempo</span>
                   <span className={isOverdue(selected.tglKembaliRencana) ? 'text-rose-600 font-bold' : 'text-slate-700 font-medium'}>
                     {fmt(selected.tglKembaliRencana)}
                   </span>
@@ -276,17 +278,17 @@ export default function PengembalianPage() {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">
+              <div className="p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800">
                 {error}
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <label className="form-label">Tanggal Kembali Aktual (Diterima Fisik) *</label>
+                <label className="form-label text-xs">Tanggal Buku Diterima Petugas *</label>
                 <input
                   id="form-tgl-kembali-aktual"
-                  className="glass-input w-full"
+                  className="library-input text-xs"
                   type="date"
                   value={form.tglKembali}
                   onChange={e => handleDateChange(e.target.value)}
@@ -295,23 +297,23 @@ export default function PengembalianPage() {
               </div>
 
               {isEarlyReturn() && (
-                <div className="p-3 rounded-xl flex items-center gap-2.5 bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold">
-                  <Sparkles size={16} className="text-blue-600 flex-shrink-0" />
-                  <span>Pengembalian lebih awal dari jadwal yang ditentukan — tidak ada denda keterlambatan.</span>
+                <div className="p-2.5 rounded-lg flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
+                  <CheckCircle2 size={15} className="text-blue-600 flex-shrink-0" />
+                  <span>Pengembalian lebih awal dari jadwal: bebas denda keterlambatan.</span>
                 </div>
               )}
 
               <div>
-                <label className="form-label flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
+                <label className="form-label text-xs flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 font-bold">
                     <Coins size={14} className="text-slate-500" />
-                    Nominal Denda (Rp)
+                    Nominal Denda Keterlambatan (Rp)
                   </span>
-                  <span className="text-[11px] text-slate-400 font-normal">Dihitung otomatis: Rp 500/hari terlambat</span>
+                  <span className="text-[11px] text-slate-400 font-normal">Tarif standar: Rp 500/hari</span>
                 </label>
                 <input
                   id="form-denda"
-                  className="glass-input w-full font-bold text-slate-900"
+                  className="library-input text-xs font-bold text-slate-900"
                   type="number"
                   min="0"
                   value={form.denda}
@@ -320,43 +322,40 @@ export default function PengembalianPage() {
               </div>
 
               {parseInt(form.denda) > 0 && (
-                <div className="p-3 rounded-xl flex items-center gap-3 bg-rose-50 border border-rose-200">
+                <div className="p-3 rounded-lg flex items-center gap-3 bg-rose-50 border border-rose-200">
                   <AlertTriangle size={18} className="text-rose-600 flex-shrink-0" />
                   <div>
                     <div className="text-xs font-bold text-rose-900">Total Denda Yang Harus Diterima:</div>
-                    <div className="text-lg font-extrabold text-rose-600">Rp {parseInt(form.denda).toLocaleString('id')}</div>
+                    <div className="text-base font-bold text-rose-600">Rp {parseInt(form.denda).toLocaleString('id')}</div>
                   </div>
                 </div>
               )}
 
-              {parseInt(form.denda) === 0 && !isEarlyReturn() && (
-                <div className="p-2.5 rounded-xl flex items-center gap-2 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
-                  <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0" />
-                  <span>Tepat waktu — bebas denda.</span>
-                </div>
-              )}
-
               <div>
-                <label className="form-label">Catatan Kondisi / Pengembalian</label>
+                <label className="form-label text-xs">Catatan Kondisi Buku (Opsional)</label>
                 <textarea
-                  className="glass-input w-full resize-none"
+                  className="library-input text-xs resize-none"
                   rows={2}
                   value={form.catatan}
                   onChange={e => setForm({ ...form, catatan: e.target.value })}
-                  placeholder="Kondisi buku baik, denda lunas dibayar, dll..."
+                  placeholder="Kondisi buku baik, halaman utuh, denda lunas dibayar, dll..."
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
-              <button type="button" onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">
+            <div className="flex gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setModal(null)}
+                className="btn-secondary flex-1 justify-center text-xs min-h-[38px]"
+              >
                 Batal
               </button>
               <button
                 id="confirm-pengembalian"
                 onClick={handleProcess}
                 disabled={saving}
-                className="btn-success flex-1 justify-center font-bold"
+                className="btn-success flex-1 justify-center text-xs font-bold min-h-[38px]"
               >
                 {saving ? 'Memproses...' : 'Konfirmasi Pengembalian'}
               </button>

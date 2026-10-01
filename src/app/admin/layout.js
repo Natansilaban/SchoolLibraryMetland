@@ -6,7 +6,7 @@ import { SidebarProvider } from '@/components/layout/AdminSidebarContext';
 export default function AdminLayout({ children }) {
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col lg:flex-row">
+      <div className="min-h-screen bg-[#FBFBF9] text-slate-900 flex flex-col lg:flex-row">
         <AdminSidebar />
         <div className="flex-1 flex flex-col min-w-0 lg:ml-64 min-h-screen">
           {children}

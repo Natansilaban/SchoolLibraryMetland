@@ -1,18 +1,17 @@
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
-import { BookMarked, Tag, PenLine, Building2, Calendar, Hash, ArrowLeft } from 'lucide-react';
+import { Tag, PenLine, Building2, Calendar, Hash, ArrowLeft, Library, BookOpen } from 'lucide-react';
 import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import PinjamBukuButton from '@/components/siswa/PinjamBukuButton';
-import Tilt3DCard from '@/components/ui/Tilt3DCard';
 
 export async function generateMetadata({ params }) {
   const resolvedParams = await params;
   const id = parseInt(resolvedParams?.id);
-  if (!id) return { title: 'Detail Buku' };
+  if (!id) return { title: 'Detail Buku | Perpustakaan Metland' };
   const buku = await prisma.buku.findUnique({ where: { id } });
-  return { title: buku?.judul || 'Detail Buku' };
+  return { title: `${buku?.judul || 'Detail Buku'} | Perpustakaan Metland` };
 }
 
 export default async function DetailBukuPage({ params }) {
@@ -46,88 +45,108 @@ export default async function DetailBukuPage({ params }) {
   }) : null;
 
   const info = [
-    { label: 'Kategori', value: buku.kategori?.nama, icon: Tag },
-    { label: 'Penulis', value: buku.penulis?.nama, icon: PenLine },
-    { label: 'Penerbit', value: buku.penerbit?.nama, icon: Building2 },
+    { label: 'Kategori Koleksi', value: buku.kategori?.nama, icon: Tag },
+    { label: 'Pengarang / Penulis', value: buku.penulis?.nama, icon: PenLine },
+    { label: 'Penerbit Buku', value: buku.penerbit?.nama, icon: Building2 },
     { label: 'Tahun Terbit', value: buku.tahunTerbit, icon: Calendar },
-    { label: 'ISBN', value: buku.isbn, icon: Hash },
+    { label: 'Nomor Standar ISBN', value: buku.isbn, icon: Hash },
   ].filter(i => i.value);
 
   return (
-    <div>
-      <Link href="/siswa/buku" className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-bold transition-colors mb-6 text-sm">
-        <ArrowLeft size={16} /> Kembali ke Katalog
+    <div className="space-y-6">
+      <Link
+        href="/siswa/buku"
+        className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 font-semibold text-xs sm:text-sm transition-colors"
+      >
+        <ArrowLeft size={16} /> Kembali ke Katalog Buku
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <Tilt3DCard
-            maxTilt={16}
-            scale={1.04}
-            glare={true}
-            borderRadius="16px"
-            className="w-full shadow-lg"
-          >
-            <div
-              className="w-full rounded-2xl flex items-center justify-center overflow-hidden border border-slate-200 shadow-md bg-slate-100 relative cursor-pointer"
-              style={{ height: '340px' }}
-            >
-              {buku.cover ? (
-                <img src={buku.cover} alt={buku.judul} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02))' }}>
-                  <BookMarked size={64} color="#2563eb" className="opacity-60" />
-                </div>
-              )}
-            </div>
-          </Tilt3DCard>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+        {/* Left Column: Book Physical Representation & Circulation Status */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="w-full rounded-xl overflow-hidden bg-slate-100 border border-slate-200 book-cover-wrap relative h-80 sm:h-96 flex items-center justify-center">
+            {buku.cover ? (
+              <img src={buku.cover} alt={buku.judul} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-slate-100">
+                <Library size={48} className="text-slate-400 mb-2" />
+                <span className="text-xs font-bold text-slate-600 line-clamp-3">
+                  {buku.judul}
+                </span>
+              </div>
+            )}
+          </div>
 
-          <div className="mt-4 glass-card-sm p-4 text-center">
-            <div className="text-3xl font-extrabold text-slate-900 mb-1">{buku.stok}</div>
-            <div className="text-xs font-semibold text-slate-500">Stok tersedia</div>
-            <div className={`badge mt-2 ${buku.stok > 0 ? 'badge-green' : 'badge-red'}`}>
-              {buku.stok > 0 ? 'Tersedia' : 'Habis'}
+          <div className="library-card p-4 space-y-3">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <span className="text-xs font-semibold text-slate-500">Ketersediaan Stok Fisik</span>
+              <span className={`badge text-xs ${buku.stok > 0 ? 'badge-green' : 'badge-red'}`}>
+                {buku.stok > 0 ? `${buku.stok} Buku Tersedia` : 'Sedang Habis Dipinjam'}
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-medium">Frekuensi Peminjaman</span>
+              <span className="font-bold text-slate-900">{buku._count.peminjaman} kali dibaca</span>
             </div>
           </div>
 
           <PinjamBukuButton buku={buku} existingLoan={existingLoan} isStudent={isStudent} />
         </div>
 
-        <div className="lg:col-span-2">
-          <h1 className="text-2xl font-bold text-slate-900 mb-2 leading-snug">{buku.judul}</h1>
+        {/* Right Column: Bibliographic Details & Description */}
+        <div className="lg:col-span-8 space-y-5">
+          <div className="library-card p-5 sm:p-6 space-y-4">
+            <div>
+              {buku.kategori && (
+                <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2.5 py-1 rounded inline-block mb-2">
+                  {buku.kategori.nama}
+                </span>
+              )}
+              <h1 className="text-xl sm:text-3xl font-bold text-slate-900 leading-snug tracking-tight">
+                {buku.judul}
+              </h1>
+              {buku.penulis && (
+                <p className="text-sm font-medium text-slate-600 mt-1">
+                  Karya <span className="font-bold text-slate-900">{buku.penulis.nama}</span>
+                </p>
+              )}
+            </div>
 
-          {buku.penulis && (
-            <p className="text-slate-600 font-medium mb-4">oleh <span className="text-blue-600 font-bold">{buku.penulis.nama}</span></p>
-          )}
+            <hr className="border-slate-100" />
 
-          <div className="glass-card-sm p-4 mb-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {info.map(item => {
-                const Icon = item.icon;
-                return (
-                  <div key={item.label} className="flex items-start gap-2">
-                    <Icon size={14} className="text-slate-400 mt-0.5" />
-                    <div>
-                      <div className="text-xs font-semibold text-slate-500">{item.label}</div>
-                      <div className="text-sm font-bold text-slate-900 mt-0.5">{item.value}</div>
+            <div>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                Informasi Bibliografi Koleksi
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                {info.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div key={item.label} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 border border-slate-100">
+                      <Icon size={16} className="text-slate-400 mt-0.5 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <div className="text-[11px] font-medium text-slate-500">{item.label}</div>
+                        <div className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 truncate">
+                          {item.value}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {buku.deskripsi && (
-            <div className="glass-card-sm p-4 mb-4">
-              <h3 className="text-sm font-bold text-slate-900 mb-2">Deskripsi</h3>
-              <p className="text-sm text-slate-600 leading-relaxed font-medium">{buku.deskripsi}</p>
-            </div>
-          )}
-
-          <div className="glass-card-sm p-4">
-            <div className="text-sm text-slate-500 font-medium">
-              Total dipinjam: <span className="text-slate-900 font-bold">{buku._count.peminjaman}×</span>
-            </div>
+            {buku.deskripsi && (
+              <div className="pt-2">
+                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  Sinopsis & Deskripsi Buku
+                </h2>
+                <div className="p-4 rounded-lg bg-slate-50/70 border border-slate-100 text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+                  {buku.deskripsi}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

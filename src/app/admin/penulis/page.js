@@ -192,7 +192,7 @@ export default function PenulisPage() {
                           </div>
                         </td>
                         <td className="text-slate-600 font-medium">
-                          {d.bio ? (d.bio.length > 60 ? d.bio.slice(0, 60) + '...' : d.bio) : '—'}
+                          {d.bio ? (d.bio.length > 60 ? d.bio.slice(0, 60) + '...' : d.bio) : '-'}
                         </td>
                         <td>
                           <div className="flex gap-2">

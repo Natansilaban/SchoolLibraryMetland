@@ -14,24 +14,20 @@ export const authOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          console.log('[AUTH] Checking user credentials for:', credentials.email);
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
             include: { anggota: true },
           });
 
           if (!user) {
-            console.warn('[AUTH] User not found in database:', credentials.email);
             return null;
           }
 
           const isValid = await bcrypt.compare(credentials.password, user.password);
           if (!isValid) {
-            console.warn('[AUTH] Invalid password for:', credentials.email);
             return null;
           }
 
-          console.log('[AUTH SUCCESS] User logged in:', user.email, 'Role:', user.role);
           return {
             id: user.id.toString(),
             email: user.email,
@@ -42,8 +38,8 @@ export const authOptions = {
             kelas: user.anggota?.kelas || null,
           };
         } catch (dbErr) {
-          console.error('[AUTH DATABASE ERROR]:', dbErr.message || dbErr);
-          throw new Error('Database connection error: ' + (dbErr.message || 'unknown'));
+          console.error('[AUTH] Database error during authentication');
+          throw new Error('Koneksi database gagal. Silakan coba lagi.');
         }
       },
     }),
@@ -80,5 +76,9 @@ export const authOptions = {
   },
   trustHost: true,
   useSecureCookies: process.env.NODE_ENV === 'production',
-  secret: process.env.NEXTAUTH_SECRET || '856f477afaa0875905e2e991bec08af30feebda82af4dd0ce400c263d87f7ec6',
+  secret: (() => {
+    const s = process.env.NEXTAUTH_SECRET;
+    if (!s || s.length < 32) throw new Error('NEXTAUTH_SECRET harus di-set (min 32 karakter). Generate: openssl rand -base64 32');
+    return s;
+  })(),
 };

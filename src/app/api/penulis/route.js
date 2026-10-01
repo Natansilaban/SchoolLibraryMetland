@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error';
 
 export async function GET() {
   try {
@@ -18,10 +19,9 @@ export async function GET() {
       },
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memuat data penulis');
   }
 }
-
 
 export async function POST(req) {
   try {
@@ -35,7 +35,8 @@ export async function POST(req) {
     const data = await prisma.penulis.create({ data: { nama: nama.trim(), bio: bio?.trim() || null } });
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error.code === 'P2002') return NextResponse.json({ error: 'Nama penulis sudah terdaftar' }, { status: 409 });
+    return handleApiError(error, 'Gagal menambahkan penulis');
   }
 }
 

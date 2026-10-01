@@ -8,14 +8,24 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-sans)', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Newsreader', 'Georgia', 'serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       colors: {
-        glass: {
-          white: 'rgba(255, 255, 255, 0.08)',
-          border: 'rgba(255, 255, 255, 0.12)',
-          hover: 'rgba(255, 255, 255, 0.14)',
-          active: 'rgba(255, 255, 255, 0.18)',
+        parchment: {
+          DEFAULT: '#FBFBF9',
+          50: '#FFFFFF',
+          100: '#F5F5F0',
+          200: '#ECECE5',
+          300: '#E2E2D8',
+        },
+        scholastic: {
+          ink: '#0F172A',
+          navy: '#1E3A8A',
+          slate: '#475569',
+          subtle: '#64748B',
+          line: '#E7E5E4',
         },
         primary: {
           50: '#eff6ff',
@@ -29,29 +39,17 @@ module.exports = {
           800: '#1e40af',
           900: '#1e3a8a',
         },
-        surface: {
-          DEFAULT: '#0a0a0f',
-          50: '#111118',
-          100: '#16161f',
-          200: '#1c1c27',
-          300: '#232330',
-        },
       },
-      backdropBlur: {
-        xs: '2px',
-        '3xl': '64px',
-      },
-      backgroundImage: {
-        'glass-gradient': 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%)',
-        'hero-gradient': 'radial-gradient(ellipse at 20% 50%, rgba(59, 130, 246, 0.15) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 60%)',
-        'mesh-gradient': 'linear-gradient(135deg, #0a0a0f 0%, #111118 50%, #0d0d18 100%)',
+      boxShadow: {
+        paper: '0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02)',
+        'paper-elevated': '0 4px 16px -2px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.03)',
+        'paper-modal': '0 20px 40px -15px rgba(15, 23, 42, 0.14), 0 0 0 1px rgba(15, 23, 42, 0.05)',
+        book: '2px 4px 14px rgba(15, 23, 42, 0.08), 0 1px 3px rgba(15, 23, 42, 0.04)',
+        'book-hover': '4px 10px 22px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06)',
       },
       animation: {
-        'fade-in': 'fadeIn 0.4s ease-out forwards',
-        'slide-up': 'slideUp 0.4s ease-out forwards',
-        'slide-in-right': 'slideInRight 0.3s ease-out forwards',
-        'glow': 'glow 2s ease-in-out infinite alternate',
-        'shimmer': 'shimmer 2s infinite',
+        'fade-in': 'fadeIn 0.2s ease-out forwards',
+        'slide-up': 'slideUp 0.25s ease-out forwards',
       },
       keyframes: {
         fadeIn: {
@@ -59,29 +57,9 @@ module.exports = {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
-        slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(16px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' },
-        },
-        glow: {
-          '0%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.2)' },
-          '100%': { boxShadow: '0 0 40px rgba(59, 130, 246, 0.4)' },
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' },
-        },
-      },
-      boxShadow: {
-        'glass': '0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
-        'glass-hover': '0 16px 48px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.15)',
-        'glass-sm': '0 4px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
-        'glow-blue': '0 0 30px rgba(59, 130, 246, 0.3)',
-        'glow-purple': '0 0 30px rgba(139, 92, 246, 0.3)',
-        'inner-glass': 'inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(0,0,0,0.2)',
       },
     },
   },

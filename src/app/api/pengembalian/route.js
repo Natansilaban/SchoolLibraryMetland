@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error';
 
 export async function POST(req) {
   try {
@@ -72,7 +73,7 @@ export async function POST(req) {
 
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memproses pengembalian buku');
   }
 }
 
@@ -85,6 +86,8 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
+    const rawLimit = parseInt(searchParams.get('limit') || '100', 10);
+    const limit = isNaN(rawLimit) || rawLimit < 1 ? 100 : Math.min(100, rawLimit);
 
     const data = await prisma.peminjaman.findMany({
       where: {
@@ -97,6 +100,7 @@ export async function GET(req) {
           ],
         } : {}),
       },
+      take: limit,
       orderBy: { tglKembaliRencana: 'asc' },
       include: {
         anggota: { select: { nama: true, nis: true, kelas: true } },
@@ -106,6 +110,6 @@ export async function GET(req) {
 
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memuat data antrean pengembalian');
   }
 }

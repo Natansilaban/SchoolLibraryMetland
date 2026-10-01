@@ -2,15 +2,14 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getPaginationParams, handleApiError } from '@/lib/api-error';
 
 export async function GET(req) {
   try {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
     const kategoriId = searchParams.get('kategoriId');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPaginationParams(searchParams, 20, 100);
 
     const where = {
       AND: [
@@ -21,7 +20,7 @@ export async function GET(req) {
             { penulis: { nama: { contains: search, mode: 'insensitive' } } },
           ],
         } : {},
-        kategoriId ? { kategoriId: parseInt(kategoriId) } : {},
+        kategoriId && !isNaN(parseInt(kategoriId, 10)) ? { kategoriId: parseInt(kategoriId, 10) } : {},
       ],
     };
 
@@ -43,7 +42,7 @@ export async function GET(req) {
 
     return NextResponse.json({ data, total, page, limit });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memuat katalog buku');
   }
 }
 
@@ -83,8 +82,8 @@ export async function POST(req) {
     return NextResponse.json(buku, { status: 201 });
   } catch (error) {
     if (error.code === 'P2002') {
-      return NextResponse.json({ error: 'ISBN sudah digunakan' }, { status: 409 });
+      return NextResponse.json({ error: 'ISBN sudah digunakan oleh buku lain' }, { status: 409 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal menambahkan buku baru');
   }
 }

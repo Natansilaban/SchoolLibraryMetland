@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error';
 
 export async function PATCH(req, { params }) {
   try {
@@ -148,7 +149,7 @@ export async function PATCH(req, { params }) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memproses aksi peminjaman');
   }
 }
 
@@ -160,13 +161,13 @@ export async function DELETE(req, { params }) {
     }
 
     const resolvedParams = await params;
-    const peminjamanId = parseInt(resolvedParams?.id);
+    const peminjamanId = parseInt(resolvedParams?.id, 10);
     if (!peminjamanId || isNaN(peminjamanId)) {
       return NextResponse.json({ error: 'ID peminjaman tidak valid' }, { status: 400 });
     }
 
     const isStudent = session.user?.role === 'SISWA';
-    const userAnggotaId = session.user?.anggotaId ? parseInt(session.user.anggotaId) : null;
+    const userAnggotaId = session.user?.anggotaId ? parseInt(session.user.anggotaId, 10) : null;
 
     const peminjaman = await prisma.peminjaman.findUnique({
       where: { id: peminjamanId },
@@ -193,6 +194,6 @@ export async function DELETE(req, { params }) {
 
     return NextResponse.json({ message: 'Pengajuan peminjaman berhasil dibatalkan dan dihapus' });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal membatalkan pengajuan peminjaman');
   }
 }

@@ -111,11 +111,11 @@ export default function KategoriPage() {
                   <tr key={d.id}>
                     <td className="text-slate-500 font-medium">{i + 1}</td>
                     <td className="font-bold text-slate-900">{d.nama}</td>
-                    <td className="text-slate-600 font-medium">{d.deskripsi || '—'}</td>
+                    <td className="text-slate-600 font-medium">{d.deskripsi || '-'}</td>
                     <td>
                       <div className="flex gap-2">
-                        <button id={`edit-kategori-${d.id}`} onClick={() => openEdit(d)} className="btn-glass btn-sm"><Pencil size={13} /></button>
-                        <button id={`delete-kategori-${d.id}`} onClick={() => openDelete(d)} className="btn-danger btn-sm"><Trash2 size={13} /></button>
+                        <button id={`edit-kategori-${d.id}`} onClick={() => openEdit(d)} className="btn-secondary btn-sm" title="Edit"><Pencil size={13} /></button>
+                        <button id={`delete-kategori-${d.id}`} onClick={() => openDelete(d)} className="btn-danger btn-sm" title="Hapus"><Trash2 size={13} /></button>
                       </div>
                     </td>
                   </tr>

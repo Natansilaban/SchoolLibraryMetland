@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import TopBar from '@/components/layout/TopBar';
+import Link from 'next/link';
 import {
   BookMarked, Users, BookCopy,
-  TrendingUp, AlertTriangle, CheckCircle2, Clock
+  TrendingUp, AlertTriangle, CheckCircle2, Clock, ChevronRight
 } from 'lucide-react';
 
 async function getDashboardStats() {
@@ -29,11 +30,13 @@ async function getDashboardStats() {
       },
     }),
     prisma.peminjaman.findMany({
-      take: 5,
+      take: 6,
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
         status: true,
+        tglPinjam: true,
+        tglKembaliRencana: true,
         anggota: { select: { nama: true, kelas: true } },
         buku: { select: { judul: true } },
       },
@@ -80,7 +83,7 @@ async function getDashboardStats() {
 }
 
 export const metadata = {
-  title: 'Dashboard',
+  title: 'Dashboard Layanan | Perpustakaan Metland School',
 };
 
 export default async function DashboardPage() {
@@ -88,47 +91,39 @@ export default async function DashboardPage() {
 
   const statCards = [
     {
-      label: 'Total Buku',
-      value: stats.totalBuku.toLocaleString('id'),
-      icon: BookMarked,
-      color: '#2563eb',
-      bg: 'rgba(37,99,235,0.08)',
-      border: 'rgba(37,99,235,0.2)',
-      spineColor: '#2563eb',
-    },
-    {
-      label: 'Total Anggota',
-      value: stats.totalAnggota.toLocaleString('id'),
-      icon: Users,
-      color: '#7c3aed',
-      bg: 'rgba(124,58,237,0.08)',
-      border: 'rgba(124,58,237,0.2)',
-      spineColor: '#7c3aed',
-    },
-    {
       label: 'Sedang Dipinjam',
       value: stats.dipinjam.toLocaleString('id'),
+      subtext: 'Buku fisik beredar',
       icon: BookCopy,
-      color: '#d97706',
-      bg: 'rgba(217,119,6,0.08)',
-      border: 'rgba(217,119,6,0.2)',
-      spineColor: '#d97706',
+      colorClass: 'text-blue-600 bg-blue-50',
     },
     {
-      label: 'Terlambat',
+      label: 'Keterlambatan',
       value: stats.terlambat.toLocaleString('id'),
+      subtext: stats.terlambat > 0 ? 'Perlu tindakan penagihan' : 'Tidak ada keterlambatan',
       icon: AlertTriangle,
-      color: '#dc2626',
-      bg: 'rgba(220,38,38,0.08)',
-      border: 'rgba(220,38,38,0.2)',
-      spineColor: '#dc2626',
+      colorClass: stats.terlambat > 0 ? 'text-rose-600 bg-rose-50' : 'text-slate-600 bg-slate-100',
+    },
+    {
+      label: 'Total Koleksi Buku',
+      value: stats.totalBuku.toLocaleString('id'),
+      subtext: 'Judul buku terdaftar',
+      icon: BookMarked,
+      colorClass: 'text-slate-700 bg-slate-100',
+    },
+    {
+      label: 'Anggota Terdaftar',
+      value: stats.totalAnggota.toLocaleString('id'),
+      subtext: 'Siswa aktif terdaftar',
+      icon: Users,
+      colorClass: 'text-slate-700 bg-slate-100',
     },
   ];
 
   const statusBadge = (status) => {
-    if (status === 'MENUNGGU_KONFIRMASI') return <span className="badge badge-yellow">Menunggu Konfirmasi</span>;
+    if (status === 'MENUNGGU_KONFIRMASI') return <span className="badge badge-yellow">Menunggu Verifikasi</span>;
     if (status === 'DIPINJAM') return <span className="badge badge-blue">Dipinjam</span>;
-    if (status === 'DIKEMBALIKAN') return <span className="badge badge-green">Dikembalikan</span>;
+    if (status === 'DIKEMBALIKAN') return <span className="badge badge-green">Kembali</span>;
     if (status === 'TERLAMBAT') return <span className="badge badge-red">Terlambat</span>;
     if (status === 'DITOLAK') return <span className="badge badge-red">Ditolak</span>;
     return null;
@@ -136,112 +131,140 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <TopBar title="Dashboard" subtitle="Selamat datang di Sistem Perpustakaan Metland School" />
+      <TopBar title="Dashboard Layanan Perpustakaan" subtitle="Pantau aktivitas peminjaman, pengembalian, dan ketersediaan buku" />
 
-      <div className="p-4 sm:p-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+      <div className="p-4 sm:p-6 space-y-6">
+        {/* Urgent Action Notice (Overdue Triage) */}
+        {stats.terlambat > 0 && (
+          <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle size={18} />
+              </div>
+              <div>
+                <h2 className="text-xs sm:text-sm font-bold text-rose-900">
+                  Perhatian: Terdapat {stats.terlambat} transaksi peminjaman yang telah melewati batas waktu
+                </h2>
+                <p className="text-[11px] text-rose-700">
+                  Lakukan pemeriksaan pada modul peminjaman untuk konfirmasi denda atau perpanjangan.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/admin/pengembalian"
+              className="btn-danger py-1.5 px-3 text-xs font-semibold self-start sm:self-auto min-h-[34px]"
+            >
+              Buka Rekap Denda
+            </Link>
+          </div>
+        )}
+
+        {/* 4 Core Circulation Metric Cards (No arbitrary colored stripes) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {statCards.map((card) => {
             const Icon = card.icon;
             return (
-              <div
-                key={card.label}
-                className="stat-card relative pl-4 sm:pl-7 p-3.5 sm:p-5"
-                style={{ borderLeft: `4px solid ${card.spineColor}` }}
-              >
-                <div
-                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center mb-2 sm:mb-3"
-                  style={{ background: card.bg, border: `1px solid ${card.border}` }}
-                >
-                  <Icon size={18} className="sm:w-5 sm:h-5" color={card.color} />
+              <div key={card.label} className="stat-card">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-slate-500">{card.label}</span>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${card.colorClass}`}>
+                    <Icon size={16} />
+                  </div>
                 </div>
-                <div className="text-xl sm:text-2xl font-extrabold text-slate-900 mb-0.5">{card.value}</div>
-                <div className="text-[11px] sm:text-xs font-semibold text-slate-500 leading-tight">{card.label}</div>
+                <div className="text-2xl font-bold text-slate-900">{card.value}</div>
+                <div className="text-[11px] text-slate-500 mt-1 truncate">{card.subtext}</div>
               </div>
             );
           })}
         </div>
 
+        {/* Working Modules Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="glass-card p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-5">
+          {/* Recent Circulation Transactions */}
+          <div className="library-card p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <h2 className="section-title text-base">Peminjaman Terbaru</h2>
-                <p className="section-subtitle text-xs">5 transaksi terakhir</p>
+                <h2 className="font-bold text-sm sm:text-base text-slate-900">Peminjaman Terbaru</h2>
+                <p className="text-xs text-slate-500">Aktivitas peminjaman dan pengembalian terbaru</p>
               </div>
-              <a href="/admin/peminjaman" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
-                Lihat semua →
-              </a>
+              <Link
+                href="/admin/peminjaman"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                Semua Transaksi
+              </Link>
             </div>
 
             {stats.recentPeminjaman.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                <BookCopy size={32} className="mx-auto mb-2 opacity-40" />
-                <p className="text-sm font-medium">Belum ada peminjaman</p>
+              <div className="text-center py-10 text-slate-400">
+                <BookCopy size={36} className="mx-auto mb-2 opacity-40" />
+                <p className="text-xs font-medium">Belum ada transaksi peminjaman</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {stats.recentPeminjaman.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center gap-3 p-3 rounded-xl transition-colors hover:bg-slate-50/80"
-                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+                    className="flex items-center justify-between gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200/80 hover:bg-white hover:border-slate-300 transition-colors"
                   >
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={{ background: 'rgba(37,99,235,0.1)', color: '#1d4ed8' }}
-                    >
-                      {p.anggota.nama[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-900 truncate">{p.buku.judul}</div>
-                      <div className="text-xs text-slate-500 font-medium truncate">
-                        {p.anggota.nama} · {p.anggota.kelas}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                        {p.buku.judul}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5 truncate">
+                        {p.anggota.nama} · Kelas {p.anggota.kelas}
                       </div>
                     </div>
-                    {statusBadge(p.status)}
+                    <div className="flex-shrink-0">
+                      {statusBadge(p.status)}
+                    </div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <div className="glass-card p-5 sm:p-6">
-            <div className="flex items-center justify-between mb-5">
+          {/* Popular Books In Demand */}
+          <div className="library-card p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <h2 className="section-title text-base">Buku Terpopuler</h2>
-                <p className="section-subtitle text-xs">Berdasarkan total peminjaman</p>
+                <h2 className="font-bold text-sm sm:text-base text-slate-900">Koleksi Paling Banyak Dipinjam</h2>
+                <p className="text-xs text-slate-500">Peringkat berdasarkan frekuensi peminjaman siswa</p>
               </div>
-              <a href="/admin/buku" className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors">
-                Lihat semua →
-              </a>
+              <Link
+                href="/admin/buku"
+                className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors"
+              >
+                Kelola Koleksi
+              </Link>
             </div>
 
             {stats.bukuTerpopuler.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                <BookMarked size={32} className="mx-auto mb-2 opacity-40" />
-                <p className="text-sm font-medium">Belum ada data buku</p>
+              <div className="text-center py-10 text-slate-400">
+                <BookMarked size={36} className="mx-auto mb-2 opacity-40" />
+                <p className="text-xs font-medium">Belum ada riwayat peminjaman buku</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 {stats.bukuTerpopuler.map((buku, idx) => (
                   <div
                     key={buku.id}
-                    className="flex items-center gap-3 p-3 rounded-xl transition-colors hover:bg-slate-50/80"
-                    style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+                    className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-200/80"
                   >
-                    <span
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                      style={{ background: '#e2e8f0', color: '#475569' }}
-                    >
+                    <span className="w-6 h-6 rounded-md bg-slate-200 text-slate-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
                       {idx + 1}
                     </span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold text-slate-900 truncate">{buku.judul}</div>
-                      <div className="text-xs text-slate-500 font-medium">
-                        Stok: {buku.stok}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                        {buku.judul}
+                      </div>
+                      <div className="text-[11px] text-slate-500 font-medium">
+                        Sisa Stok Fisik: <span className="font-bold text-slate-700">{buku.stok}</span>
                       </div>
                     </div>
-                    <span className="badge badge-blue">{buku._count.peminjaman}×</span>
+                    <span className="badge badge-blue">
+                      {buku._count.peminjaman}× dipinjam
+                    </span>
                   </div>
                 ))}
               </div>
@@ -249,31 +272,37 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {[
-            { label: 'Total Transaksi', value: stats.totalPeminjaman, icon: TrendingUp, color: '#059669', bg: '#d1fae5' },
-            { label: 'Sudah Kembali', value: stats.dikembalikan, icon: CheckCircle2, color: '#2563eb', bg: '#dbeafe' },
-            { label: 'Belum Kembali', value: stats.dipinjam + stats.terlambat, icon: Clock, color: '#d97706', bg: '#fef3c7' },
-          ].map((item) => {
-            const Icon = item.icon;
-            return (
-              <div
-                key={item.label}
-                className="glass-card-sm p-4 flex items-center gap-4"
-              >
-                <div
-                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ background: item.bg }}
-                >
-                  <Icon size={20} color={item.color} />
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-slate-900">{item.value}</div>
-                  <div className="text-xs font-semibold text-slate-500">{item.label}</div>
-                </div>
-              </div>
-            );
-          })}
+        {/* Operational Circulation Totals */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
+          <div className="library-card p-4 flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center flex-shrink-0">
+              <TrendingUp size={18} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900">{stats.totalPeminjaman}</div>
+              <div className="text-xs text-slate-500 font-medium">Akumulasi Transaksi</div>
+            </div>
+          </div>
+
+          <div className="library-card p-4 flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center flex-shrink-0">
+              <CheckCircle2 size={18} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900">{stats.dikembalikan}</div>
+              <div className="text-xs text-slate-500 font-medium">Buku Berhasil Dikembalikan</div>
+            </div>
+          </div>
+
+          <div className="library-card p-4 flex items-center gap-3.5">
+            <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-700 flex items-center justify-center flex-shrink-0">
+              <Clock size={18} />
+            </div>
+            <div>
+              <div className="text-lg font-bold text-slate-900">{stats.dipinjam + stats.terlambat}</div>
+              <div className="text-xs text-slate-500 font-medium">Buku Sedang di Tangan Siswa</div>
+            </div>
+          </div>
         </div>
       </div>
     </>

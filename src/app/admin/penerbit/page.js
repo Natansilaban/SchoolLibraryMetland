@@ -169,18 +169,18 @@ export default function PenerbitPage() {
                         <td>
                           <div className="font-bold text-slate-900">{d.nama}</div>
                         </td>
-                        <td className="text-slate-600 font-medium">{d.kota || '—'}</td>
+                        <td className="text-slate-600 font-medium">{d.kota || '-'}</td>
                         <td>
                           {d.website ? (
                             <a
                               href={d.website.startsWith('http') ? d.website : `https://${d.website}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs text-blue-600 hover:underline truncate block max-w-[160px]"
+                              className="text-xs text-navy-600 hover:underline truncate block max-w-[160px]"
                             >
                               {d.website}
                             </a>
-                          ) : '—'}
+                          ) : '-'}
                         </td>
                         <td>
                           <div className="flex flex-col gap-1 max-w-xs">

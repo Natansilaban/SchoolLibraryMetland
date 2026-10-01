@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error';
 
 export async function GET(req) {
   try {
@@ -12,8 +13,11 @@ export async function GET(req) {
 
     const { searchParams } = new URL(req.url);
     const now = new Date();
-    const bulan = parseInt(searchParams.get('bulan') || (now.getMonth() + 1));
-    const tahun = parseInt(searchParams.get('tahun') || now.getFullYear());
+    const rawBulan = parseInt(searchParams.get('bulan') || String(now.getMonth() + 1), 10);
+    const rawTahun = parseInt(searchParams.get('tahun') || String(now.getFullYear()), 10);
+
+    const bulan = isNaN(rawBulan) || rawBulan < 1 || rawBulan > 12 ? now.getMonth() + 1 : rawBulan;
+    const tahun = isNaN(rawTahun) || rawTahun < 2000 || rawTahun > 2100 ? now.getFullYear() : rawTahun;
 
     const startDate = new Date(tahun, bulan - 1, 1, 0, 0, 0, 0);
     const endDate = new Date(tahun, bulan, 0, 23, 59, 59, 999);
@@ -31,6 +35,7 @@ export async function GET(req) {
     ] = await Promise.all([
       prisma.peminjaman.findMany({
         where: periodFilter,
+        take: 500, // Bound maximum records retrieved for a single month's export
         include: {
           anggota: { select: { nama: true, nis: true, kelas: true } },
           buku: { select: { judul: true } },
@@ -79,6 +84,6 @@ export async function GET(req) {
       anggotaTerAktif,
     });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memproses rekap laporan perpustakaan');
   }
 }

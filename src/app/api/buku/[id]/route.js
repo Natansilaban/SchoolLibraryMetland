@@ -2,11 +2,12 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error';
 
 export async function GET(req, { params }) {
   try {
     const { id } = await params;
-    const bukuId = parseInt(id);
+    const bukuId = parseInt(id, 10);
     if (!bukuId || isNaN(bukuId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
@@ -23,7 +24,7 @@ export async function GET(req, { params }) {
     if (!buku) return NextResponse.json({ error: 'Buku tidak ditemukan' }, { status: 404 });
     return NextResponse.json(buku);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memuat detail buku');
   }
 }
 
@@ -35,7 +36,7 @@ export async function PUT(req, { params }) {
     }
 
     const { id } = await params;
-    const bukuId = parseInt(id);
+    const bukuId = parseInt(id, 10);
     if (!bukuId || isNaN(bukuId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
@@ -43,16 +44,20 @@ export async function PUT(req, { params }) {
     const body = await req.json();
     const { judul, isbn, kategoriId, penulisId, penerbitId, tahunTerbit, stok, deskripsi, cover } = body;
 
+    if (!judul || !judul.trim()) {
+      return NextResponse.json({ error: 'Judul buku wajib diisi' }, { status: 400 });
+    }
+
     const buku = await prisma.buku.update({
       where: { id: bukuId },
       data: {
-        judul: judul?.trim(),
+        judul: judul.trim(),
         isbn: isbn ? isbn.trim() : null,
-        kategoriId: kategoriId ? parseInt(kategoriId) : null,
-        penulisId: penulisId ? parseInt(penulisId) : null,
-        penerbitId: penerbitId ? parseInt(penerbitId) : null,
-        tahunTerbit: tahunTerbit ? parseInt(tahunTerbit) : null,
-        stok: stok !== undefined && stok !== null ? Math.max(0, parseInt(stok)) : 1,
+        kategoriId: kategoriId ? parseInt(kategoriId, 10) : null,
+        penulisId: penulisId ? parseInt(penulisId, 10) : null,
+        penerbitId: penerbitId ? parseInt(penerbitId, 10) : null,
+        tahunTerbit: tahunTerbit ? parseInt(tahunTerbit, 10) : null,
+        stok: stok !== undefined && stok !== null ? Math.max(0, parseInt(stok, 10)) : 1,
         deskripsi: deskripsi || null,
         cover: cover || null,
       },
@@ -60,7 +65,10 @@ export async function PUT(req, { params }) {
     });
     return NextResponse.json(buku);
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'ISBN sudah digunakan oleh buku lain' }, { status: 409 });
+    }
+    return handleApiError(error, 'Gagal memperbarui data buku');
   }
 }
 
@@ -72,7 +80,7 @@ export async function DELETE(req, { params }) {
     }
 
     const { id } = await params;
-    const bukuId = parseInt(id);
+    const bukuId = parseInt(id, 10);
     if (!bukuId || isNaN(bukuId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
@@ -94,6 +102,6 @@ export async function DELETE(req, { params }) {
     await prisma.buku.delete({ where: { id: bukuId } });
     return NextResponse.json({ message: 'Buku berhasil dihapus' });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal menghapus buku');
   }
 }

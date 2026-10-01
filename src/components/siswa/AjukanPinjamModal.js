@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Calendar, BookMarked, CheckCircle2 } from 'lucide-react';
+import { Calendar, BookMarked, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import { toast } from '@/components/ui/Toast';
 
 export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) {
@@ -83,8 +83,9 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800">
-            ⚠️ {error}
+          <div className="mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-2">
+            <AlertCircle size={16} className="text-rose-600 flex-shrink-0" />
+            <span>{error}</span>
           </div>
         )}
 
@@ -116,8 +117,11 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
             />
           </div>
 
-          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs leading-relaxed font-medium">
-            📌 <strong>Catatan:</strong> Setelah diajukan, status akan <strong>Menunggu Konfirmasi Admin</strong>. Silakan ambil buku fisik di perpustakaan setelah diapprove.
+          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed font-medium flex items-start gap-2">
+            <Info size={16} className="text-amber-700 flex-shrink-0 mt-0.5" />
+            <span>
+              Pengajuan akan diverifikasi oleh petugas perpustakaan. Setelah disetujui, kamu bisa langsung mengambil buku fisik di perpustakaan.
+            </span>
           </div>
 
           <div className="flex gap-3 pt-2">

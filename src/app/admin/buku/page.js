@@ -6,7 +6,6 @@ import {
   Plus, Search, Pencil, Trash2, BookMarked, X,
   ChevronLeft, ChevronRight, RefreshCw, Upload, Image as ImageIcon, Check
 } from 'lucide-react';
-import Tilt3DCard from '@/components/ui/Tilt3DCard';
 import { toast } from '@/components/ui/Toast';
 
 export default function BukuPage() {
@@ -251,20 +250,20 @@ export default function BukuPage() {
                         <div className="font-bold text-slate-900">{b.judul}</div>
                         {b.penerbit && <div className="text-xs text-slate-500 font-medium">{b.penerbit.nama}</div>}
                       </td>
-                      <td className="text-slate-600 font-medium">{b.isbn || '—'}</td>
-                      <td>{b.kategori ? <span className="badge badge-blue">{b.kategori.nama}</span> : '—'}</td>
-                      <td className="text-slate-600 font-medium">{b.penulis?.nama || '—'}</td>
-                      <td className="text-slate-600 font-medium">{b.tahunTerbit || '—'}</td>
+                      <td className="text-slate-600 font-medium">{b.isbn || '-'}</td>
+                      <td>{b.kategori ? <span className="badge badge-blue">{b.kategori.nama}</span> : '-'}</td>
+                      <td className="text-slate-600 font-medium">{b.penulis?.nama || '-'}</td>
+                      <td className="text-slate-600 font-medium">{b.tahunTerbit || '-'}</td>
                       <td>
                         <span className={`badge ${b.stok > 0 ? 'badge-green' : 'badge-red'}`}>{b.stok}</span>
                       </td>
                       <td>
-                        <div className="flex items-center gap-2">
-                          <button id={`edit-buku-${b.id}`} onClick={() => openEdit(b)} className="btn-glass btn-sm" title="Edit Buku">
-                            <Pencil size={13} />
+                        <div className="flex items-center gap-1.5">
+                          <button id={`edit-buku-${b.id}`} onClick={() => openEdit(b)} className="btn-secondary min-h-[34px] min-w-[34px] p-1.5" title="Edit Buku">
+                            <Pencil size={14} />
                           </button>
-                          <button id={`delete-buku-${b.id}`} onClick={() => openDelete(b)} className="btn-danger btn-sm" title="Hapus Buku">
-                            <Trash2 size={13} />
+                          <button id={`delete-buku-${b.id}`} onClick={() => openDelete(b)} className="btn-danger min-h-[34px] min-w-[34px] p-1.5" title="Hapus Buku">
+                            <Trash2 size={14} />
                           </button>
                         </div>
                       </td>
@@ -336,15 +335,13 @@ export default function BukuPage() {
                 </label>
 
                 <div className="flex items-center gap-4">
-                  <Tilt3DCard maxTilt={15} scale={1.05} glare={true} borderRadius="12px" className="w-16 h-22 flex-shrink-0">
-                    <div className="w-16 h-22 rounded-xl overflow-hidden border-2 border-dashed border-slate-300 bg-slate-100 flex items-center justify-center shadow-inner">
-                      {form.cover ? (
-                        <img src={form.cover} alt="Preview" className="w-full h-full object-cover" />
-                      ) : (
-                        <BookMarked size={24} className="text-slate-400 opacity-50" />
-                      )}
-                    </div>
-                  </Tilt3DCard>
+                  <div className="w-16 h-22 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center flex-shrink-0 shadow-xs">
+                    {form.cover ? (
+                      <img src={form.cover} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <BookMarked size={24} className="text-slate-400 opacity-50" />
+                    )}
+                  </div>
 
                   <div className="flex-1 space-y-2">
                     <div className="flex gap-2">

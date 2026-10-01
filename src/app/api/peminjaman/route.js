@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { getPaginationParams, handleApiError } from '@/lib/api-error';
 
 export async function GET(req) {
   try {
@@ -13,8 +14,7 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') || '';
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
+    const { page, limit, skip } = getPaginationParams(searchParams, 20, 100);
 
     const isStudent = session.user.role === 'SISWA';
     const rawAnggotaId = isStudent ? session.user.anggotaId : searchParams.get('anggotaId');
@@ -41,7 +41,7 @@ export async function GET(req) {
     const [data, total] = await Promise.all([
       prisma.peminjaman.findMany({
         where,
-        skip: (page - 1) * limit,
+        skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
@@ -54,7 +54,7 @@ export async function GET(req) {
 
     return NextResponse.json({ data, total, page, limit });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memuat data riwayat peminjaman');
   }
 }
 
@@ -156,6 +156,6 @@ export async function POST(req) {
 
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return handleApiError(error, 'Gagal memproses peminjaman buku');
   }
 }

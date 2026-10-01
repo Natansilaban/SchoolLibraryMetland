@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, Sparkles, ShieldCheck, GraduationCap } from 'lucide-react';
+import Link from 'next/link';
+import { Eye, EyeOff, Lock, Mail, AlertCircle, Library, ShieldCheck, GraduationCap } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        setError('Email atau password salah. Silakan coba lagi.');
+        setError('Email atau password tidak sesuai. Silakan periksa kembali.');
         setLoading(false);
         setActiveDemo(null);
       } else {
@@ -33,7 +34,7 @@ export default function LoginPage() {
         window.location.replace(target);
       }
     } catch {
-      setError('Terjadi kendala saat menghubungkan ke server.');
+      setError('Terjadi kendala saat menghubungkan ke server perpustakaan.');
       setLoading(false);
       setActiveDemo(null);
     }
@@ -57,95 +58,68 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden" role="main">
-      <div className="fixed inset-0 pointer-events-none" aria-hidden="true">
-        <div
-          className="absolute w-[500px] h-[500px] rounded-full opacity-40 blur-3xl"
-          style={{
-            background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)',
-            top: '-10%',
-            left: '10%',
-          }}
-        />
-        <div
-          className="absolute w-[450px] h-[450px] rounded-full opacity-30 blur-3xl"
-          style={{
-            background: 'radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)',
-            bottom: '10%',
-            right: '10%',
-          }}
-        />
-      </div>
-
-      <div className="w-full max-w-md relative">
-        <div className="flex justify-center mb-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shadow-sm animate-pulse">
-            <Sparkles size={13} className="text-blue-600" />
-            <span>Portfolio Live Demo</span>
+    <main className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9]" role="main">
+      <div className="w-full max-w-md space-y-6">
+        {/* Scholastic Library Brand Identity */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-xs mx-auto p-2">
+            <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
           </div>
-        </div>
-
-        <div className="text-center mb-6">
-          <div
-            className="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-3 p-2.5 shadow-sm"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(241,245,249,0.9) 100%)',
-              border: '1px solid rgba(226,232,240,0.9)',
-              boxShadow: '0 10px 25px -5px rgba(37,99,235,0.1)',
-            }}
-          >
-            <img src="/logo.png" alt="Logo Perpustakaan Metland School" className="w-full h-full object-contain" />
-          </div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-            Metland Library
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Perpustakaan Metland School
           </h1>
-          <p className="text-sm font-medium text-slate-500">
-            Sistem Perpustakaan Digital Sekolah
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Sistem Informasi Peminjaman & Koleksi Buku
           </p>
         </div>
 
-        <section
-          aria-labelledby="demo-access-title"
-          className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 via-indigo-50/70 to-slate-50 border border-blue-200/80 shadow-sm"
-        >
-          <div className="flex items-center gap-2 mb-2.5">
-            <Sparkles size={15} className="text-blue-600" />
-            <h2 id="demo-access-title" className="text-xs font-extrabold uppercase tracking-wider text-blue-900">
-              Akses Cepat Demo Portfolio
-            </h2>
-          </div>
-          <p className="text-xs text-slate-600 mb-3 font-medium leading-relaxed">
-            Pilih peran demo di bawah ini untuk langsung masuk otomatis tanpa perlu mengetik:
-          </p>
-          <div className="grid grid-cols-2 gap-2.5">
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('admin')}
-              disabled={loading}
-              aria-label="Masuk otomatis sebagai Administrator Demo"
-              className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none disabled:opacity-60"
-            >
-              <ShieldCheck size={15} className="text-blue-600" />
-              <span>{activeDemo === 'admin' ? 'Memuat...' : 'Demo Admin'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickDemo('siswa')}
-              disabled={loading}
-              aria-label="Masuk otomatis sebagai Siswa Demo"
-              className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-bold text-slate-800 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 shadow-sm transition-all focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none disabled:opacity-60"
-            >
-              <GraduationCap size={15} className="text-indigo-600" />
-              <span>{activeDemo === 'siswa' ? 'Memuat...' : 'Demo Siswa'}</span>
-            </button>
-          </div>
-        </section>
+        {/* Quick Access Account Selector (Disable in strict production via NEXT_PUBLIC_ENABLE_DEMO_LOGIN=false) */}
+        {process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'false' && (
+          <section
+            aria-labelledby="quick-access-title"
+            className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <h2 id="quick-access-title" className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                Akses Langsung Akun Uji Coba
+              </h2>
+              <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
+                1-Klik Masuk
+              </span>
+            </div>
 
-        <div className="glass-card p-6 sm:p-8 shadow-lg">
-          <div className="mb-5">
-            <h2 className="text-base font-bold text-slate-900">Atau Masuk Manual</h2>
-            <p className="text-xs text-slate-500 mt-0.5 font-medium">
-              Gunakan akun perpustakaan terdaftar Anda
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('admin')}
+                disabled={loading}
+                aria-label="Masuk sebagai Administrator Perpustakaan"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-200 transition-colors disabled:opacity-60 min-h-[42px]"
+              >
+                <ShieldCheck size={16} className="text-blue-600 flex-shrink-0" />
+                <span>{activeDemo === 'admin' ? 'Memuat...' : 'Akun Petugas'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleQuickDemo('siswa')}
+                disabled={loading}
+                aria-label="Masuk sebagai Akun Siswa"
+                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-200 transition-colors disabled:opacity-60 min-h-[42px]"
+              >
+                <GraduationCap size={16} className="text-blue-600 flex-shrink-0" />
+                <span>{activeDemo === 'siswa' ? 'Memuat...' : 'Akun Siswa'}</span>
+              </button>
+            </div>
+          </section>
+        )}
+
+        {/* Standard Credentials Form */}
+        <div className="library-card p-6 sm:p-7 space-y-5">
+          <div className="border-b border-slate-100 pb-3">
+            <h2 className="text-sm font-bold text-slate-900">Masuk dengan Kredensial</h2>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Gunakan email dan kata sandi akun perpustakaan Anda
             </p>
           </div>
 
@@ -153,36 +127,27 @@ export default function LoginPage() {
             <div
               role="alert"
               aria-live="polite"
-              className="flex items-center gap-2.5 p-3 rounded-xl mb-4 text-xs font-medium"
-              style={{
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                color: '#991b1b',
-              }}
+              className="flex items-center gap-2.5 p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800"
             >
-              <AlertCircle size={15} className="flex-shrink-0" />
+              <AlertCircle size={16} className="text-rose-600 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="form-label text-xs font-bold text-slate-700">
-                Alamat Email
+              <label htmlFor="login-email" className="form-label text-xs">
+                Alamat Email Terdaftar
               </label>
-              <div className="relative mt-1">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none" aria-hidden="true">
-                  <Mail size={16} className="text-slate-400" />
-                </div>
+              <div className="relative">
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
-                  id="email"
-                  name="email"
+                  id="login-email"
                   type="email"
-                  autoComplete="email"
                   required
-                  aria-required="true"
-                  className="glass-input pl-10 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-                  placeholder="admin@metland.sch.id"
+                  autoComplete="email"
+                  className="library-input pl-10 text-xs sm:text-sm"
+                  placeholder="nama@metland.sch.id"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -190,30 +155,26 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="form-label text-xs font-bold text-slate-700">
-                Password
+              <label htmlFor="login-password" className="form-label text-xs">
+                Kata Sandi
               </label>
-              <div className="relative mt-1">
-                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none" aria-hidden="true">
-                  <Lock size={16} className="text-slate-400" />
-                </div>
+              <div className="relative">
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
-                  id="password"
-                  name="password"
+                  id="login-password"
                   type={showPass ? 'text' : 'password'}
-                  autoComplete="current-password"
                   required
-                  aria-required="true"
-                  className="glass-input pl-10 pr-10 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className="library-input pl-10 pr-10 text-xs sm:text-sm"
+                  placeholder="Masukkan kata sandi"
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  aria-label={showPass ? 'Sembunyikan password' : 'Tampilkan password'}
-                  className="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600 focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none rounded-md"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  aria-label={showPass ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -221,38 +182,27 @@ export default function LoginPage() {
             </div>
 
             <button
-              id="login-submit"
+              id="login-submit-btn"
               type="submit"
               disabled={loading}
-              aria-label="Masuk ke aplikasi perpustakaan"
-              className="btn-primary w-full justify-center py-2.5 mt-2 text-sm font-bold focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:outline-none"
-              style={{ opacity: loading ? 0.7 : 1 }}
+              className="btn-primary w-full text-xs sm:text-sm font-semibold min-h-[44px]"
             >
-              {loading ? (
-                <>
-                  <svg className="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  <span>Memproses...</span>
-                </>
-              ) : 'Masuk'}
+              {loading ? 'Memverifikasi...' : 'Masuk ke Sistem Perpustakaan'}
             </button>
           </form>
 
-          <hr className="glass-divider mt-5" />
-
-          <p className="text-center text-xs mt-4 text-slate-500 font-medium">
-            Belum punya akun?{' '}
-            <a href="/register" className="text-blue-600 font-bold hover:text-blue-700 transition-colors focus-visible:ring-2 focus-visible:ring-blue-600 rounded-sm">
-              Daftar sebagai siswa
-            </a>
-          </p>
+          <div className="pt-3 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-500">
+              Siswa baru belum memiliki akun?{' '}
+              <Link
+                href="/register"
+                className="font-bold text-blue-700 hover:text-blue-900 hover:underline transition-colors"
+              >
+                Daftar Akun Baru
+              </Link>
+            </p>
+          </div>
         </div>
-
-        <p className="text-center text-xs mt-5 text-slate-400 font-medium">
-          © 2026 Metland School Library System · Portfolio Live Demo
-        </p>
       </div>
     </main>
   );

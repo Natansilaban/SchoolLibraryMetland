@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
+import { handleApiError } from '@/lib/api-error';
 
 export async function PUT(req, { params }) {
   try {
@@ -11,7 +12,7 @@ export async function PUT(req, { params }) {
     }
 
     const { id } = await params;
-    const anggotaId = parseInt(id);
+    const anggotaId = parseInt(id, 10);
     if (!anggotaId || isNaN(anggotaId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
@@ -22,14 +23,31 @@ export async function PUT(req, { params }) {
       return NextResponse.json({ error: 'Akses ditolak' }, { status: 403 });
     }
 
-    const { nama, nis, kelas, alamat, noHp } = await req.json();
+    const body = await req.json();
+    const updateData = {};
+
+    // Only administrators can edit core scholastic identity (nama, nis, kelas)
+    if (isAdmin) {
+      if (body.nama !== undefined) updateData.nama = String(body.nama).trim();
+      if (body.nis !== undefined) updateData.nis = String(body.nis).trim();
+      if (body.kelas !== undefined) updateData.kelas = String(body.kelas).trim();
+    }
+
+    // Both admin and member owner can update personal contact information
+    if (body.alamat !== undefined) updateData.alamat = body.alamat ? String(body.alamat).trim() : null;
+    if (body.noHp !== undefined) updateData.noHp = body.noHp ? String(body.noHp).trim() : null;
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'Tidak ada data valid yang dapat diperbarui' }, { status: 400 });
+    }
+
     const data = await prisma.anggota.update({
       where: { id: anggotaId },
-      data: { nama, nis, kelas, alamat, noHp },
+      data: updateData,
     });
     return NextResponse.json(data);
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return handleApiError(e, 'Gagal memperbarui data anggota');
   }
 }
 
@@ -73,7 +91,7 @@ export async function DELETE(req, { params }) {
     await prisma.user.delete({ where: { id: anggota.userId } });
     return NextResponse.json({ message: 'Anggota berhasil dihapus' });
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    return handleApiError(e, 'Gagal menghapus data anggota');
   }
 }
 

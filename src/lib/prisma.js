@@ -6,8 +6,12 @@ const globalForPrisma = globalThis;
 
 function getPgPool() {
   if (!globalForPrisma.pgPool) {
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+      throw new Error('DATABASE_URL environment variable is required');
+    }
     globalForPrisma.pgPool = new Pool({
-      connectionString: process.env.DATABASE_URL || 'postgresql://casaos:casaos@172.17.0.1:5432/metschoo',
+      connectionString,
       max: 10,
       min: 2,
       idleTimeoutMillis: 30000,

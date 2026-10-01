@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, Mail, Lock, Hash, GraduationCap, Phone, MapPin, AlertCircle, ArrowLeft } from 'lucide-react';
+import { User, Mail, Lock, Hash, GraduationCap, Phone, MapPin, AlertCircle, ArrowLeft, Library, CheckCircle2 } from 'lucide-react';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -44,206 +44,210 @@ export default function RegisterPage() {
         router.push('/login');
       }, 1500);
     } catch {
-      setError('Terjadi kesalahan koneksi');
+      setError('Terjadi kendala koneksi dengan server');
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8 relative overflow-hidden">
-      <div className="fixed inset-0 pointer-events-none">
-        <div
-          className="absolute w-[500px] h-[500px] rounded-full opacity-40 blur-3xl"
-          style={{
-            background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)',
-            top: '-10%',
-            left: '10%',
-          }}
-        />
-        <div
-          className="absolute w-[450px] h-[450px] rounded-full opacity-30 blur-3xl"
-          style={{
-            background: 'radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)',
-            bottom: '10%',
-            right: '10%',
-          }}
-        />
-      </div>
-
-      <div className="w-full max-w-lg relative">
-        <Link href="/login" className="inline-flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-900 mb-6 transition-colors">
-          <ArrowLeft size={16} /> Kembali ke Login
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9]">
+      <div className="w-full max-w-lg space-y-5">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+        >
+          <ArrowLeft size={16} /> Kembali ke Halaman Masuk
         </Link>
 
-        <div className="text-center mb-6">
-          <div
-            className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-3 p-2 shadow-sm"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(241,245,249,0.9) 100%)',
-              border: '1px solid rgba(226,232,240,0.9)',
-              boxShadow: '0 10px 25px -5px rgba(37,99,235,0.1)',
-            }}
-          >
-            <img src="/logo.png" alt="Metland School Logo" className="w-full h-full object-contain" />
+        <div className="text-center space-y-1.5">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-xs mx-auto p-1.5">
+            <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-1">
-            Pendaftaran Siswa Baru
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            Pendaftaran Anggota Baru
           </h1>
-          <p className="text-sm font-medium text-slate-500">
-            Daftar untuk mengakses perpustakaan digital Metland School
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+            Daftarkan diri untuk mengakses peminjaman buku perpustakaan Metland School
           </p>
         </div>
 
-        <div className="glass-card p-6 sm:p-8 shadow-lg">
+        <div className="library-card p-6 sm:p-7 space-y-5">
           {success ? (
-            <div className="text-center py-6">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
-                ✓
+            <div className="text-center py-8 space-y-3">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                <CheckCircle2 size={32} />
               </div>
-              <h2 className="text-xl font-bold text-slate-900 mb-2">Pendaftaran Berhasil!</h2>
-              <p className="text-sm text-slate-600 font-medium">Mengalihkan ke halaman login...</p>
+              <h2 className="text-lg font-bold text-slate-900">Pendaftaran Berhasil</h2>
+              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                Akun perpustakaan kamu berhasil dibuat. Mengalihkan ke halaman masuk...
+              </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <>
               {error && (
                 <div
-                  className="flex items-center gap-3 p-3 rounded-xl text-sm font-medium mb-4"
-                  style={{
-                    background: '#fef2f2',
-                    border: '1px solid #fecaca',
-                    color: '#991b1b',
-                  }}
+                  role="alert"
+                  className="flex items-center gap-2.5 p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800"
                 >
-                  <AlertCircle size={16} />
-                  {error}
+                  <AlertCircle size={16} className="text-rose-600 flex-shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
 
-              <div>
-                <label className="form-label">Nama Lengkap *</label>
-                <div className="relative">
-                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    required
-                    className="glass-input pl-10"
-                    placeholder="Contoh: Budi Santoso"
-                    value={form.nama}
-                    onChange={e => setForm({ ...form, nama: e.target.value })}
-                  />
-                </div>
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="reg-nama" className="form-label text-xs">
+                      Nama Lengkap Siswa *
+                    </label>
+                    <div className="relative">
+                      <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="reg-nama"
+                        type="text"
+                        required
+                        className="library-input pl-10 text-xs sm:text-sm"
+                        placeholder="Nama lengkap"
+                        value={form.nama}
+                        onChange={(e) => setForm({ ...form, nama: e.target.value })}
+                      />
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="reg-nis" className="form-label text-xs">
+                      Nomor Induk Siswa (NIS) *
+                    </label>
+                    <div className="relative">
+                      <Hash size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="reg-nis"
+                        type="text"
+                        required
+                        className="library-input pl-10 text-xs sm:text-sm"
+                        placeholder="Contoh: 20241001"
+                        value={form.nis}
+                        onChange={(e) => setForm({ ...form, nis: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="reg-kelas" className="form-label text-xs">
+                      Rombongan Belajar (Kelas) *
+                    </label>
+                    <div className="relative">
+                      <GraduationCap size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="reg-kelas"
+                        type="text"
+                        required
+                        className="library-input pl-10 text-xs sm:text-sm"
+                        placeholder="Contoh: X RPL 1"
+                        value={form.kelas}
+                        onChange={(e) => setForm({ ...form, kelas: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="reg-phone" className="form-label text-xs">
+                      No. WhatsApp / Telepon
+                    </label>
+                    <div className="relative">
+                      <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        id="reg-phone"
+                        type="tel"
+                        className="library-input pl-10 text-xs sm:text-sm"
+                        placeholder="08xxxxxxxxxx"
+                        value={form.noHp}
+                        onChange={(e) => setForm({ ...form, noHp: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="form-label">NIS *</label>
+                  <label htmlFor="reg-email" className="form-label text-xs">
+                    Alamat Email Siswa *
+                  </label>
                   <div className="relative">
-                    <Hash size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
-                      type="text"
+                      id="reg-email"
+                      type="email"
                       required
-                      className="glass-input pl-10"
-                      placeholder="2024002"
-                      value={form.nis}
-                      onChange={e => setForm({ ...form, nis: e.target.value })}
+                      autoComplete="email"
+                      className="library-input pl-10 text-xs sm:text-sm"
+                      placeholder="siswa@metland.sch.id"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
                     />
                   </div>
                 </div>
+
                 <div>
-                  <label className="form-label">Kelas *</label>
+                  <label htmlFor="reg-password" className="form-label text-xs">
+                    Kata Sandi Akun *
+                  </label>
                   <div className="relative">
-                    <GraduationCap size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <input
-                      type="text"
+                      id="reg-password"
+                      type="password"
                       required
-                      className="glass-input pl-10"
-                      placeholder="10A / 11B"
-                      value={form.kelas}
-                      onChange={e => setForm({ ...form, kelas: e.target.value })}
+                      minLength={6}
+                      autoComplete="new-password"
+                      className="library-input pl-10 text-xs sm:text-sm"
+                      placeholder="Minimal 6 karakter"
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
                     />
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="form-label">Alamat Email *</label>
-                <div className="relative">
-                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="email"
-                    required
-                    className="glass-input pl-10"
-                    placeholder="siswa@metland.sch.id"
-                    value={form.email}
-                    onChange={e => setForm({ ...form, email: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="form-label">Password *</label>
-                <div className="relative">
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    className="glass-input pl-10"
-                    placeholder="Minimal 6 karakter"
-                    value={form.password}
-                    onChange={e => setForm({ ...form, password: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="form-label">No. HP (Opsional)</label>
+                  <label htmlFor="reg-alamat" className="form-label text-xs">
+                    Alamat Domisili Siswa
+                  </label>
                   <div className="relative">
-                    <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      className="glass-input pl-10"
-                      placeholder="08123456789"
-                      value={form.noHp}
-                      onChange={e => setForm({ ...form, noHp: e.target.value })}
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="form-label">Alamat (Opsional)</label>
-                  <div className="relative">
-                    <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input
-                      type="text"
-                      className="glass-input pl-10"
-                      placeholder="Jakarta / Bekasi"
+                    <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
+                    <textarea
+                      id="reg-alamat"
+                      rows={2}
+                      className="library-input pl-10 text-xs sm:text-sm"
+                      placeholder="Alamat tempat tinggal siswa"
                       value={form.alamat}
-                      onChange={e => setForm({ ...form, alamat: e.target.value })}
+                      onChange={(e) => setForm({ ...form, alamat: e.target.value })}
                     />
                   </div>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn-primary w-full justify-center py-3 mt-4 text-base font-semibold"
-                style={{ opacity: loading ? 0.7 : 1 }}
-              >
-                {loading ? 'Daftar...' : 'Daftar Sekarang'}
-              </button>
-            </form>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn-primary w-full text-xs sm:text-sm font-semibold min-h-[44px]"
+                >
+                  {loading ? 'Mendaftarkan Akun...' : 'Kirim Pendaftaran Anggota'}
+                </button>
+              </form>
+            </>
           )}
 
-          <hr className="glass-divider mt-6" />
-
-          <p className="text-center text-xs mt-4 text-slate-500 font-medium">
-            Sudah punya akun?{' '}
-            <Link href="/login" className="text-blue-600 font-bold hover:text-blue-700 transition-colors">
-              Masuk di sini
-            </Link>
-          </p>
+          <div className="pt-3 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-500">
+              Sudah memiliki akun terdaftar?{' '}
+              <Link
+                href="/login"
+                className="font-bold text-blue-700 hover:text-blue-900 hover:underline transition-colors"
+              >
+                Masuk ke Perpustakaan
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
