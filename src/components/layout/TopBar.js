@@ -40,18 +40,6 @@ export default function TopBar({ title, subtitle }) {
         </button>
 
         <div className="flex-1 min-w-0 flex flex-col justify-center">
-          {/* Institutional Context Badge */}
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400" />
-              Panel Petugas Perpustakaan
-            </span>
-            <span className="text-slate-300 dark:text-slate-700 hidden sm:inline">•</span>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium hidden sm:inline">
-              Metland School
-            </span>
-          </div>
-
           <h1 className="text-xl sm:text-2xl lg:text-[25px] font-black text-slate-900 dark:text-white tracking-tight leading-tight max-sm:truncate">
             {title}
           </h1>
@@ -64,7 +52,7 @@ export default function TopBar({ title, subtitle }) {
         </div>
       </div>
 
-      {/* Sisi Kanan: Live Date, Portal Link, System Status, Theme Toggle, & Profile */}
+      {/* Sisi Kanan: Live Date, Portal Link, Theme Toggle, & Profile */}
       <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
         {/* Live Academic Date */}
         {currentDate && (
@@ -84,12 +72,6 @@ export default function TopBar({ title, subtitle }) {
           <span>Katalog Siswa</span>
           <ExternalLink size={13} className="opacity-70" />
         </Link>
-
-        {/* Status Sistem Perpustakaan */}
-        <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          <span>Sistem Aktif</span>
-        </div>
 
         {/* Theme Toggle Button */}
         <ThemeToggle className="rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80" />
