@@ -24,13 +24,27 @@ import {
 // Indonesian stopwords and conversational filler for this domain
 // ---------------------------------------------------------------------------
 const STOP_WORDS = new Set([
-  'cariin', 'cari', 'cariakan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
+  'cariin', 'cari', 'cariakan', 'carikan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
   'buku', 'judul', 'novel', 'kategori', 'koleksi', 'perpustakaan',
   'tentang', 'mengenai', 'berkaitan', 'berhubungan', 'soal', 'hal',
   'yang', 'ada', 'di', 'dan', 'atau', 'dengan', 'untuk', 'buat',
   'dari', 'ke', 'ini', 'itu', 'juga', 'lebih', 'paling', 'sangat',
   'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
   'ingin', 'minta', 'info', 'ada', 'apa', 'itu',
+]);
+
+// Lexical stop words — only pure conversational filler.
+// Deliberately keeps content words ('novel', 'fisika', 'kopi') so that
+// lexical keyword search doesn't silently drop what the user is asking for.
+// Includes prepositions/topic words ('tentang', 'mengenai') that appear in virtually
+// every book description and would otherwise match hundreds of unrelated books.
+const LEXICAL_STOP_WORDS = new Set([
+  'cariin', 'cari', 'cariakan', 'carikan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
+  'buku', 'tentang', 'mengenai', 'soal', 'hal', 'berkaitan', 'berhubungan', 'bikin', 'cara',
+  'yang', 'ada', 'di', 'dan', 'atau', 'dengan', 'untuk', 'buat',
+  'dari', 'ke', 'ini', 'itu', 'juga', 'lebih', 'paling', 'sangat',
+  'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
+  'ingin', 'minta', 'info', 'apa',
 ]);
 
 // Alias map: informal query terms -> canonical library/topic terms for better embedding signal
@@ -108,14 +122,16 @@ function buildSemanticQuery(raw) {
 
 /**
  * Extract meaningful lexical keywords for scoring boosts (separate from semantic query).
+ * Uses LEXICAL_STOP_WORDS (conservative) so content words like 'novel' are not dropped.
  * @param {string} raw
+ * @param {Set<string>} [stopWords]
  * @returns {string[]}
  */
-function extractKeywords(raw) {
+function extractKeywords(raw, stopWords = LEXICAL_STOP_WORDS) {
   return raw
     .toLowerCase()
     .split(/[\s,.\-!?;:]+/)
-    .filter((w) => w.length >= 2 && !STOP_WORDS.has(w));
+    .filter((w) => w.length >= 2 && !stopWords.has(w));
 }
 
 // ---------------------------------------------------------------------------
@@ -235,15 +251,33 @@ export async function searchCatalog({
           const candidateTexts = candidates.map(bookEmbedText);
           const candidateVectors = await computeBatchEmbeddings(candidateTexts, 'RETRIEVAL_DOCUMENT');
 
-          const scored = [];
-          for (let i = 0; i < candidates.length; i++) {
-            const book = candidates[i];
+          const candidateData = candidates.map((book, i) => {
             const vec = candidateVectors[i];
+            const isValid = vec && vec.length === queryVector.length;
+            const semScore = isValid ? calculateSimilarity(queryVector, vec) : 0;
+            return { book, vec, semScore };
+          });
 
-            // Dimension mismatch guard — skip if vector spaces are incompatible
-            if (vec && vec.length !== queryVector.length) continue;
+          let maxSemScore = 0;
+          for (const item of candidateData) {
+            if (item.semScore > maxSemScore) maxSemScore = item.semScore;
+          }
 
-            const semScore = vec ? calculateSimilarity(queryVector, vec) : 0;
+          // Adaptive Thresholding based on best practices:
+          // We use a relative drop-off (elbow) approach on top of absolute floors.
+          const isGemini = queryVector.length === 768;
+          
+          // Gemini Baseline: Standard RAG is 0.65 - 0.74
+          // ONNX Baseline: Standard Client-Side is 0.60 - 0.70
+          const semFloor = isGemini ? 0.65 : 0.60;
+          
+          // Relative margin: we accept documents that score within this margin of the top match
+          const adaptiveMargin = isGemini ? 0.08 : 0.10;
+          const semThreshold = Math.max(semFloor, maxSemScore - adaptiveMargin);
+
+          const scored = [];
+          for (const { book, vec, semScore } of candidateData) {
+            if (!vec || vec.length !== queryVector.length) continue;
 
             const lowerTitle = book.judul.toLowerCase();
             const lowerDesc = (book.deskripsi ?? '').toLowerCase();
@@ -269,10 +303,10 @@ export async function searchCatalog({
 
             // Acceptance gate: semantic score must be meaningful OR strong lexical signal
             const accepted =
-              semScore >= 0.18 ||
+              semScore >= semThreshold ||
               exactTitle ||
               titleHits >= 1 ||
-              (descHits >= 2 && semScore >= 0.12) ||
+              (descHits >= 2 && semScore >= semThreshold * 0.6) ||
               (authorHits >= 1 && intent === 'author');
 
             if (accepted) {
@@ -310,25 +344,25 @@ export async function searchCatalog({
       const isConn = /connection|timeout|socket|econnrefused/i.test(err.message ?? '');
 
       if (isRateLimit) {
-        // Re-throw so the API route can return a 429-aware response
-        throw Object.assign(new Error('Terlalu banyak permintaan ke AI. Silakan coba lagi dalam beberapa detik.'), { code: 'RATE_LIMIT' });
+        // Fall through to lexical search — user still gets results, just keyword-based.
+        // Re-throwing a 500 here left users with an empty page, which is worse.
+        console.warn('[SEARCH] Gemini rate-limited, falling back to lexical search.');
+      } else if (isConn) {
+        throw err;
+      } else {
+        console.warn('[SEARCH] Non-fatal semantic error, falling back to lexical:', err.message ?? err);
       }
-      if (isConn) throw err;
-
-      console.warn('[SEARCH] Non-fatal semantic error, falling back to lexical:', err.message ?? err);
     }
   }
 
   // ------------------------------------------------------------------ //
   // 4. Lexical fallback — keyword-based DB query
   // ------------------------------------------------------------------ //
+  // Use raw keywords only (no alias expansion) — expanded terms like 'sains', 'alam'
+  // are too generic for SQL LIKE matching and cause false positives.
   const keywords = extractKeywords(raw);
-  // Also expand aliases in fallback so "koding" matches "pemrograman"
-  const expandedKeywords = [
-    ...new Set(keywords.flatMap((k) => (ALIAS_MAP[k] ? [...ALIAS_MAP[k].split(' '), k] : [k]))),
-  ];
 
-  const wordConditions = expandedKeywords.slice(0, 8).flatMap((tok) => [
+  const wordConditions = keywords.slice(0, 8).flatMap((tok) => [
     { judul: { contains: tok, mode: 'insensitive' } },
     { deskripsi: { contains: tok, mode: 'insensitive' } },
     { penulis: { nama: { contains: tok, mode: 'insensitive' } } },

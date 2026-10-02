@@ -25,6 +25,12 @@ let activeGeminiModel = 'gemini-embedding-001';
 let geminiDisabled = false;
 // Flag to log the disable event once
 let geminiDisableLogged = false;
+// Tracks which provider produced the most recent embeddings — used by callers to apply
+// model-aware acceptance thresholds (Gemini scores calibrate higher than ONNX).
+let lastProvider = 'unknown';
+
+/** Returns the provider that produced the last computed embedding: 'gemini' | 'onnx' | 'unknown' */
+export function getActiveProvider() { return lastProvider; }
 
 function lruSet(key, value) {
   if (embeddingCache.size >= MAX_CACHE_SIZE) {
@@ -159,6 +165,7 @@ export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
   // Try Gemini first
   const geminiVec = await computeGeminiEmbedding(sanitized, taskType);
   if (geminiVec) {
+    lastProvider = 'gemini';
     lruSet(cacheKey, geminiVec);
     return geminiVec;
   }
@@ -169,6 +176,7 @@ export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
     if (pipe) {
       const out = await pipe(sanitized, { pooling: 'mean', normalize: true });
       const vec = new Float32Array(out.data);
+      lastProvider = 'onnx';
       lruSet(cacheKey, vec);
       return vec;
     }
