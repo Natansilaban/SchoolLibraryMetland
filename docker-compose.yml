@@ -1,22 +1,4 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: metland-library-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: school_library
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: metlandsecret123
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d school_library"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - metland-net
-
   app:
     build:
       context: .
@@ -24,31 +6,14 @@ services:
     container_name: metland-library-app
     restart: unless-stopped
     ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
-      - HOSTNAME=0.0.0.0
-      - AUTH_TRUST_HOST=true
-      - NEXTAUTH_URL=http://localhost:3000
-      - NEXTAUTH_SECRET=metland_school_secret_key_demo_2026_super_secure_32char
-      - DATABASE_URL=postgresql://postgres:metlandsecret123@postgres:5432/school_library?schema=public
-      - NEXT_PUBLIC_ENABLE_DEMO_LOGIN=true
-      # - GEMINI_API_KEY=your_gemini_api_key_here
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - "${PORT:-3000}:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - .env
     volumes:
       - app_uploads:/app/public/uploads
-    networks:
-      - metland-net
 
 volumes:
-  postgres_data:
-    name: metland_library_db_data
   app_uploads:
     name: metland_library_uploads
-
-networks:
-  metland-net:
-    name: metland_library_network
