@@ -122,10 +122,6 @@ export default async function SiswaDashboardPage() {
           </div>
 
           <div className="flex sm:flex-col items-center sm:items-end justify-between border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100 dark:border-slate-800">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
-              Keanggotaan Aktif
-            </span>
             <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-medium hidden sm:block">
               SMK Pariwisata Metland
             </span>
