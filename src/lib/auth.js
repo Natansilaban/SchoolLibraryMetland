@@ -108,8 +108,8 @@ export const authOptions = {
   trustHost: true,
   useSecureCookies: process.env.NODE_ENV === 'production',
   secret: (() => {
-    const s = process.env.NEXTAUTH_SECRET;
-    if (!s || s.length < 32) throw new Error('NEXTAUTH_SECRET harus di-set (min 32 karakter). Generate: openssl rand -base64 32');
+    const s = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || process.env.BETTER_AUTH_SECRET;
+    if (!s || s.length < 32) throw new Error('NEXTAUTH_SECRET / AUTH_SECRET harus di-set (min 32 karakter). Generate: openssl rand -base64 32');
     return s;
   })(),
 };

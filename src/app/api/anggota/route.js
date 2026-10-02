@@ -5,35 +5,6 @@ import { authOptions } from '@/lib/auth';
 import { getPaginationParams, handleApiError } from '@/lib/api-error';
 import bcrypt from 'bcryptjs';
 
-// Sliding-window IP rate limiter to mitigate registration bcrypt CPU-exhaustion DoS
-const registrationLimits = new Map();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REGISTRATIONS_PER_WINDOW = 5;
-
-function isRateLimited(ip) {
-  const now = Date.now();
-  const entry = registrationLimits.get(ip) || [];
-  const validTimestamps = entry.filter((time) => now - time < RATE_LIMIT_WINDOW_MS);
-
-  if (validTimestamps.length >= MAX_REGISTRATIONS_PER_WINDOW) {
-    return true;
-  }
-
-  validTimestamps.push(now);
-  registrationLimits.set(ip, validTimestamps);
-
-  // Periodic cleanup if map grows
-  if (registrationLimits.size > 1000) {
-    for (const [key, times] of registrationLimits.entries()) {
-      if (times.every((t) => now - t >= RATE_LIMIT_WINDOW_MS)) {
-        registrationLimits.delete(key);
-      }
-    }
-  }
-
-  return false;
-}
-
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -75,14 +46,11 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    // Rate limit public registration
-    const forwarded = req.headers.get('x-forwarded-for');
-    const ip = forwarded ? forwarded.split(',')[0].trim() : 'local';
-
-    if (isRateLimited(ip)) {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.role !== 'ADMIN') {
       return NextResponse.json(
-        { error: 'Terlalu banyak permintaan pendaftaran. Silakan tunggu 1 menit sebelum mencoba lagi.' },
-        { status: 429 }
+        { error: 'Akses ditolak. Pendaftaran anggota hanya dapat dilakukan oleh Admin Perpustakaan.' },
+        { status: 403 }
       );
     }
 

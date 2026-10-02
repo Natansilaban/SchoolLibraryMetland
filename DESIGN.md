@@ -82,7 +82,7 @@ Active palette restricted to 2 core neutrals + 1 brand primary + semantic status
   - **Required Touchpoints:**
     - Admin Sidebar Brand Header ([`AdminSidebar.js`](file:///d:/Project/SchoolLibraryMetland/src/components/layout/AdminSidebar.js))
     - Student Navbar Brand Header ([`SiswaNav.js`](file:///d:/Project/SchoolLibraryMetland/src/components/layout/SiswaNav.js))
-    - Authentication Portals ([`login/page.js`](file:///d:/Project/SchoolLibraryMetland/src/app/login/page.js) & [`register/page.js`](file:///d:/Project/SchoolLibraryMetland/src/app/register/page.js))
+    - Authentication Portal ([`login/page.js`](file:///d:/Project/SchoolLibraryMetland/src/app/login/page.js))
     - Official Student Member Card ([`siswa/profil/page.js`](file:///d:/Project/SchoolLibraryMetland/src/app/siswa/profil/page.js))
     - Application Favicon & Metadata ([`layout.js`](file:///d:/Project/SchoolLibraryMetland/src/app/layout.js))
 

@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
@@ -217,13 +216,7 @@ export default function LoginPage() {
 
           <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Siswa baru belum memiliki akun?{' '}
-              <Link
-                href="/register"
-                className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
-              >
-                Daftar Akun Baru
-              </Link>
+              Belum memiliki akun siswa? Hubungi <strong>Petugas Perpustakaan Sekolah</strong> untuk aktivasi dan pendataan anggota.
             </p>
           </div>
         </div>
