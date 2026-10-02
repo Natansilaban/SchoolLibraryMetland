@@ -173,7 +173,11 @@ export default function SiswaBukuPage() {
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="library-card p-3.5 flex flex-col h-72 shimmer rounded-xl" />
+            <div 
+              key={i} 
+              style={{ animation: `slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s both` }}
+              className="library-card p-3.5 flex flex-col h-72 shimmer rounded-xl" 
+            />
           ))}
         </div>
       ) : buku.length === 0 ? (
@@ -188,11 +192,12 @@ export default function SiswaBukuPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {buku.map((b) => (
+          {buku.map((b, index) => (
             <Link
               key={b.id}
               href={`/siswa/buku/${b.id}`}
               id={`buku-card-${b.id}`}
+              style={{ animation: `slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.05}s both` }}
               className="library-card p-3.5 sm:p-4 flex flex-col h-full group hover:border-slate-300 dark:hover:border-slate-700 transition-all block focus-visible:outline-2 focus-visible:outline-blue-600"
             >
               {/* Authentic Book Spine & Cover Container */}

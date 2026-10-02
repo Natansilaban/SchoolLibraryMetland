@@ -93,6 +93,7 @@ model Buku {
   stok        Int          @default(1)
   deskripsi   String?
   cover       String?
+  embedding   Bytes?
   createdAt   DateTime     @default(now()) @map("created_at")
   updatedAt   DateTime     @updatedAt @map("updated_at")
   kategori    Kategori?    @relation(fields: [kategoriId], references: [id])

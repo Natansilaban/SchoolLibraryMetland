@@ -248,15 +248,35 @@ export async function searchCatalog({
         });
 
         if (candidates.length > 0) {
-          const candidateTexts = candidates.map(bookEmbedText);
-          const candidateVectors = await computeBatchEmbeddings(candidateTexts, 'RETRIEVAL_DOCUMENT');
+          const candidateData = [];
+          const missingEmbeddings = [];
 
-          const candidateData = candidates.map((book, i) => {
-            const vec = candidateVectors[i];
-            const isValid = vec && vec.length === queryVector.length;
-            const semScore = isValid ? calculateSimilarity(queryVector, vec) : 0;
-            return { book, vec, semScore };
-          });
+          for (const book of candidates) {
+            let vec = null;
+            if (book.embedding) {
+               vec = new Float32Array(book.embedding.buffer, book.embedding.byteOffset, book.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT);
+               if (vec.length !== queryVector.length) vec = null; // dimension mismatch
+            }
+            
+            if (!vec) {
+               missingEmbeddings.push(book);
+            } else {
+               candidateData.push({ book, vec, semScore: calculateSimilarity(queryVector, vec) });
+            }
+          }
+          
+          if (missingEmbeddings.length > 0) {
+            const candidateTexts = missingEmbeddings.map(bookEmbedText);
+            const computedVectors = await computeBatchEmbeddings(candidateTexts, 'RETRIEVAL_DOCUMENT');
+            
+            for (let i = 0; i < missingEmbeddings.length; i++) {
+              const book = missingEmbeddings[i];
+              const vec = computedVectors[i];
+              const isValid = vec && vec.length === queryVector.length;
+              const semScore = isValid ? calculateSimilarity(queryVector, vec) : 0;
+              candidateData.push({ book, vec, semScore });
+            }
+          }
 
           let maxSemScore = 0;
           for (const item of candidateData) {
@@ -265,14 +285,14 @@ export async function searchCatalog({
 
           // Adaptive Thresholding based on best practices:
           // We use a relative drop-off (elbow) approach on top of absolute floors.
-          const isGemini = queryVector.length === 768;
+          const isJina = queryVector.length === 1024;
           
-          // Gemini Baseline: Standard RAG is 0.65 - 0.74
-          // ONNX Baseline: Standard Client-Side is 0.60 - 0.70
-          const semFloor = isGemini ? 0.65 : 0.60;
+          // Jina Baseline: Relevant matches hover around 0.30 - 0.40 in this dataset
+          // ONNX Baseline: Usually similar ranges
+          const semFloor = isJina ? 0.20 : 0.20;
           
           // Relative margin: we accept documents that score within this margin of the top match
-          const adaptiveMargin = isGemini ? 0.08 : 0.10;
+          const adaptiveMargin = isJina ? 0.15 : 0.12;
           const semThreshold = Math.max(semFloor, maxSemScore - adaptiveMargin);
 
           const scored = [];
