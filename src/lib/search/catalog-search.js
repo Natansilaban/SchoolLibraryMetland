@@ -118,7 +118,7 @@ function buildSemanticQuery(raw) {
 
   if (aliases.length > 0) {
     const uniqueAliases = [...new Set(aliases)].join(' ');
-    return ${raw} ;
+    return `${raw} ${uniqueAliases}`;
   }
 
   return raw;
