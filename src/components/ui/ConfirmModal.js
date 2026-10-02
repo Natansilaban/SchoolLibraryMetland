@@ -79,18 +79,18 @@ export default function ConfirmModalContainer() {
         <div
           className={`w-12 h-12 rounded-2xl mx-auto mb-3.5 flex items-center justify-center border shadow-sm ${
             isDanger
-              ? 'bg-rose-100/90 text-rose-600 border-rose-200'
-              : 'bg-blue-100/90 text-blue-600 border-blue-200'
+              ? 'bg-rose-100/90 text-rose-600 border-rose-200 dark:bg-rose-950/60 dark:text-rose-400 dark:border-rose-900/60'
+              : 'bg-blue-100/90 text-blue-600 border-blue-200 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-900/60'
           }`}
         >
           <Icon size={24} />
         </div>
 
-        <h3 className="text-base font-bold text-slate-900 mb-1.5">
+        <h3 className="text-base font-bold text-slate-900 dark:text-white mb-1.5">
           {dialog.title || (isDanger ? 'Konfirmasi Tindakan' : 'Konfirmasi')}
         </h3>
 
-        <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed mb-6">
+        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium leading-relaxed mb-6">
           {dialog.message || 'Apakah Anda yakin ingin melanjutkan?'}
         </p>
 

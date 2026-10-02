@@ -125,12 +125,12 @@ export default function PengembalianPage() {
     <>
       <TopBar title="Verifikasi Pengembalian Buku" subtitle="Pemeriksaan kondisi buku, hitung denda, dan pengembalian stok" />
       <div className="p-4 sm:p-6 space-y-5">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="relative flex-1 max-w-none sm:max-w-md">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-blue-600 rounded-lg outline-none transition-colors"
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-800 dark:hover:bg-slate-800/80 dark:focus:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors"
               placeholder="Cari nama peminjam, judul buku, atau NIS..."
               value={search}
               onChange={e => setSearch(e.target.value)}
@@ -164,10 +164,10 @@ export default function PengembalianPage() {
                 ) : data.length === 0 ? (
                   <tr>
                     <td colSpan={7}>
-                      <div className="text-center py-12 text-slate-400">
+                      <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                         <CheckCircle2 size={36} className="mx-auto mb-2 text-emerald-600 opacity-60" />
-                        <p className="font-bold text-slate-700">Semua Buku Telah Kembali</p>
-                        <p className="text-xs text-slate-500 mt-0.5">Tidak ada peminjaman aktif yang menunggu pengembalian saat ini.</p>
+                        <p className="font-bold text-slate-700 dark:text-slate-200">Semua Buku Telah Kembali</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tidak ada peminjaman aktif yang menunggu pengembalian saat ini.</p>
                       </div>
                     </td>
                   </tr>
@@ -177,18 +177,18 @@ export default function PengembalianPage() {
                     const isReturnRequested = d.catatan && d.catatan.includes('[Pengajuan Pengembalian Siswa]');
 
                     return (
-                      <tr key={d.id} className={isReturnRequested ? 'bg-emerald-50/30' : ''}>
-                        <td className="text-slate-500 font-medium">{i + 1}</td>
+                      <tr key={d.id} className={isReturnRequested ? 'bg-emerald-50/30 dark:bg-emerald-950/20' : ''}>
+                        <td className="text-slate-500 dark:text-slate-400 font-medium">{i + 1}</td>
                         <td>
-                          <div className="font-bold text-slate-900">{d.anggota.nama}</div>
-                          <div className="text-xs text-slate-500 font-medium">NIS: {d.anggota.nis} · Kelas {d.anggota.kelas}</div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{d.anggota.nama}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">NIS: {d.anggota.nis} · Kelas {d.anggota.kelas}</div>
                         </td>
                         <td>
-                          <div className="font-bold text-slate-900">{d.buku.judul}</div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{d.buku.judul}</div>
                         </td>
-                        <td className="text-slate-600 font-medium">{fmt(d.tglPinjam)}</td>
+                        <td className="text-slate-600 dark:text-slate-300 font-medium">{fmt(d.tglPinjam)}</td>
                         <td>
-                          <span className={overdue ? 'text-rose-600 font-bold' : 'text-slate-700 font-medium'}>
+                          <span className={overdue ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium'}>
                             {fmt(d.tglKembaliRencana)}
                           </span>
                         </td>
@@ -234,43 +234,43 @@ export default function PengembalianPage() {
           role="dialog"
           aria-modal="true"
           onClick={() => setModal(null)}
-          className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl border border-slate-200 p-6 max-w-lg w-full shadow-xl space-y-4"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full shadow-xl space-y-4"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <RotateCcw size={18} className="text-emerald-600" />
-                <h2 className="text-base font-bold text-slate-900">Verifikasi Pengembalian Buku</h2>
+                <RotateCcw size={18} className="text-emerald-600 dark:text-emerald-400" />
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">Verifikasi Pengembalian Buku</h2>
               </div>
-              <button onClick={() => setModal(null)} className="p-1 rounded text-slate-400 hover:text-slate-600">
+              <button onClick={() => setModal(null)} className="p-1 rounded text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
                 <X size={16} />
               </button>
             </div>
 
-            <div className="p-3.5 rounded-lg bg-slate-50 border border-slate-200">
+            <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                 <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">Peminjam</span>
-                  <span className="text-slate-900 font-bold">{selected.anggota.nama} ({selected.anggota.kelas})</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[11px] font-semibold">Peminjam</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-bold">{selected.anggota.nama} ({selected.anggota.kelas})</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">NIS</span>
-                  <span className="text-slate-900 font-bold">{selected.anggota.nis}</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[11px] font-semibold">NIS</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-bold">{selected.anggota.nis}</span>
                 </div>
                 <div className="sm:col-span-2">
-                  <span className="text-slate-500 block text-[11px] font-semibold">Judul Buku</span>
-                  <span className="text-slate-900 font-bold">{selected.buku.judul}</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[11px] font-semibold">Judul Buku</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-bold">{selected.buku.judul}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">Tgl Pinjam</span>
-                  <span className="text-slate-700 font-medium">{fmt(selected.tglPinjam)}</span>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[11px] font-semibold">Tgl Pinjam</span>
+                  <span className="text-slate-700 dark:text-slate-300 font-medium">{fmt(selected.tglPinjam)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-[11px] font-semibold">Jadwal Jatuh Tempo</span>
-                  <span className={isOverdue(selected.tglKembaliRencana) ? 'text-rose-600 font-bold' : 'text-slate-700 font-medium'}>
+                  <span className="text-slate-500 dark:text-slate-400 block text-[11px] font-semibold">Jadwal Jatuh Tempo</span>
+                  <span className={isOverdue(selected.tglKembaliRencana) ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300 font-medium'}>
                     {fmt(selected.tglKembaliRencana)}
                   </span>
                 </div>
@@ -278,7 +278,7 @@ export default function PengembalianPage() {
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800">
+              <div className="p-3 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300">
                 {error}
               </div>
             )}
@@ -297,8 +297,8 @@ export default function PengembalianPage() {
               </div>
 
               {isEarlyReturn() && (
-                <div className="p-2.5 rounded-lg flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium">
-                  <CheckCircle2 size={15} className="text-blue-600 flex-shrink-0" />
+                <div className="p-2.5 rounded-lg flex items-center gap-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-blue-900 dark:text-blue-300 text-xs font-medium">
+                  <CheckCircle2 size={15} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <span>Pengembalian lebih awal dari jadwal: bebas denda keterlambatan.</span>
                 </div>
               )}
@@ -306,14 +306,14 @@ export default function PengembalianPage() {
               <div>
                 <label className="form-label text-xs flex items-center justify-between">
                   <span className="flex items-center gap-1.5 font-bold">
-                    <Coins size={14} className="text-slate-500" />
+                    <Coins size={14} className="text-slate-500 dark:text-slate-400" />
                     Nominal Denda Keterlambatan (Rp)
                   </span>
-                  <span className="text-[11px] text-slate-400 font-normal">Tarif standar: Rp 500/hari</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500 font-normal">Tarif standar: Rp 500/hari</span>
                 </label>
                 <input
                   id="form-denda"
-                  className="library-input text-xs font-bold text-slate-900"
+                  className="library-input text-xs font-bold text-slate-900 dark:text-slate-100"
                   type="number"
                   min="0"
                   value={form.denda}
@@ -322,11 +322,11 @@ export default function PengembalianPage() {
               </div>
 
               {parseInt(form.denda) > 0 && (
-                <div className="p-3 rounded-lg flex items-center gap-3 bg-rose-50 border border-rose-200">
-                  <AlertTriangle size={18} className="text-rose-600 flex-shrink-0" />
+                <div className="p-3 rounded-lg flex items-center gap-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50">
+                  <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400 flex-shrink-0" />
                   <div>
-                    <div className="text-xs font-bold text-rose-900">Total Denda Yang Harus Diterima:</div>
-                    <div className="text-base font-bold text-rose-600">Rp {parseInt(form.denda).toLocaleString('id')}</div>
+                    <div className="text-xs font-bold text-rose-900 dark:text-rose-200">Total Denda Yang Harus Diterima:</div>
+                    <div className="text-base font-bold text-rose-600 dark:text-rose-400">Rp {parseInt(form.denda).toLocaleString('id')}</div>
                   </div>
                 </div>
               )}

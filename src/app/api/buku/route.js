@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma';
+import { searchCatalog } from '@/lib/search/catalog-search';
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
@@ -9,38 +10,18 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const search = searchParams.get('search') || '';
     const kategoriId = searchParams.get('kategoriId');
-    const { page, limit, skip } = getPaginationParams(searchParams, 20, 100);
+    const mode = searchParams.get('mode') || 'auto';
+    const { page, limit } = getPaginationParams(searchParams, 20, 100);
 
-    const where = {
-      AND: [
-        search ? {
-          OR: [
-            { judul: { contains: search, mode: 'insensitive' } },
-            { isbn: { contains: search, mode: 'insensitive' } },
-            { penulis: { nama: { contains: search, mode: 'insensitive' } } },
-          ],
-        } : {},
-        kategoriId && !isNaN(parseInt(kategoriId, 10)) ? { kategoriId: parseInt(kategoriId, 10) } : {},
-      ],
-    };
+    const result = await searchCatalog({
+      query: search,
+      kategoriId,
+      page,
+      limit,
+      searchMode: mode,
+    });
 
-    const [data, total] = await Promise.all([
-      prisma.buku.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          kategori: { select: { id: true, nama: true } },
-          penulis: { select: { id: true, nama: true } },
-          penerbit: { select: { id: true, nama: true } },
-          _count: { select: { peminjaman: true } },
-        },
-      }),
-      prisma.buku.count({ where }),
-    ]);
-
-    return NextResponse.json({ data, total, page, limit });
+    return NextResponse.json(result);
   } catch (error) {
     return handleApiError(error, 'Gagal memuat katalog buku');
   }

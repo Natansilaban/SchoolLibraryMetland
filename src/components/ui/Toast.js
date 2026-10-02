@@ -52,22 +52,22 @@ export default function ToastContainer() {
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] flex flex-col items-center gap-2.5 w-full max-w-sm px-4 pointer-events-none">
       {toasts.map((t) => {
-        let bgClass = 'bg-white/95 border-slate-200 text-slate-800 shadow-lg';
+        let bgClass = 'bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 shadow-lg';
         let Icon = Info;
-        let iconColor = 'text-blue-500';
+        let iconColor = 'text-blue-500 dark:text-blue-400';
 
         if (t.type === 'success') {
-          bgClass = 'bg-emerald-50/95 border-emerald-200 text-emerald-900 shadow-emerald-500/10 shadow-lg';
+          bgClass = 'bg-emerald-50/95 dark:bg-emerald-950/95 border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 shadow-emerald-500/10 shadow-lg';
           Icon = CheckCircle2;
-          iconColor = 'text-emerald-600';
+          iconColor = 'text-emerald-600 dark:text-emerald-400';
         } else if (t.type === 'error') {
-          bgClass = 'bg-rose-50/95 border-rose-200 text-rose-900 shadow-rose-500/10 shadow-lg';
+          bgClass = 'bg-rose-50/95 dark:bg-rose-950/95 border-rose-200 dark:border-rose-800 text-rose-900 dark:text-rose-200 shadow-rose-500/10 shadow-lg';
           Icon = AlertCircle;
-          iconColor = 'text-rose-600';
+          iconColor = 'text-rose-600 dark:text-rose-400';
         } else if (t.type === 'warning') {
-          bgClass = 'bg-amber-50/95 border-amber-200 text-amber-900 shadow-amber-500/10 shadow-lg';
+          bgClass = 'bg-amber-50/95 dark:bg-amber-950/95 border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 shadow-amber-500/10 shadow-lg';
           Icon = AlertTriangle;
-          iconColor = 'text-amber-600';
+          iconColor = 'text-amber-600 dark:text-amber-400';
         }
 
         return (
@@ -85,7 +85,7 @@ export default function ToastContainer() {
                 e.stopPropagation();
                 removeToast(t.id);
               }}
-              className="text-slate-400 hover:text-slate-600 p-0.5 rounded-lg transition-colors flex-shrink-0"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-lg transition-colors flex-shrink-0"
             >
               <X size={15} />
             </button>

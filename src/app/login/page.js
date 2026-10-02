@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff, Lock, Mail, AlertCircle, Library, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, AlertCircle } from 'lucide-react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [activeDemo, setActiveDemo] = useState(null);
   const [error, setError] = useState('');
 
   const executeLogin = async (email, password) => {
@@ -20,7 +20,7 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       });
@@ -28,15 +28,42 @@ export default function LoginPage() {
       if (result?.error) {
         setError('Email atau password tidak sesuai. Silakan periksa kembali.');
         setLoading(false);
-        setActiveDemo(null);
       } else {
-        const target = (email && email.toLowerCase().includes('admin')) ? '/admin/dashboard' : '/siswa/dashboard';
+        try {
+          const sessionRes = await fetch('/api/auth/session').then((r) => r.json());
+          const target = sessionRes?.user?.role === 'ADMIN' ? '/admin/dashboard' : '/siswa/dashboard';
+          window.location.replace(target);
+        } catch {
+          window.location.replace('/siswa/dashboard');
+        }
+      }
+    } catch {
+      setError('Terjadi kendala saat menghubungkan ke server perpustakaan.');
+      setLoading(false);
+    }
+  };
+
+  const executeDemoLogin = async (role) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const result = await signIn('credentials', {
+        isDemo: 'true',
+        demoRole: role,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError('Akses demo mode tidak aktif atau akun tidak ditemukan.');
+        setLoading(false);
+      } else {
+        const target = role === 'ADMIN' ? '/admin/dashboard' : '/siswa/dashboard';
         window.location.replace(target);
       }
     } catch {
       setError('Terjadi kendala saat menghubungkan ke server perpustakaan.');
       setLoading(false);
-      setActiveDemo(null);
     }
   };
 
@@ -45,80 +72,32 @@ export default function LoginPage() {
     await executeLogin(form.email, form.password);
   };
 
-  const handleQuickDemo = async (role) => {
-    if (loading) return;
-    setActiveDemo(role);
-    if (role === 'admin') {
-      setForm({ email: 'admin@metland.sch.id', password: 'admin123' });
-      await executeLogin('admin@metland.sch.id', 'admin123');
-    } else {
-      setForm({ email: 'siswa@metland.sch.id', password: 'siswa123' });
-      await executeLogin('siswa@metland.sch.id', 'siswa123');
-    }
-  };
-
   return (
-    <main className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9]" role="main">
+    <main className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 relative" role="main">
+      {/* Theme Switcher in Corner */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-md space-y-6">
         {/* Scholastic Library Brand Identity */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white border border-slate-200 shadow-xs mx-auto p-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs mx-auto p-2">
             <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Perpustakaan Metland School
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
-            Sistem Informasi Peminjaman & Koleksi Buku
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+            Sistem Informasi Peminjaman &amp; Koleksi Buku
           </p>
         </div>
 
-        {/* Quick Access Account Selector (Disable in strict production via NEXT_PUBLIC_ENABLE_DEMO_LOGIN=false) */}
-        {process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN !== 'false' && (
-          <section
-            aria-labelledby="quick-access-title"
-            className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <h2 id="quick-access-title" className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                Akses Langsung Akun Uji Coba
-              </h2>
-              <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded">
-                1-Klik Masuk
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2.5">
-              <button
-                type="button"
-                onClick={() => handleQuickDemo('admin')}
-                disabled={loading}
-                aria-label="Masuk sebagai Administrator Perpustakaan"
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-200 transition-colors disabled:opacity-60 min-h-[42px]"
-              >
-                <ShieldCheck size={16} className="text-blue-600 flex-shrink-0" />
-                <span>{activeDemo === 'admin' ? 'Memuat...' : 'Akun Petugas'}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickDemo('siswa')}
-                disabled={loading}
-                aria-label="Masuk sebagai Akun Siswa"
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-800 bg-slate-50 hover:bg-blue-50 hover:text-blue-700 border border-slate-200 hover:border-blue-200 transition-colors disabled:opacity-60 min-h-[42px]"
-              >
-                <GraduationCap size={16} className="text-blue-600 flex-shrink-0" />
-                <span>{activeDemo === 'siswa' ? 'Memuat...' : 'Akun Siswa'}</span>
-              </button>
-            </div>
-          </section>
-        )}
-
         {/* Standard Credentials Form */}
-        <div className="library-card p-6 sm:p-7 space-y-5">
-          <div className="border-b border-slate-100 pb-3">
-            <h2 className="text-sm font-bold text-slate-900">Masuk dengan Kredensial</h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+        <div className="library-card p-6 sm:p-7 space-y-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h2 className="text-sm font-bold text-slate-900 dark:text-white">Masuk dengan Kredensial</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Gunakan email dan kata sandi akun perpustakaan Anda
             </p>
           </div>
@@ -127,9 +106,9 @@ export default function LoginPage() {
             <div
               role="alert"
               aria-live="polite"
-              className="flex items-center gap-2.5 p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800"
+              className="flex items-center gap-2.5 p-3 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200"
             >
-              <AlertCircle size={16} className="text-rose-600 flex-shrink-0" />
+              <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -140,7 +119,7 @@ export default function LoginPage() {
                 Alamat Email Terdaftar
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="login-email"
                   type="email"
@@ -159,7 +138,7 @@ export default function LoginPage() {
                 Kata Sandi
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                 <input
                   id="login-password"
                   type={showPass ? 'text' : 'password'}
@@ -173,7 +152,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 p-0.5"
                   aria-label={showPass ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
                 >
                   {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -191,19 +170,69 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="pt-3 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-500">
+          {/* 1-Click Demo Quick Login (Server-Gated, Zero Hardcoded Credentials) */}
+          {process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true' && (
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                <span>Akses Cepat Demo</span>
+                <span className="text-[10px] bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                  Demo Mode
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  id="demo-login-admin"
+                  disabled={loading}
+                  onClick={() => executeDemoLogin('ADMIN')}
+                  className="p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-left transition-colors min-h-[44px] flex flex-col justify-center cursor-pointer"
+                >
+                  <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-blue-600" />
+                    Admin Petugas
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Mode Pengelola
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  id="demo-login-siswa"
+                  disabled={loading}
+                  onClick={() => executeDemoLogin('SISWA')}
+                  className="p-2.5 rounded-lg bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700 text-left transition-colors min-h-[44px] flex flex-col justify-center cursor-pointer"
+                >
+                  <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-600" />
+                    Siswa Perpustakaan
+                  </div>
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">
+                    Mode Peminjam
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Siswa baru belum memiliki akun?{' '}
               <Link
                 href="/register"
-                className="font-bold text-blue-700 hover:text-blue-900 hover:underline transition-colors"
+                className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
               >
                 Daftar Akun Baru
               </Link>
             </p>
           </div>
         </div>
+
+        <p className="text-center text-[11px] text-slate-400 dark:text-slate-500">
+          &copy; {new Date().getFullYear()} Fikri, Natan, Arthur
+        </p>
       </div>
     </main>
   );
 }
+

@@ -12,7 +12,9 @@ export async function GET(req) {
     }
 
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get('search') || '';
+    // Root Cause Remediation (SEC-04): Clamp search string length
+    const rawSearch = searchParams.get('search') || '';
+    const search = rawSearch.trim().slice(0, 100);
     const status = searchParams.get('status') || '';
     const { page, limit, skip } = getPaginationParams(searchParams, 20, 100);
 
@@ -145,10 +147,15 @@ export async function POST(req) {
       });
 
       if (initialStatus === 'DIPINJAM') {
-        await tx.buku.update({
-          where: { id: parseInt(bukuId) },
+        // Root Cause Remediation (SEC-02): Atomic check-and-decrement prevents overselling inventory
+        const stockUpdate = await tx.buku.updateMany({
+          where: { id: parseInt(bukuId), stok: { gt: 0 } },
           data: { stok: { decrement: 1 } },
         });
+
+        if (stockUpdate.count === 0) {
+          throw new Error('Stok buku habis saat transaksi peminjaman diproses');
+        }
       }
 
       return peminjaman;

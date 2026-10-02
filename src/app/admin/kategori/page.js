@@ -82,7 +82,7 @@ export default function KategoriPage() {
       <div className="p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
           <div className="relative flex-1 max-w-none sm:max-w-xs">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               className="glass-input pl-9 w-full"
@@ -106,12 +106,12 @@ export default function KategoriPage() {
                     <tr key={i}>{[1,2,3,4].map(j => <td key={j}><div className="h-4 shimmer rounded" /></td>)}</tr>
                   ))
                 ) : filteredData.length === 0 ? (
-                  <tr><td colSpan={4}><div className="text-center py-12 text-slate-400"><Tag size={36} className="mx-auto mb-2 opacity-40" /><p className="font-medium">Belum ada kategori</p></div></td></tr>
+                  <tr><td colSpan={4}><div className="text-center py-12 text-slate-400 dark:text-slate-500"><Tag size={36} className="mx-auto mb-2 opacity-40" /><p className="font-medium">Belum ada kategori</p></div></td></tr>
                 ) : filteredData.map((d, i) => (
                   <tr key={d.id}>
-                    <td className="text-slate-500 font-medium">{i + 1}</td>
-                    <td className="font-bold text-slate-900">{d.nama}</td>
-                    <td className="text-slate-600 font-medium">{d.deskripsi || '-'}</td>
+                    <td className="text-slate-500 dark:text-slate-400 font-medium">{i + 1}</td>
+                    <td className="font-bold text-slate-900 dark:text-slate-100">{d.nama}</td>
+                    <td className="text-slate-600 dark:text-slate-300 font-medium">{d.deskripsi || '-'}</td>
                     <td>
                       <div className="flex gap-2">
                         <button id={`edit-kategori-${d.id}`} onClick={() => openEdit(d)} className="btn-secondary btn-sm" title="Edit"><Pencil size={13} /></button>
@@ -137,10 +137,10 @@ export default function KategoriPage() {
             style={{ maxWidth: '440px' }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-900">{modal === 'add' ? 'Tambah' : 'Edit'} Kategori</h2>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{modal === 'add' ? 'Tambah' : 'Edit'} Kategori</h2>
               <button onClick={() => setModal(null)} className="btn-glass" style={{ padding: '6px' }}><X size={16} /></button>
             </div>
-            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">{error}</div>}
+            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300">{error}</div>}
             <div className="space-y-4">
               <div><label className="form-label">Nama *</label><input id="form-nama-kategori" className="glass-input" value={form.nama} onChange={e => setForm({ ...form, nama: e.target.value })} placeholder="Nama kategori" /></div>
               <div><label className="form-label">Deskripsi</label><textarea className="glass-input resize-none" rows={3} value={form.deskripsi} onChange={e => setForm({ ...form, deskripsi: e.target.value })} placeholder="Deskripsi kategori..." /></div>
@@ -164,9 +164,9 @@ export default function KategoriPage() {
             style={{ maxWidth: '380px' }}
           >
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200"><Trash2 size={22} className="text-rose-600" /></div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Kategori?</h2>
-              <p className="text-sm text-slate-500 mb-6 font-medium">Kategori <strong className="text-slate-900">"{selected?.nama}"</strong> akan dihapus.</p>
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/50"><Trash2 size={22} className="text-rose-600 dark:text-rose-400" /></div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Hapus Kategori?</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Kategori <strong className="text-slate-900 dark:text-slate-100">"{selected?.nama}"</strong> akan dihapus.</p>
               <div className="flex gap-3">
                 <button onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">Batal</button>
                 <button id="confirm-delete-kategori" onClick={handleDelete} disabled={saving} className="btn-danger flex-1 justify-center">{saving ? 'Menghapus...' : 'Hapus'}</button>

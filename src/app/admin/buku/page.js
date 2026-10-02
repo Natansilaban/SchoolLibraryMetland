@@ -227,7 +227,7 @@ export default function BukuPage() {
                 ) : buku.length === 0 ? (
                   <tr>
                     <td colSpan={9}>
-                      <div className="text-center py-12 text-slate-400">
+                      <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                         <BookMarked size={40} className="mx-auto mb-3 opacity-40" />
                         <p className="font-medium">Belum ada data buku</p>
                       </div>
@@ -236,24 +236,24 @@ export default function BukuPage() {
                 ) : (
                   buku.map((b, i) => (
                     <tr key={b.id}>
-                      <td className="text-slate-500 font-medium">{(page - 1) * limit + i + 1}</td>
+                      <td className="text-slate-500 dark:text-slate-400 font-medium">{(page - 1) * limit + i + 1}</td>
                       <td>
-                        <div className="w-10 h-14 rounded-lg overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center shadow-sm flex-shrink-0">
+                        <div className="w-10 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-sm flex-shrink-0">
                           {b.cover ? (
                             <img src={b.cover} alt={b.judul} className="w-full h-full object-cover" />
                           ) : (
-                            <BookMarked size={18} className="text-slate-400" />
+                            <BookMarked size={18} className="text-slate-400 dark:text-slate-500" />
                           )}
                         </div>
                       </td>
                       <td>
-                        <div className="font-bold text-slate-900">{b.judul}</div>
-                        {b.penerbit && <div className="text-xs text-slate-500 font-medium">{b.penerbit.nama}</div>}
+                        <div className="font-bold text-slate-900 dark:text-slate-100">{b.judul}</div>
+                        {b.penerbit && <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">{b.penerbit.nama}</div>}
                       </td>
-                      <td className="text-slate-600 font-medium">{b.isbn || '-'}</td>
+                      <td className="text-slate-600 dark:text-slate-300 font-medium">{b.isbn || '-'}</td>
                       <td>{b.kategori ? <span className="badge badge-blue">{b.kategori.nama}</span> : '-'}</td>
-                      <td className="text-slate-600 font-medium">{b.penulis?.nama || '-'}</td>
-                      <td className="text-slate-600 font-medium">{b.tahunTerbit || '-'}</td>
+                      <td className="text-slate-600 dark:text-slate-300 font-medium">{b.penulis?.nama || '-'}</td>
+                      <td className="text-slate-600 dark:text-slate-300 font-medium">{b.tahunTerbit || '-'}</td>
                       <td>
                         <span className={`badge ${b.stok > 0 ? 'badge-green' : 'badge-red'}`}>{b.stok}</span>
                       </td>
@@ -275,8 +275,8 @@ export default function BukuPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-              <span className="text-xs text-slate-500 font-medium">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {total} buku · hal {page}/{totalPages}
               </span>
               <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ export default function BukuPage() {
             className="glass-modal p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto overscroll-contain"
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 {modal === 'add' ? 'Tambah Buku Baru' : 'Edit Data Buku'}
               </h2>
               <button onClick={() => setModal(null)} className="btn-glass" style={{ padding: '6px' }}>
@@ -311,23 +311,23 @@ export default function BukuPage() {
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">
+              <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300">
                 {error}
               </div>
             )}
 
             <div className="space-y-4">
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60">
                 <label className="form-label mb-2 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 font-bold text-slate-800">
-                    <ImageIcon size={15} className="text-blue-600" />
+                  <span className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                    <ImageIcon size={15} className="text-blue-600 dark:text-blue-400" />
                     Foto Sampul Buku (Cover)
                   </span>
                   {form.cover && (
                     <button
                       type="button"
                       onClick={() => setForm({ ...form, cover: '' })}
-                      className="text-xs text-rose-600 hover:text-rose-700 font-bold"
+                      className="text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 font-bold"
                     >
                       Hapus Foto
                     </button>
@@ -335,11 +335,11 @@ export default function BukuPage() {
                 </label>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-22 rounded-lg overflow-hidden border border-slate-300 bg-slate-100 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <div className="w-16 h-22 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 shadow-xs">
                     {form.cover ? (
                       <img src={form.cover} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
-                      <BookMarked size={24} className="text-slate-400 opacity-50" />
+                      <BookMarked size={24} className="text-slate-400 dark:text-slate-500 opacity-50" />
                     )}
                   </div>
 
@@ -355,7 +355,7 @@ export default function BukuPage() {
                       />
                       <label
                         htmlFor="buku-cover-file"
-                        className="btn-glass btn-sm cursor-pointer flex items-center gap-1.5 font-bold text-blue-700 hover:bg-blue-50"
+                        className="btn-glass btn-sm cursor-pointer flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800"
                       >
                         <Upload size={13} />
                         {uploading ? 'Mengupload...' : 'Pilih File Foto'}
@@ -501,12 +501,12 @@ export default function BukuPage() {
             style={{ maxWidth: '400px' }}
           >
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200">
-                <Trash2 size={22} className="text-rose-600" />
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/50">
+                <Trash2 size={22} className="text-rose-600 dark:text-rose-400" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Buku?</h2>
-              <p className="text-sm text-slate-500 mb-1 font-medium">Buku berikut akan dihapus permanen:</p>
-              <p className="text-sm font-bold text-slate-900 mb-6">"{selected?.judul}"</p>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Hapus Buku?</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-1 font-medium">Buku berikut akan dihapus permanen:</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-slate-100 mb-6">"{selected?.judul}"</p>
               <div className="flex gap-3">
                 <button onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">
                   Batal

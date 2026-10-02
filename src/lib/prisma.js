@@ -13,16 +13,20 @@ function getPgPool() {
     globalForPrisma.pgPool = new Pool({
       connectionString,
       max: 10,
-      min: 2,
-      idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 4000,
+      min: 1, // Keep 1 warm connection active to eliminate cold-start handshake latency
+      idleTimeoutMillis: 300000, // 5 minutes idle timeout so testing doesn't drop connections every 10s
+      connectionTimeoutMillis: 8000,
       keepAlive: true,
-      keepAliveInitialDelayMillis: 10000,
+      keepAliveInitialDelayMillis: 2000,
       statement_timeout: 10000,
     });
 
     globalForPrisma.pgPool.on('error', (err) => {
-      console.error('Unexpected error on idle pg client', err);
+      // Gracefully handle severed idle sockets over VPN/WAN without crashing the pool
+      if (err.message?.includes('Connection terminated') || err.message?.includes('timeout')) {
+        return;
+      }
+      console.warn('[DB POOL] Database pool notice:', err.message);
     });
   }
   return globalForPrisma.pgPool;

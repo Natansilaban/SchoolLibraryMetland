@@ -135,10 +135,10 @@ export default function SiswaPeminjamanPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
           Status & Riwayat Peminjaman Buku
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
           Pantau buku yang sedang kamu bawa, jadwal pengembalian fisik, serta rekap denda
         </p>
       </div>
@@ -151,9 +151,9 @@ export default function SiswaPeminjamanPage() {
         </div>
       ) : data.length === 0 ? (
         <div className="library-card text-center py-16 px-4">
-          <BookCopy size={44} className="mx-auto mb-3 text-slate-300" />
-          <h2 className="text-base font-bold text-slate-800">Belum ada riwayat peminjaman</h2>
-          <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+          <BookCopy size={44} className="mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+          <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">Belum ada riwayat peminjaman</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto">
             Kamu belum pernah meminjam buku. Buka katalog untuk memilih buku bacaan favoritmu.
           </p>
           <Link href="/siswa/buku" className="btn-primary mt-4 text-xs font-semibold">
@@ -170,15 +170,15 @@ export default function SiswaPeminjamanPage() {
             return (
               <div
                 key={p.id}
-                className="library-card p-4 sm:p-5 transition-all hover:border-slate-300"
+                className="library-card p-4 sm:p-5 transition-all hover:border-slate-300 dark:hover:border-slate-700"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                    <div className="w-12 h-16 rounded bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-12 h-16 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
                       {p.buku?.cover ? (
                         <img src={p.buku.cover} alt={p.buku.judul} className="w-full h-full object-cover" />
                       ) : (
-                        <Library size={22} className="text-slate-400" />
+                        <Library size={22} className="text-slate-400 dark:text-slate-500" />
                       )}
                     </div>
 
@@ -186,35 +186,35 @@ export default function SiswaPeminjamanPage() {
                       <div className="flex flex-wrap items-center gap-2 mb-1">
                         <Link
                           href={`/siswa/buku/${p.buku?.id}`}
-                          className="font-bold text-slate-900 hover:text-blue-700 transition-colors text-sm sm:text-base leading-snug"
+                          className="font-bold text-slate-900 dark:text-slate-100 hover:text-blue-700 dark:hover:text-blue-400 transition-colors text-sm sm:text-base leading-snug"
                         >
                           {p.buku?.judul || 'Buku Perpustakaan'}
                         </Link>
                         {statusBadge(p.status)}
                       </div>
 
-                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600 font-medium mt-2">
+                      <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-600 dark:text-slate-400 font-medium mt-2">
                         <span className="inline-flex items-center gap-1.5">
-                          <Calendar size={13} className="text-slate-400" /> Diajukan: {fmt(p.createdAt)}
+                          <Calendar size={13} className="text-slate-400 dark:text-slate-500" /> Diajukan: {fmt(p.createdAt)}
                         </span>
 
                         {p.status !== 'MENUNGGU_KONFIRMASI' && p.status !== 'DITOLAK' && (
                           <span className="inline-flex items-center gap-1.5">
-                            <Calendar size={13} className="text-slate-400" /> Tanggal Pinjam: {fmt(p.tglPinjam)}
+                            <Calendar size={13} className="text-slate-400 dark:text-slate-500" /> Tanggal Pinjam: {fmt(p.tglPinjam)}
                           </span>
                         )}
 
                         <span
                           className={`inline-flex items-center gap-1.5 ${
-                            isCurrentlyOverdue ? 'text-rose-700 font-bold' : 'text-slate-600'
+                            isCurrentlyOverdue ? 'text-rose-700 dark:text-rose-400 font-bold' : 'text-slate-600 dark:text-slate-300'
                           }`}
                         >
-                          {isCurrentlyOverdue ? <AlertTriangle size={13} className="text-rose-600" /> : <Clock size={13} className="text-slate-400" />}
+                          {isCurrentlyOverdue ? <AlertTriangle size={13} className="text-rose-600 dark:text-rose-400" /> : <Clock size={13} className="text-slate-400 dark:text-slate-500" />}
                           Batas Kembali: {fmt(p.tglKembaliRencana)}
                         </span>
 
                         {p.status === 'DIKEMBALIKAN' && p.tglKembaliAktual && (
-                          <span className="inline-flex items-center gap-1.5 text-emerald-700 font-bold">
+                          <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400 font-bold">
                             <CheckCircle2 size={13} /> Selesai: {fmt(p.tglKembaliAktual)}
                           </span>
                         )}
@@ -222,9 +222,9 @@ export default function SiswaPeminjamanPage() {
 
                       {/* Status Notice Banners */}
                       {p.status === 'MENUNGGU_KONFIRMASI' && (
-                        <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                           <div className="flex items-center gap-2">
-                            <Clock size={15} className="text-amber-600 flex-shrink-0" />
+                            <Clock size={15} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
                             <span>Pengajuan menunggu persetujuan petugas. Jika berubah pikiran, kamu dapat membatalkannya.</span>
                           </div>
                           <button
@@ -239,16 +239,16 @@ export default function SiswaPeminjamanPage() {
                       )}
 
                       {(p.status === 'DIPINJAM' || p.status === 'TERLAMBAT') && !hasRequestedReturn && (
-                        <div className="mt-3 p-3 rounded-lg bg-blue-50/80 border border-blue-200 text-blue-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="mt-3 p-3 rounded-lg bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-900 dark:text-blue-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
                             <span className="font-semibold block">Buku fisik sedang kamu pinjam.</span>
                             {isCurrentlyOverdue ? (
-                              <p className="text-rose-700 font-bold mt-0.5 flex items-center gap-1">
+                              <p className="text-rose-700 dark:text-rose-400 font-bold mt-0.5 flex items-center gap-1">
                                 <AlertTriangle size={13} />
                                 Terlambat {daysLate} hari (Estimasi Denda: Rp {estimatedFine.toLocaleString('id')})
                               </p>
                             ) : (
-                              <span className="text-slate-600 block mt-0.5">Sudah selesai membaca? Ajukan pengembalian sebelum jatuh tempo.</span>
+                              <span className="text-slate-600 dark:text-slate-300 block mt-0.5">Sudah selesai membaca? Ajukan pengembalian sebelum jatuh tempo.</span>
                             )}
                           </div>
                           <button
@@ -262,8 +262,8 @@ export default function SiswaPeminjamanPage() {
                       )}
 
                       {hasRequestedReturn && p.status !== 'DIKEMBALIKAN' && (
-                        <div className="mt-3 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
-                          <CheckCircle2 size={16} className="text-emerald-600 flex-shrink-0" />
+                        <div className="mt-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-2">
+                          <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                           <span>Pengembalian telah diajukan. Silakan serahkan buku fisik ke meja petugas perpustakaan untuk diverifikasi.</span>
                         </div>
                       )}
@@ -281,28 +281,28 @@ export default function SiswaPeminjamanPage() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setReturnModal(null)}
         >
           <div
-            className="bg-white rounded-xl border border-slate-200 max-w-md w-full p-5 sm:p-6 shadow-xl space-y-4"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 max-w-md w-full p-5 sm:p-6 shadow-xl space-y-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-900">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
                 Konfirmasi Pengembalian Buku
               </h2>
               <button
                 onClick={() => setReturnModal(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-lg"
                 aria-label="Tutup Dialog"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-600">
-              Kamu akan mengajukan pengembalian untuk buku <span className="font-bold text-slate-900">"{returnModal.buku?.judul}"</span>. Pastikan kondisi buku lengkap dan tidak rusak.
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+              Kamu akan mengajukan pengembalian untuk buku <span className="font-bold text-slate-900 dark:text-white">&quot;{returnModal.buku?.judul}&quot;</span>. Pastikan kondisi buku lengkap dan tidak rusak.
             </p>
 
             <form onSubmit={handleSubmitReturn} className="space-y-3">

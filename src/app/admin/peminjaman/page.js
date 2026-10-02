@@ -145,14 +145,14 @@ export default function PeminjamanPage() {
     <>
       <TopBar title="Kelola Peminjaman Buku" subtitle="Catat peminjaman langsung, konfirmasi pengajuan siswa, dan pantau jatuh tempo" />
       <div className="p-4 sm:p-6 space-y-5">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-1">
             <div className="relative flex-1">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
               <input
                 id="search-peminjaman"
                 type="text"
-                className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-blue-600 rounded-lg outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                 placeholder="Cari nama anggota, NIS, atau judul buku..."
                 value={search}
                 onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -160,7 +160,7 @@ export default function PeminjamanPage() {
             </div>
             <select
               id="filter-status"
-              className="px-3 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 focus:border-blue-600 rounded-lg outline-none transition-colors text-slate-700 sm:w-auto"
+              className="px-3 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-700 dark:text-slate-200 sm:w-auto"
               value={statusFilter}
               onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
             >
@@ -207,9 +207,9 @@ export default function PeminjamanPage() {
                 ) : data.length === 0 ? (
                   <tr>
                     <td colSpan={7}>
-                      <div className="text-center py-12 text-slate-400">
+                      <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                         <BookCopy size={36} className="mx-auto mb-2 opacity-40" />
-                        <p className="font-semibold text-slate-700">Belum ada data peminjaman</p>
+                        <p className="font-semibold text-slate-700 dark:text-slate-300">Belum ada data peminjaman</p>
                       </div>
                     </td>
                   </tr>
@@ -218,17 +218,17 @@ export default function PeminjamanPage() {
                     const isPending = d.status === 'MENUNGGU_KONFIRMASI';
                     return (
                       <tr key={d.id}>
-                        <td className="text-slate-500 font-medium">{(page - 1) * limit + i + 1}</td>
+                        <td className="text-slate-500 dark:text-slate-400 font-medium">{(page - 1) * limit + i + 1}</td>
                         <td>
-                          <div className="font-bold text-slate-900">{d.anggota.nama}</div>
-                          <div className="text-xs text-slate-500 font-medium">NIS: {d.anggota.nis} · Kelas {d.anggota.kelas}</div>
+                          <div className="font-bold text-slate-900 dark:text-white">{d.anggota.nama}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">NIS: {d.anggota.nis} · Kelas {d.anggota.kelas}</div>
                         </td>
                         <td>
-                          <div className="font-bold text-slate-900">{d.buku.judul}</div>
-                          {d.buku.isbn && <div className="text-xs text-slate-500 font-medium">ISBN: {d.buku.isbn}</div>}
+                          <div className="font-bold text-slate-900 dark:text-white">{d.buku.judul}</div>
+                          {d.buku.isbn && <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">ISBN: {d.buku.isbn}</div>}
                         </td>
-                        <td className="text-slate-600 font-medium">{fmt(d.tglPinjam)}</td>
-                        <td className="text-slate-600 font-medium">{fmt(d.tglKembaliRencana)}</td>
+                        <td className="text-slate-600 dark:text-slate-300 font-medium">{fmt(d.tglPinjam)}</td>
+                        <td className="text-slate-600 dark:text-slate-300 font-medium">{fmt(d.tglKembaliRencana)}</td>
                         <td>{STATUS_BADGE[d.status] || d.status}</td>
                         <td>
                           {isPending ? (
@@ -253,7 +253,7 @@ export default function PeminjamanPage() {
                               </button>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-400 font-medium">-</span>
+                            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">-</span>
                           )}
                         </td>
                       </tr>
@@ -265,8 +265,8 @@ export default function PeminjamanPage() {
           </div>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-              <span className="text-xs text-slate-500 font-medium">
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                 {total} transaksi · Halaman {page} dari {totalPages}
               </span>
               <div className="flex gap-2">
@@ -295,21 +295,21 @@ export default function PeminjamanPage() {
           role="dialog"
           aria-modal="true"
           onClick={() => setModal(false)}
-          className="fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-xl border border-slate-200 p-6 max-w-lg w-full shadow-xl space-y-4"
+            className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 max-w-lg w-full shadow-xl space-y-4"
           >
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h2 className="text-base font-bold text-slate-900">Catat Peminjaman Buku</h2>
-              <button onClick={() => setModal(false)} className="p-1 rounded text-slate-400 hover:text-slate-600">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">Catat Peminjaman Buku</h2>
+              <button onClick={() => setModal(false)} className="p-1 rounded text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
                 <X size={16} />
               </button>
             </div>
 
             {error && (
-              <div className="p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800">
+              <div className="p-3 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200">
                 {error}
               </div>
             )}
@@ -395,3 +395,4 @@ export default function PeminjamanPage() {
     </>
   );
 }
+

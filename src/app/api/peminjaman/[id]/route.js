@@ -45,7 +45,8 @@ export async function PATCH(req, { params }) {
           throw new Error(`Buku ini berstatus ${peminjaman.status} dan tidak sedang aktif dipinjam`);
         }
 
-        const tglAktual = tglKembali ? new Date(tglKembali) : new Date();
+        // Root Cause Remediation (SEC-03): Enforce server-side timestamp to prevent client fine forgery
+        const tglAktual = new Date();
         const tglRencana = new Date(peminjaman.tglKembaliRencana);
         tglAktual.setHours(0, 0, 0, 0);
         tglRencana.setHours(0, 0, 0, 0);
@@ -56,12 +57,13 @@ export async function PATCH(req, { params }) {
           denda = diffDays * 500;
         }
 
-        const returnNote = `[Pengajuan Pengembalian Siswa] ${catatan || 'Siswa mengajukan pengembalian buku.'}`;
+        const cleanCatatan = catatan ? String(catatan).trim().slice(0, 300) : 'Siswa mengajukan pengembalian buku.';
+        const returnNote = `[Pengajuan Pengembalian Siswa] ${cleanCatatan}`;
 
         return await tx.peminjaman.update({
           where: { id: peminjamanId },
           data: {
-            tglKembaliAktual: tglKembali ? new Date(tglKembali) : new Date(),
+            tglKembaliAktual: new Date(),
             denda,
             catatan: returnNote,
           },
@@ -128,10 +130,15 @@ export async function PATCH(req, { params }) {
           include: { anggota: true, buku: true },
         });
 
-        await tx.buku.update({
-          where: { id: peminjaman.bukuId },
+        // Root Cause Remediation (SEC-02): Atomic check-and-decrement prevents approval race conditions
+        const stockUpdate = await tx.buku.updateMany({
+          where: { id: peminjaman.bukuId, stok: { gt: 0 } },
           data: { stok: { decrement: 1 } },
         });
+
+        if (stockUpdate.count === 0) {
+          throw new Error('Stok buku habis saat konfirmasi persetujuan diproses');
+        }
 
         return res;
       } else {

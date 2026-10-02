@@ -11,11 +11,42 @@ export const authOptions = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        // 1. Secure Server-Gated Demo Mode Authorization (Zero Passwords on Client)
+        if (credentials?.isDemo === 'true') {
+          const isDemoEnabled =
+            process.env.ENABLE_DEMO_LOGIN === 'true' ||
+            process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === 'true';
+
+          if (!isDemoEnabled) {
+            return null;
+          }
+
+          const targetRole = credentials?.demoRole === 'ADMIN' ? 'ADMIN' : 'SISWA';
+          const demoUser = await prisma.user.findFirst({
+            where: { role: targetRole },
+            include: { anggota: true },
+            orderBy: { id: 'asc' },
+          });
+
+          if (!demoUser) return null;
+
+          return {
+            id: demoUser.id.toString(),
+            email: demoUser.email,
+            role: demoUser.role,
+            name: demoUser.anggota?.nama || demoUser.email,
+            anggotaId: demoUser.anggota?.id || null,
+            nis: demoUser.anggota?.nis || null,
+            kelas: demoUser.anggota?.kelas || null,
+          };
+        }
+
+        // 2. Standard Cryptographic Credentials Authorization
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
           const user = await prisma.user.findUnique({
-            where: { email: credentials.email },
+            where: { email: credentials.email.trim().toLowerCase() },
             include: { anggota: true },
           });
 

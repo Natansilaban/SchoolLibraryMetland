@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { User, Mail, Lock, Hash, GraduationCap, Phone, MapPin, AlertCircle, ArrowLeft, Library, CheckCircle2 } from 'lucide-react';
+import { User, Mail, Lock, Hash, GraduationCap, Phone, MapPin, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -50,35 +51,40 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9]">
+    <div className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 relative">
+      {/* Theme Switcher in Corner */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+
       <div className="w-full max-w-lg space-y-5">
         <Link
           href="/login"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
         >
           <ArrowLeft size={16} /> Kembali ke Halaman Masuk
         </Link>
 
         <div className="text-center space-y-1.5">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-xs mx-auto p-1.5">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs mx-auto p-1.5">
             <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Pendaftaran Anggota Baru
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
             Daftarkan diri untuk mengakses peminjaman buku perpustakaan Metland School
           </p>
         </div>
 
-        <div className="library-card p-6 sm:p-7 space-y-5">
+        <div className="library-card p-6 sm:p-7 space-y-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           {success ? (
             <div className="text-center py-8 space-y-3">
-              <div className="w-14 h-14 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+              <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mx-auto">
                 <CheckCircle2 size={32} />
               </div>
-              <h2 className="text-lg font-bold text-slate-900">Pendaftaran Berhasil</h2>
-              <p className="text-xs text-slate-500 max-w-xs mx-auto">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Pendaftaran Berhasil</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                 Akun perpustakaan kamu berhasil dibuat. Mengalihkan ke halaman masuk...
               </p>
             </div>
@@ -87,9 +93,9 @@ export default function RegisterPage() {
               {error && (
                 <div
                   role="alert"
-                  className="flex items-center gap-2.5 p-3 rounded-lg text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800"
+                  className="flex items-center gap-2.5 p-3 rounded-lg text-xs font-medium bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200"
                 >
-                  <AlertCircle size={16} className="text-rose-600 flex-shrink-0" />
+                  <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 flex-shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
@@ -101,7 +107,7 @@ export default function RegisterPage() {
                       Nama Lengkap Siswa *
                     </label>
                     <div className="relative">
-                      <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <User size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                       <input
                         id="reg-nama"
                         type="text"
@@ -119,7 +125,7 @@ export default function RegisterPage() {
                       Nomor Induk Siswa (NIS) *
                     </label>
                     <div className="relative">
-                      <Hash size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Hash size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                       <input
                         id="reg-nis"
                         type="text"
@@ -139,7 +145,7 @@ export default function RegisterPage() {
                       Rombongan Belajar (Kelas) *
                     </label>
                     <div className="relative">
-                      <GraduationCap size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <GraduationCap size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                       <input
                         id="reg-kelas"
                         type="text"
@@ -157,7 +163,7 @@ export default function RegisterPage() {
                       No. WhatsApp / Telepon
                     </label>
                     <div className="relative">
-                      <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <Phone size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                       <input
                         id="reg-phone"
                         type="tel"
@@ -175,7 +181,7 @@ export default function RegisterPage() {
                     Alamat Email Siswa *
                   </label>
                   <div className="relative">
-                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <input
                       id="reg-email"
                       type="email"
@@ -194,7 +200,7 @@ export default function RegisterPage() {
                     Kata Sandi Akun *
                   </label>
                   <div className="relative">
-                    <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
                     <input
                       id="reg-password"
                       type="password"
@@ -214,7 +220,7 @@ export default function RegisterPage() {
                     Alamat Domisili Siswa
                   </label>
                   <div className="relative">
-                    <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400" />
+                    <MapPin size={15} className="absolute left-3.5 top-3 text-slate-400 dark:text-slate-500" />
                     <textarea
                       id="reg-alamat"
                       rows={2}
@@ -237,12 +243,12 @@ export default function RegisterPage() {
             </>
           )}
 
-          <div className="pt-3 border-t border-slate-100 text-center">
-            <p className="text-xs text-slate-500">
+          <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Sudah memiliki akun terdaftar?{' '}
               <Link
                 href="/login"
-                className="font-bold text-blue-700 hover:text-blue-900 hover:underline transition-colors"
+                className="font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
               >
                 Masuk ke Perpustakaan
               </Link>
@@ -253,3 +259,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

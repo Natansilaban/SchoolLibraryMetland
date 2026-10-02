@@ -112,7 +112,7 @@ export default function PenulisPage() {
       <div className="p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
           <div className="relative flex-1 max-w-none sm:max-w-xs">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
               className="glass-input pl-9 w-full"
@@ -150,7 +150,7 @@ export default function PenulisPage() {
                 ) : filteredData.length === 0 ? (
                   <tr>
                     <td colSpan={5}>
-                      <div className="text-center py-12 text-slate-400">
+                      <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                         <PenLine size={36} className="mx-auto mb-2 opacity-40" />
                         <p className="font-medium">Belum ada penulis</p>
                       </div>
@@ -163,9 +163,9 @@ export default function PenulisPage() {
 
                     return (
                       <tr key={d.id}>
-                        <td className="text-slate-500 font-medium">{i + 1}</td>
+                        <td className="text-slate-500 dark:text-slate-400 font-medium">{i + 1}</td>
                         <td>
-                          <div className="font-bold text-slate-900">{d.nama}</div>
+                          <div className="font-bold text-slate-900 dark:text-slate-100">{d.nama}</div>
                         </td>
                         <td>
                           <div className="flex flex-col gap-1 max-w-xs">
@@ -178,12 +178,12 @@ export default function PenulisPage() {
                             {books.length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-0.5">
                                 {books.slice(0, 3).map(b => (
-                                  <span key={b.id} className="text-[11px] bg-slate-100 text-slate-700 font-medium px-2 py-0.5 rounded-md border border-slate-200 truncate max-w-[150px]">
+                                  <span key={b.id} className="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium px-2 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 truncate max-w-[150px]">
                                     {b.judul}
                                   </span>
                                 ))}
                                 {books.length > 3 && (
-                                  <span className="text-[10px] text-slate-500 font-bold self-center">
+                                  <span className="text-[10px] text-slate-500 dark:text-slate-400 font-bold self-center">
                                     +{books.length - 3} lainnya
                                   </span>
                                 )}
@@ -191,7 +191,7 @@ export default function PenulisPage() {
                             )}
                           </div>
                         </td>
-                        <td className="text-slate-600 font-medium">
+                        <td className="text-slate-600 dark:text-slate-300 font-medium">
                           {d.bio ? (d.bio.length > 60 ? d.bio.slice(0, 60) + '...' : d.bio) : '-'}
                         </td>
                         <td>
@@ -235,7 +235,7 @@ export default function PenulisPage() {
             style={{ maxWidth: '440px' }}
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                 {modal === 'add' ? 'Tambah' : 'Edit'} Penulis
               </h2>
               <button onClick={() => setModal(null)} className="btn-glass" style={{ padding: '6px' }}>
@@ -243,7 +243,7 @@ export default function PenulisPage() {
               </button>
             </div>
             {error && (
-              <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">
+              <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300">
                 {error}
               </div>
             )}
@@ -297,12 +297,12 @@ export default function PenulisPage() {
             style={{ maxWidth: '380px' }}
           >
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200">
-                <Trash2 size={22} className="text-rose-600" />
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/50">
+                <Trash2 size={22} className="text-rose-600 dark:text-rose-400" />
               </div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Penulis?</h2>
-              <p className="text-sm text-slate-500 mb-6 font-medium">
-                Penulis <strong className="text-slate-900">"{selected?.nama}"</strong> akan dihapus.
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Hapus Penulis?</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">
+                Penulis <strong className="text-slate-900 dark:text-slate-100">"{selected?.nama}"</strong> akan dihapus.
               </p>
               <div className="flex gap-3">
                 <button onClick={() => setModal(null)} className="btn-glass flex-1 justify-center">

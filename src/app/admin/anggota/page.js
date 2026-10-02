@@ -93,7 +93,7 @@ export default function AnggotaPage() {
       <div className="p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mb-6">
           <div className="relative flex-1 max-w-none sm:max-w-sm">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input id="search-anggota" type="text" className="glass-input pl-9 w-full" placeholder="Cari nama, NIS, kelas..." value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
           </div>
           <button id="add-anggota" onClick={openAdd} className="btn-primary justify-center sm:flex-initial"><Plus size={16}/> Tambah Anggota</button>
@@ -105,19 +105,19 @@ export default function AnggotaPage() {
               <thead><tr><th>No</th><th>Nama</th><th>NIS</th><th>Kelas</th><th>Email</th><th>Peminjaman</th><th>Aksi</th></tr></thead>
               <tbody>
                 {loading ? Array.from({length:5}).map((_,i)=><tr key={i}>{[1,2,3,4,5,6,7].map(j=><td key={j}><div className="h-4 shimmer rounded"/></td>)}</tr>)
-                : data.length === 0 ? <tr><td colSpan={7}><div className="text-center py-12 text-slate-400"><Users size={36} className="mx-auto mb-2 opacity-40"/><p className="font-medium">Belum ada anggota</p></div></td></tr>
+                : data.length === 0 ? <tr><td colSpan={7}><div className="text-center py-12 text-slate-400 dark:text-slate-500"><Users size={36} className="mx-auto mb-2 opacity-40"/><p className="font-medium">Belum ada anggota</p></div></td></tr>
                 : data.map((d,i) => (
                   <tr key={d.id}>
-                    <td className="text-slate-500 font-medium">{(page-1)*limit+i+1}</td>
+                    <td className="text-slate-500 dark:text-slate-400 font-medium">{(page-1)*limit+i+1}</td>
                     <td>
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm" style={{background:'rgba(37,99,235,0.12)',color:'#1d4ed8'}}>{d.nama[0]}</div>
-                        <span className="font-bold text-slate-900">{d.nama}</span>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shadow-sm bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300">{d.nama[0]}</div>
+                        <span className="font-bold text-slate-900 dark:text-slate-100">{d.nama}</span>
                       </div>
                     </td>
-                    <td className="text-slate-600 font-medium">{d.nis}</td>
+                    <td className="text-slate-600 dark:text-slate-300 font-medium">{d.nis}</td>
                     <td><span className="badge badge-blue">{d.kelas}</span></td>
-                    <td className="text-slate-600 font-medium">{d.user?.email}</td>
+                    <td className="text-slate-600 dark:text-slate-300 font-medium">{d.user?.email}</td>
                     <td><span className="badge badge-gray">{d._count?.peminjaman || 0}×</span></td>
                     <td><div className="flex gap-2">
                       <button id={`edit-anggota-${d.id}`} onClick={()=>openEdit(d)} className="btn-glass btn-sm"><Pencil size={13}/></button>
@@ -129,8 +129,8 @@ export default function AnggotaPage() {
             </table>
           </div>
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200">
-              <span className="text-xs text-slate-500 font-medium">{total} anggota · hal {page}/{totalPages}</span>
+            <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{total} anggota · hal {page}/{totalPages}</span>
               <div className="flex gap-2">
                 <button disabled={page===1} onClick={()=>setPage(p=>p-1)} className="btn-glass btn-sm" style={{opacity:page===1?0.4:1}}><ChevronLeft size={14}/></button>
                 <button disabled={page===totalPages} onClick={()=>setPage(p=>p+1)} className="btn-glass btn-sm" style={{opacity:page===totalPages?0.4:1}}><ChevronRight size={14}/></button>
@@ -150,10 +150,10 @@ export default function AnggotaPage() {
             className="glass-modal p-6 overscroll-contain"
           >
             <div className="flex items-center justify-between mb-5">
-              <h2 className="text-lg font-bold text-slate-900">{modal==='add'?'Tambah':'Edit'} Anggota</h2>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{modal==='add'?'Tambah':'Edit'} Anggota</h2>
               <button onClick={()=>setModal(null)} className="btn-glass" style={{padding:'6px'}}><X size={16}/></button>
             </div>
-            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 border border-rose-200 text-rose-800">{error}</div>}
+            {error && <div className="mb-4 p-3 rounded-xl text-sm font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-800 dark:text-rose-300">{error}</div>}
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div><label className="form-label">Nama Lengkap *</label><input id="form-nama-anggota" className="glass-input" value={form.nama} onChange={e=>setForm({...form,nama:e.target.value})} placeholder="Nama lengkap"/></div>
@@ -186,9 +186,9 @@ export default function AnggotaPage() {
             style={{maxWidth:'380px'}}
           >
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 border border-rose-200"><Trash2 size={22} className="text-rose-600"/></div>
-              <h2 className="text-lg font-bold text-slate-900 mb-2">Hapus Anggota?</h2>
-              <p className="text-sm text-slate-500 mb-6 font-medium">Anggota <strong className="text-slate-900">"{selected?.nama}"</strong> akan dihapus beserta akun loginnya.</p>
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center bg-rose-100 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-900/50"><Trash2 size={22} className="text-rose-600 dark:text-rose-400"/></div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-2">Hapus Anggota?</h2>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 font-medium">Anggota <strong className="text-slate-900 dark:text-slate-100">"{selected?.nama}"</strong> akan dihapus beserta akun loginnya.</p>
               <div className="flex gap-3">
                 <button onClick={()=>setModal(null)} className="btn-glass flex-1 justify-center">Batal</button>
                 <button id="confirm-delete-anggota" onClick={handleDelete} disabled={saving} className="btn-danger flex-1 justify-center">{saving?'Menghapus...':'Hapus'}</button>

@@ -44,7 +44,14 @@ export default async function RootLayout({ children }) {
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
-      <body suppressHydrationWarning className="font-sans antialiased bg-[#FBFBF9] text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}else{document.documentElement.classList.remove('dark')}}catch(e){}})()`,
+          }}
+        />
+      </head>
+      <body suppressHydrationWarning className="font-sans antialiased bg-[#FBFBF9] dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-blue-100 selection:text-blue-900">
         <AuthProvider session={session}>
           <ToastContainer />
           <ConfirmModalContainer />

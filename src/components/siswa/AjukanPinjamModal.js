@@ -71,20 +71,20 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
         className="glass-modal p-5 sm:p-6 max-w-md w-full overscroll-contain"
       >
         <div className="flex items-center gap-2.5 mb-4">
-          <BookMarked size={22} className="text-blue-600 flex-shrink-0" />
-          <h2 className="text-lg font-bold text-slate-900">Ajukan Peminjaman Buku</h2>
+          <BookMarked size={22} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+          <h2 className="text-lg font-bold text-slate-900 dark:text-white">Ajukan Peminjaman Buku</h2>
         </div>
 
-        <div className="mb-4 p-3 rounded-xl bg-slate-50 border border-slate-200">
-          <div className="text-sm font-bold text-slate-900 line-clamp-1">{buku.judul}</div>
-          <div className="text-xs text-slate-500 font-medium mt-0.5">
-            Stok Tersedia: <span className="font-bold text-emerald-600">{buku.stok}</span>
+        <div className="mb-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700">
+          <div className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1">{buku.judul}</div>
+          <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+            Stok Tersedia: <span className="font-bold text-emerald-600 dark:text-emerald-400">{buku.stok}</span>
           </div>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-2">
-            <AlertCircle size={16} className="text-rose-600 flex-shrink-0" />
+          <div className="mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200 flex items-center gap-2">
+            <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -92,7 +92,7 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="form-label flex items-center gap-1.5">
-              <Calendar size={14} className="text-slate-500" />
+              <Calendar size={14} className="text-slate-500 dark:text-slate-400" />
               Rencana Tanggal Pengembalian *
             </label>
             <input
@@ -103,7 +103,7 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
               onChange={(e) => setTglKembaliRencana(e.target.value)}
               required
             />
-            <p className="text-[11px] text-slate-500 mt-1 font-medium">Batas peminjaman standar adalah 7 hari.</p>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Batas peminjaman standar adalah 7 hari.</p>
           </div>
 
           <div>
@@ -117,8 +117,8 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
             />
           </div>
 
-          <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed font-medium flex items-start gap-2">
-            <Info size={16} className="text-amber-700 flex-shrink-0 mt-0.5" />
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs leading-relaxed font-medium flex items-start gap-2">
+            <Info size={16} className="text-amber-700 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <span>
               Pengajuan akan diverifikasi oleh petugas perpustakaan. Setelah disetujui, kamu bisa langsung mengambil buku fisik di perpustakaan.
             </span>
