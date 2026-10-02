@@ -93,6 +93,7 @@ function MobileFloatingNav() {
               <div className="p-1 space-y-1">
                 <Link
                   href="/siswa/profil"
+                  prefetch={true}
                   onClick={() => setIsMenuOpen(false)}
                   className={`flex items-center gap-3 p-2.5 rounded-xl transition-colors ${
                     isProfilActive
@@ -113,6 +114,7 @@ function MobileFloatingNav() {
 
                 <Link
                   href="/siswa/buku"
+                  prefetch={true}
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
                 >
@@ -129,6 +131,7 @@ function MobileFloatingNav() {
 
                 <Link
                   href="/siswa/peminjaman"
+                  prefetch={true}
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
                 >
@@ -162,6 +165,7 @@ function MobileFloatingNav() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={true}
                   id={`mobile-nav-${item.label.toLowerCase()}`}
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex flex-col items-center justify-center min-w-[68px] sm:min-w-[76px] py-1.5 px-3 rounded-full transition-all duration-150 select-none min-h-[48px] active:scale-95 ${

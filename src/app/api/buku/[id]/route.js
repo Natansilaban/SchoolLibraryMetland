@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error';
+import { invalidateCatalogCache } from '@/lib/catalog-cache';
 
 export async function GET(req, { params }) {
   try {
@@ -63,6 +64,7 @@ export async function PUT(req, { params }) {
       },
       include: { kategori: true, penulis: true, penerbit: true },
     });
+    invalidateCatalogCache();
     return NextResponse.json(buku);
   } catch (error) {
     if (error.code === 'P2002') {
@@ -100,6 +102,7 @@ export async function DELETE(req, { params }) {
     }
 
     await prisma.buku.delete({ where: { id: bukuId } });
+    invalidateCatalogCache();
     return NextResponse.json({ message: 'Buku berhasil dihapus' });
   } catch (error) {
     return handleApiError(error, 'Gagal menghapus buku');

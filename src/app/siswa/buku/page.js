@@ -1,20 +1,26 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight, Library } from 'lucide-react';
 
+// SWR In-Memory Client Cache (persists during active browser session across tab switches)
+let clientCatalogCache = null;
+let clientKategoriCache = null;
+
 export default function SiswaBukuPage() {
-  const [buku, setBuku] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [buku, setBuku] = useState(() => clientCatalogCache?.data || []);
+  const [total, setTotal] = useState(() => clientCatalogCache?.total || 0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [kategori, setKategori] = useState([]);
+  const [loading, setLoading] = useState(() => !clientCatalogCache);
+  const [kategori, setKategori] = useState(() => clientKategoriCache || []);
   const [kategoriFilter, setKategoriFilter] = useState('');
   const [searchMeta, setSearchMeta] = useState({ mode: 'browse', hasSemanticResults: false });
   const limit = 12;
+
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -24,7 +30,12 @@ export default function SiswaBukuPage() {
   }, [search]);
 
   const fetch_ = useCallback(async () => {
-    setLoading(true);
+    const isDefaultBrowse = !debouncedSearch && page === 1 && !kategoriFilter;
+    // Only show full loading skeleton if we don't already have cached browse data
+    if (!isDefaultBrowse || !clientCatalogCache) {
+      setLoading(true);
+    }
+
     const params = new URLSearchParams({
       search: debouncedSearch,
       page: page.toString(),
@@ -34,15 +45,21 @@ export default function SiswaBukuPage() {
     try {
       const res = await fetch(`/api/buku?${params}`);
       const json = await res.json();
-      setBuku(json.data || []);
+      const items = json.data || [];
+      setBuku(items);
       setTotal(json.total || 0);
       setSearchMeta({
         mode: json.mode || 'browse',
         hasSemanticResults: !!json.hasSemanticResults,
       });
+      if (isDefaultBrowse) {
+        clientCatalogCache = json;
+      }
     } catch {
-      setBuku([]);
-      setTotal(0);
+      if (!isDefaultBrowse) {
+        setBuku([]);
+        setTotal(0);
+      }
       setSearchMeta({ mode: 'browse', hasSemanticResults: false });
     } finally {
       setLoading(false);
@@ -54,10 +71,16 @@ export default function SiswaBukuPage() {
   }, [fetch_]);
 
   useEffect(() => {
-    fetch('/api/kategori')
-      .then((r) => r.json())
-      .then((data) => setKategori(Array.isArray(data) ? data : []))
-      .catch(() => setKategori([]));
+    if (!clientKategoriCache) {
+      fetch('/api/kategori')
+        .then((r) => r.json())
+        .then((data) => {
+          const list = Array.isArray(data) ? data : [];
+          clientKategoriCache = list;
+          setKategori(list);
+        })
+        .catch(() => setKategori([]));
+    }
   }, []);
 
   const totalPages = Math.ceil(total / limit);

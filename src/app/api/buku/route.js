@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getPaginationParams, handleApiError } from '@/lib/api-error';
+import { getCachedCatalog, setCachedCatalog, invalidateCatalogCache } from '@/lib/catalog-cache';
 
 export async function GET(req) {
   try {
@@ -13,6 +14,17 @@ export async function GET(req) {
     const mode = searchParams.get('mode') || 'auto';
     const { page, limit } = getPaginationParams(searchParams, 20, 100);
 
+    const cacheKey = `${search.toLowerCase().trim()}_${kategoriId || 'all'}_${page}_${limit}_${mode}`;
+    const cached = getCachedCatalog(cacheKey);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'X-Cache': 'HIT',
+        },
+      });
+    }
+
     const result = await searchCatalog({
       query: search,
       kategoriId,
@@ -21,7 +33,14 @@ export async function GET(req) {
       searchMode: mode,
     });
 
-    return NextResponse.json(result);
+    setCachedCatalog(cacheKey, result);
+
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        'X-Cache': 'MISS',
+      },
+    });
   } catch (error) {
     return handleApiError(error, 'Gagal memuat katalog buku');
   }
@@ -60,6 +79,7 @@ export async function POST(req) {
       },
     });
 
+    invalidateCatalogCache();
     return NextResponse.json(buku, { status: 201 });
   } catch (error) {
     if (error.code === 'P2002') {

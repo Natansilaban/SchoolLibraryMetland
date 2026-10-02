@@ -9,9 +9,12 @@ import Link from 'next/link';
 import { toast } from '@/components/ui/Toast';
 import { confirmModal } from '@/components/ui/ConfirmModal';
 
+// SWR In-Memory Client Cache for student loans history
+let clientLoansCache = null;
+
 export default function SiswaPeminjamanPage() {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(() => clientLoansCache || []);
+  const [loading, setLoading] = useState(() => !clientLoansCache);
   const [cancellingId, setCancellingId] = useState(null);
   const [returnModal, setReturnModal] = useState(null);
   const [returnForm, setReturnForm] = useState({ catatan: '' });
@@ -20,13 +23,19 @@ export default function SiswaPeminjamanPage() {
   const today = new Date().toISOString().split('T')[0];
 
   const fetchLoans = useCallback(async () => {
-    setLoading(true);
+    if (!clientLoansCache) {
+      setLoading(true);
+    }
     try {
       const res = await fetch('/api/peminjaman');
       const json = await res.json();
-      setData(json.data || []);
+      const loans = json.data || [];
+      clientLoansCache = loans;
+      setData(loans);
     } catch {
-      setData([]);
+      if (!clientLoansCache) {
+        setData([]);
+      }
     } finally {
       setLoading(false);
     }
