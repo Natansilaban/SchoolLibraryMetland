@@ -94,6 +94,10 @@ export default function LoginPage() {
             <img
               src="/logo.png"
               alt="Logo Metland School"
+              width={64}
+              height={64}
+              decoding="async"
+              fetchPriority="high"
               className="w-full h-full object-contain"
             />
           </div>

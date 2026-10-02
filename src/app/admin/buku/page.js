@@ -240,7 +240,7 @@ export default function BukuPage() {
                       <td>
                         <div className="w-10 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-sm flex-shrink-0">
                           {b.cover ? (
-                            <img src={b.cover} alt={b.judul} className="w-full h-full object-cover" />
+                            <img src={b.cover} alt={b.judul} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           ) : (
                             <BookMarked size={18} className="text-slate-400 dark:text-slate-500" />
                           )}
@@ -337,7 +337,7 @@ export default function BukuPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-22 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 shadow-xs">
                     {form.cover ? (
-                      <img src={form.cover} alt="Preview" className="w-full h-full object-cover" />
+                      <img src={form.cover} alt="Preview" decoding="async" className="w-full h-full object-cover" />
                     ) : (
                       <BookMarked size={24} className="text-slate-400 dark:text-slate-500 opacity-50" />
                     )}

@@ -156,7 +156,9 @@ export default function SiswaBukuPage() {
                   <img
                     src={b.cover}
                     alt={b.judul}
-                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-300"
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-200"
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 dark:bg-slate-800/90 p-4 text-center">

@@ -31,7 +31,7 @@ export default function SiswaNav() {
             aria-label="Beranda Siswa Perpustakaan Metland"
           >
             <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shadow-xs flex-shrink-0 overflow-hidden">
-              <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="Logo Metland School" width={36} height={36} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div>
               <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-tight block leading-tight">

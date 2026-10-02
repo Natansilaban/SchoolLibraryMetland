@@ -50,7 +50,7 @@ export default function AdminSidebar() {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 bg-slate-900/40 dark:bg-slate-950/70 backdrop-blur-xs z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-slate-900/50 dark:bg-slate-950/70 z-40 lg:hidden transition-opacity"
           onClick={close}
           aria-hidden="true"
         />
@@ -64,7 +64,7 @@ export default function AdminSidebar() {
         <div className="p-5 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5 group" onClick={close}>
             <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shadow-xs flex-shrink-0 overflow-hidden">
-              <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="Logo Metland School" width={36} height={36} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="text-sm font-bold text-slate-900 dark:text-white leading-tight">Perpustakaan</div>

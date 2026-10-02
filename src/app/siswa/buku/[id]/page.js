@@ -80,7 +80,7 @@ export default async function DetailBukuPage({ params }) {
         <div className="lg:col-span-4 space-y-4">
           <div className="w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 book-cover-wrap relative h-80 sm:h-96 flex items-center justify-center">
             {buku.cover ? (
-              <img src={buku.cover} alt={buku.judul} className="w-full h-full object-cover" />
+              <img src={buku.cover} alt={buku.judul} decoding="async" fetchPriority="high" className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-slate-100 dark:bg-slate-800">
                 <Library size={48} className="text-slate-400 dark:text-slate-500 mb-2" />

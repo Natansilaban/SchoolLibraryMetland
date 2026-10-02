@@ -69,7 +69,7 @@ export default async function SiswaProfilPage() {
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-white p-1 flex items-center justify-center shadow-xs flex-shrink-0">
-              <img src="/logo.png" alt="Logo Metland School" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="Logo Metland School" width={40} height={40} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-slate-300">Kartu Anggota</div>

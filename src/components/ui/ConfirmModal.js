@@ -68,7 +68,7 @@ export default function ConfirmModalContainer() {
   return (
     <div
       onClick={() => handleClose(false)}
-      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/75 animate-fadeIn"
       role="dialog"
       aria-modal="true"
     >

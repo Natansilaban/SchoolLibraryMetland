@@ -74,7 +74,7 @@ export default function ToastContainer() {
           <div
             key={t.id}
             onClick={() => removeToast(t.id)}
-            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border backdrop-blur-xl transition-all duration-300 transform animate-slideUp w-full cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${bgClass}`}
+            className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200 transform animate-slideUp w-full cursor-pointer active:scale-[0.98] ${bgClass}`}
           >
             <Icon size={20} className={`${iconColor} flex-shrink-0`} />
             <div className="text-xs sm:text-sm font-semibold flex-1 leading-snug break-words">

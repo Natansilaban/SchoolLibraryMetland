@@ -106,7 +106,7 @@ export default async function SiswaDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-2.5 shadow-xs flex-shrink-0">
-              <img src="/logo.png" alt="Logo SMK Pariwisata Metland" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="Logo SMK Pariwisata Metland" width={64} height={64} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0">
               <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
@@ -248,14 +248,14 @@ export default async function SiswaDashboardPage() {
               >
                 <div className="aspect-[3/4] w-full rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden relative mb-2.5 shadow-xs">
                   {buku.cover ? (
-                    <img src={buku.cover} alt={buku.judul} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                    <img src={buku.cover} alt={buku.judul} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-slate-400">
                       <Library size={28} />
                     </div>
                   )}
                   {buku.kategori?.nama && (
-                    <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-[9px] font-bold bg-slate-900/80 text-white backdrop-blur-xs">
+                    <span className="absolute top-1.5 left-1.5 px-2 py-0.5 rounded text-[9px] font-bold bg-slate-900/90 text-white shadow-xs">
                       {buku.kategori.nama}
                     </span>
                   )}
@@ -312,7 +312,7 @@ export default async function SiswaDashboardPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-13 rounded-md bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
                     {p.buku?.cover ? (
-                      <img src={p.buku.cover} alt={p.buku.judul} className="w-full h-full object-cover" />
+                      <img src={p.buku.cover} alt={p.buku.judul} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
                       <Library size={18} className="text-slate-400" />
                     )}

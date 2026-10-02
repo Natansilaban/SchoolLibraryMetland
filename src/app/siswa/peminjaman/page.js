@@ -176,7 +176,7 @@ export default function SiswaPeminjamanPage() {
                   <div className="flex items-start gap-3.5 min-w-0 flex-1">
                     <div className="w-12 h-16 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
                       {p.buku?.cover ? (
-                        <img src={p.buku.cover} alt={p.buku.judul} className="w-full h-full object-cover" />
+                        <img src={p.buku.cover} alt={p.buku.judul} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       ) : (
                         <Library size={22} className="text-slate-400 dark:text-slate-500" />
                       )}
@@ -281,7 +281,7 @@ export default function SiswaPeminjamanPage() {
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={() => setReturnModal(null)}
         >
           <div
