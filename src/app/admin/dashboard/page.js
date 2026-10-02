@@ -148,7 +148,7 @@ export default async function DashboardPage() {
       <TopBar title="Dashboard Layanan Perpustakaan" subtitle="Pantau aktivitas peminjaman, pengembalian, dan ketersediaan buku" />
 
       <div className="p-4 sm:p-6 space-y-6">
-        {/* Urgent Action Notice (Overdue Triage) */}
+        {}
         {stats.terlambat > 0 && (
           <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* 4 Core Circulation Metric Cards */}
+        {}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {statCards.map((card) => {
             const Icon = card.icon;
@@ -192,9 +192,9 @@ export default async function DashboardPage() {
           })}
         </div>
 
-        {/* Working Modules Grid */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Recent Circulation Transactions */}
+          {}
           <div className="library-card p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
@@ -238,7 +238,7 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          {/* Popular Books In Demand */}
+          {}
           <div className="library-card p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
@@ -286,7 +286,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        {/* Operational Circulation Totals */}
+        {}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
           <div className="library-card p-4 flex items-center gap-3.5">
             <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0">

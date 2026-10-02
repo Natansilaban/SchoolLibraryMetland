@@ -29,7 +29,7 @@ export default function TopBar({ title, subtitle }) {
 
   return (
     <header className="sticky top-0 z-30 w-full min-h-[82px] py-4 sm:py-5 px-5 sm:px-8 lg:px-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-stone-200/90 dark:border-slate-800 flex items-center justify-between gap-4 transition-colors shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-      {/* Sisi Kiri: Breadcrumb / Badge, Judul, & Deskripsi Halaman */}
+      {}
       <div className="flex items-center gap-3.5 flex-1 min-w-0">
         <button
           onClick={toggle}
@@ -52,9 +52,9 @@ export default function TopBar({ title, subtitle }) {
         </div>
       </div>
 
-      {/* Sisi Kanan: Live Date, Portal Link, Theme Toggle, & Profile */}
+      {}
       <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
-        {/* Live Academic Date */}
+        {}
         {currentDate && (
           <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-medium text-slate-600 dark:text-slate-300">
             <Calendar size={14} className="text-slate-400 dark:text-slate-500" />
@@ -62,7 +62,7 @@ export default function TopBar({ title, subtitle }) {
           </div>
         )}
 
-        {/* Quick Link ke Portal Siswa */}
+        {}
         <Link
           href="/siswa/dashboard"
           target="_blank"
@@ -73,10 +73,10 @@ export default function TopBar({ title, subtitle }) {
           <ExternalLink size={13} className="opacity-70" />
         </Link>
 
-        {/* Theme Toggle Button */}
+        {}
         <ThemeToggle className="rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80" />
 
-        {/* Executive Profile Avatar & Details */}
+        {}
         <div
           className="flex items-center gap-3 pl-2 sm:pl-3 border-l border-slate-200 dark:border-slate-800"
           aria-label="Informasi pengguna aktif"
@@ -106,5 +106,4 @@ export default function TopBar({ title, subtitle }) {
     </header>
   );
 }
-
 

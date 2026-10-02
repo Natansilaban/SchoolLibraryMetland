@@ -3,19 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Mic, MicOff, AlertCircle } from 'lucide-react';
 
-/**
- * VoiceSearchButton
- *
- * Uses Web Speech API (SpeechRecognition) for voice-to-text.
- * The microphone permission prompt is triggered by calling rec.start() directly.
- * We do NOT pre-call getUserMedia() — that pattern causes a race condition where
- * Chrome revokes the temporary permission context before SpeechRecognition can use it,
- * resulting in a `not-allowed` error even when the user has mic access granted in site settings.
- *
- * If the user sees "Izin mikrofon diblokir" but has already allowed mic in browser settings,
- * they should click the lock icon in the address bar and set Microphone to "Allow", then refresh.
- * This is a browser policy enforcement: the site-level permission must be "Allow", not "Ask".
- */
 export default function VoiceSearchButton({
   onTranscript,
   onListeningChange,
@@ -26,9 +13,7 @@ export default function VoiceSearchButton({
   const [permissionState, setPermissionState] = useState('unknown'); // 'granted'|'denied'|'prompt'|'unknown'
   const [errorMessage, setErrorMessage] = useState('');
   const recognitionRef = useRef(null);
-  const errorTimerRef = useRef(null);
-
-  // Check mic permission state on mount and subscribe to changes
+  const errorTimerRef = useRef(null);
   useEffect(() => {
     if (typeof window === 'undefined') return;
 

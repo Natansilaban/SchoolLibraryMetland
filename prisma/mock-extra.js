@@ -1,5 +1,4 @@
-module.exports = [
-  // Teknologi Informasi & Komputer
+module.exports = [
   {
     judul: 'Arsitektur Microservices dengan Node.js dan Docker',
     kategori: 'Teknologi Informasi & Komputer',
@@ -41,9 +40,7 @@ module.exports = [
     penulis: 'Sandhika Galih',
     penerbit: 'Andi Publisher',
     deskripsi: 'Langkah demi langkah membangun antarmuka responsif, manajemen state dengan Riverpod, dan integrasi API RESTful untuk menghasilkan aplikasi iOS dan Android dalam satu basis kode.'
-  },
-
-  // Kuliner & Tata Boga
+  },
   {
     judul: 'Seni Memanggang: Rahasia Artisan Bread Sourdough',
     kategori: 'Kuliner & Tata Boga',
@@ -85,9 +82,7 @@ module.exports = [
     penulis: 'Chef William Wongso',
     penerbit: 'Gramedia Pustaka Utama',
     deskripsi: 'Analisis variabel kalibrasi grinder, rasio air, suhu mesin, dan teknik tamping. Termasuk panduan mendeteksi rasa under-extracted atau over-extracted dari sebuah cangkir espresso.'
-  },
-
-  // Perhotelan & Pariwisata
+  },
   {
     judul: 'Strategi Manajemen Pendapatan (Yield Management) Hotel',
     kategori: 'Perhotelan & Pariwisata',
@@ -122,9 +117,7 @@ module.exports = [
     penulis: 'Bambang Hermanto',
     penerbit: 'Gramedia Pustaka Utama',
     deskripsi: 'Langkah taktis memenangkan tender penyelenggaraan konferensi. Meliputi penyusunan timeline, negosiasi vendor, tata letak ruang sidang, dan logistik peserta skala internasional.'
-  },
-
-  // Bisnis & Kewirausahaan
+  },
   {
     judul: 'Growth Hacking: Menggandakan Pengguna Startup Tanpa Iklan',
     kategori: 'Bisnis & Kewirausahaan',
@@ -159,9 +152,7 @@ module.exports = [
     penulis: 'Dewi Lestari',
     penerbit: 'Balai Pustaka',
     deskripsi: 'Panduan merancang model bisnis yang mengentaskan masalah sosial atau lingkungan sambil tetap mencetak profit (triple bottom line). Dilengkapi profil wirausahawan sosial sukses Indonesia.'
-  },
-
-  // Sastra & Fiksi
+  },
   {
     judul: 'Lorong Waktu Halimunda',
     kategori: 'Sastra & Fiksi',
@@ -196,9 +187,7 @@ module.exports = [
     penulis: 'Andrea Hirata',
     penerbit: 'Mizan Pustaka',
     deskripsi: 'Dua kisah dalam satu buku yang menceritakan determinasi Enong belajar bahasa Inggris demi mencari pekerjaan, serta kehidupan para penggemar kopi di warung pamannya.'
-  },
-
-  // Sains Alam & Matematika
+  },
   {
     judul: 'Fisika Kuantum untuk Pemula',
     kategori: 'Sains Alam & Matematika',
@@ -233,9 +222,7 @@ module.exports = [
     penulis: 'Prof. Dr. B.J. Habibie',
     penerbit: 'Erlangga',
     deskripsi: 'Kajian ilmiah siklus polimer plastik di lautan, interaksinya dengan rantai makanan laut, dan metode kimiawi bioremidiasi untuk menguraikan limbah toksik perairan.'
-  },
-
-  // Sejarah & Sosial Budaya
+  },
   {
     judul: 'Nusantara di Simpang Jalur Sutra',
     kategori: 'Sejarah & Sosial Budaya',
@@ -263,9 +250,7 @@ module.exports = [
     penulis: 'Chef William Wongso',
     penerbit: 'Gramedia Pustaka Utama',
     deskripsi: 'Mengkaji hubungan antara makanan, status sosial, dan ritual keagamaan di berbagai suku Nusantara. Dari tradisi makan bajamba Minang hingga pesta babi di pedalaman Papua.'
-  },
-
-  // Bahasa & Komunikasi
+  },
   {
     judul: 'Retorika Politik: Seni Mempengaruhi Massa',
     kategori: 'Bahasa & Komunikasi',
@@ -300,9 +285,7 @@ module.exports = [
     penulis: 'Pramoedya Ananta Toer',
     penerbit: 'Balai Pustaka',
     deskripsi: 'Kajian akademis tentang pergeseran makna kata dan pola kalimat baku. Menganalisis pengaruh serapan bahasa asing dan bahasa slang kaum urban terhadap struktur tata bahasa resmi.'
-  },
-
-  // Additional Mixed Books (to hit exactly 46)
+  },
   { judul: 'Pemrograman Python untuk Analisis Data Cuaca', kategori: 'Teknologi Informasi & Komputer', penulis: 'Sandhika Galih', penerbit: 'Andi Publisher', deskripsi: 'Implementasi library Pandas dan Matplotlib untuk memproses dataset iklim BMKG, menemukan anomali pemanasan global, dan membuat visualisasi interaktif.' },
   { judul: 'Seni Fotografi Kuliner Komersial (Food Photography)', kategori: 'Kuliner & Tata Boga', penulis: 'Bambang Hermanto', penerbit: 'Gramedia Pustaka Utama', deskripsi: 'Teknik pencahayaan natural, komposisi framing, dan penggunaan properti untuk membuat foto makanan tampak lezat menggugah selera untuk keperluan majalah dan iklan.' },
   { judul: 'Manajemen Krisis dan Resiko Pariwisata', kategori: 'Perhotelan & Pariwisata', penulis: 'Philip Kotler', penerbit: 'Erlangga', deskripsi: 'Strategi pemulihan destinasi wisata pasca bencana alam atau krisis pandemi. Panduan menyusun protokol keselamatan, komunikasi media, dan rebranding citra pariwisata.' },

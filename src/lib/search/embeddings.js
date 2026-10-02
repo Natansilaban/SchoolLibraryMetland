@@ -1,29 +1,14 @@
-/**
- * Semantic Embedding Service
- *
- * Primary: Self-Hosted Jina AI API (jina.r1fikri.dev)
- * Fallback: Local ONNX via @huggingface/transformers (ONNX Runtime Web)
- *
- * Key design decisions:
- * - Uses standard OpenAI `/v1/embeddings` payload shape for the Jina endpoint.
- * - The in-process LRU cache keeps repeated queries fast without persisting to disk.
- */
+
 
 const embeddingCache = new Map();
 const MAX_CACHE_SIZE = 3000;
 
-/** @type {any} */
 let localPipeline = null;
-let localInitPromise = null;
-
-// When true, all Jina calls are skipped for this server session (if the endpoint is completely down)
+let localInitPromise = null;
 let jinaDisabled = false;
-let jinaDisableLogged = false;
-
-// Tracks which provider produced the most recent embeddings
+let jinaDisableLogged = false;
 let lastProvider = 'unknown';
 
-/** Returns the provider that produced the last computed embedding: 'jina' | 'onnx' | 'unknown' */
 export function getActiveProvider() { return lastProvider; }
 
 function lruSet(key, value) {
@@ -33,9 +18,6 @@ function lruSet(key, value) {
   embeddingCache.set(key, value);
 }
 
-/**
- * Lazy-loads the local fallback model once.
- */
 async function getLocalPipeline() {
   if (localPipeline) return localPipeline;
   if (localInitPromise) return localInitPromise;
@@ -60,14 +42,6 @@ async function getLocalPipeline() {
   return localInitPromise;
 }
 
-/**
- * Computes a single normalized embedding via Self-hosted Jina API.
- * Returns null on errors (caller falls back to local ONNX).
- *
- * @param {string} text
- * @param {'RETRIEVAL_QUERY'|'RETRIEVAL_DOCUMENT'} taskType
- * @returns {Promise<Float32Array|null>}
- */
 async function computeJinaEmbedding(text, taskType) {
   if (jinaDisabled) return null;
 
@@ -111,14 +85,6 @@ async function computeJinaEmbedding(text, taskType) {
   }
 }
 
-/**
- * Computes a normalized embedding for a single string.
- * Uses Jina when available, local ONNX as fallback.
- *
- * @param {string} text
- * @param {'RETRIEVAL_QUERY'|'RETRIEVAL_DOCUMENT'} [taskType='RETRIEVAL_QUERY']
- * @returns {Promise<Float32Array|null>}
- */
 export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
   if (!text || typeof text !== 'string') return null;
 
@@ -126,17 +92,13 @@ export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
   if (!sanitized) return null;
 
   const cacheKey = `${taskType}::${sanitized.toLowerCase()}`;
-  if (embeddingCache.has(cacheKey)) return embeddingCache.get(cacheKey);
-
-  // Try Jina API first
+  if (embeddingCache.has(cacheKey)) return embeddingCache.get(cacheKey);
   const jinaVec = await computeJinaEmbedding(sanitized, taskType);
   if (jinaVec) {
     lastProvider = 'jina';
     lruSet(cacheKey, jinaVec);
     return jinaVec;
-  }
-
-  // Local ONNX fallback
+  }
   try {
     const pipe = await getLocalPipeline();
     if (pipe) {
@@ -153,18 +115,8 @@ export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
   return null;
 }
 
-/**
- * Batch embedding via Jina API. Falls back to sequential computeEmbedding calls
- * if Jina is unavailable.
- *
- * @param {string[]} texts
- * @param {'RETRIEVAL_DOCUMENT'|'RETRIEVAL_QUERY'} [taskType='RETRIEVAL_DOCUMENT']
- * @returns {Promise<Array<Float32Array|null>>}
- */
 export async function computeBatchEmbeddings(texts, taskType = 'RETRIEVAL_DOCUMENT') {
-  if (!Array.isArray(texts) || texts.length === 0) return [];
-
-  // If Jina disabled, use local model sequentially for whole batch
+  if (!Array.isArray(texts) || texts.length === 0) return [];
   if (jinaDisabled) {
     return Promise.all(texts.map((t) => computeEmbedding(t, taskType)));
   }
@@ -238,14 +190,6 @@ export async function computeBatchEmbeddings(texts, taskType = 'RETRIEVAL_DOCUME
   return results;
 }
 
-/**
- * Cosine similarity between two normalized vectors.
- * Returns 0 when vectors have mismatched dimensions or are empty (guards against mixed model spaces).
- *
- * @param {Float32Array|number[]} vecA
- * @param {Float32Array|number[]} vecB
- * @returns {number}
- */
 export function calculateSimilarity(vecA, vecB) {
   if (!vecA || !vecB || vecA.length !== vecB.length || vecA.length === 0) return 0;
 

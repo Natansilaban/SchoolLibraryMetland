@@ -101,7 +101,7 @@ export default async function SiswaDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Kartu Anggota Resmi Siswa */}
+      {}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -129,7 +129,7 @@ export default async function SiswaDashboardPage() {
         </div>
       </div>
 
-      {/* Circulation Metric Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <div className="library-card p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-blue-300 dark:hover:border-blue-800 transition-all">
           <div className="flex items-center justify-between mb-2">
@@ -173,7 +173,7 @@ export default async function SiswaDashboardPage() {
         </div>
       </div>
 
-      {/* Actionable Library Gateways */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           href="/siswa/buku"
@@ -216,7 +216,7 @@ export default async function SiswaDashboardPage() {
         </Link>
       </div>
 
-      {/* Featured Book Showcase */}
+      {}
       {featuredBooks.length > 0 && (
         <div className="library-card p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -272,7 +272,7 @@ export default async function SiswaDashboardPage() {
         </div>
       )}
 
-      {/* Recent Loans Feed */}
+      {}
       <div className="library-card p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div>

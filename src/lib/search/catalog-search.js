@@ -1,28 +1,11 @@
-/**
- * CatalogSearchService
- *
- * A production-grade hybrid search engine:
- *   1. ISBN/barcode exact match
- *   2. AI semantic vector search (Gemini or local ONNX via @huggingface/transformers)
- *   3. Intelligent lexical fallback with Indonesian stopword filtering
- *
- * Query intelligence pipeline:
- *   a. Intent detection  — are we looking for a title, author, topic, or ISBN?
- *   b. Stopword stripping — remove conversational filler before embedding
- *   c. Alias expansion   — map common informal terms to canonical library terms
- *   d. Hybrid scoring    — semantic score + lexical boosters, hard-gated by vector dimensionality
- */
+
 
 import { prisma } from '@/lib/prisma';
 import {
   computeEmbedding,
   computeBatchEmbeddings,
   calculateSimilarity,
-} from '@/lib/search/embeddings';
-
-// ---------------------------------------------------------------------------
-// Indonesian stopwords and conversational filler for this domain
-// ---------------------------------------------------------------------------
+} from '@/lib/search/embeddings';
 const STOP_WORDS = new Set([
   'cariin', 'cari', 'cariakan', 'carikan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
   'buku', 'judul', 'novel', 'kategori', 'koleksi', 'perpustakaan',
@@ -31,13 +14,8 @@ const STOP_WORDS = new Set([
   'dari', 'ke', 'ini', 'itu', 'juga', 'lebih', 'paling', 'sangat',
   'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
   'ingin', 'minta', 'info', 'ada', 'apa', 'itu',
-]);
-
-// Lexical stop words — only pure conversational filler.
-// Deliberately keeps content words ('novel', 'fisika', 'kopi') so that
-// lexical keyword search doesn't silently drop what the user is asking for.
-// Includes prepositions/topic words ('tentang', 'mengenai') that appear in virtually
-// every book description and would otherwise match hundreds of unrelated books.
+  'ga', 'ngga', 'nggak', 'kalo', 'kalau', 'bisa'
+]);
 const LEXICAL_STOP_WORDS = new Set([
   'cariin', 'cari', 'cariakan', 'carikan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
   'buku', 'tentang', 'mengenai', 'soal', 'hal', 'berkaitan', 'berhubungan', 'bikin', 'cara',
@@ -45,16 +23,44 @@ const LEXICAL_STOP_WORDS = new Set([
   'dari', 'ke', 'ini', 'itu', 'juga', 'lebih', 'paling', 'sangat',
   'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
   'ingin', 'minta', 'info', 'apa',
-]);
-
-// Alias map: informal query terms -> canonical library/topic terms for better embedding signal
+  'ga', 'ngga', 'nggak', 'kalo', 'kalau', 'bisa'
+]);
 const ALIAS_MAP = {
   'koding': 'pemrograman komputer',
   'coding': 'pemrograman komputer',
   'ngoding': 'pemrograman komputer',
   'programing': 'pemrograman',
+  'programming': 'pemrograman komputer',
+  'web': 'pengembangan web pemrograman',
+  'python': 'pemrograman python',
+  'javascript': 'pemrograman javascript web',
+  'jaringan': 'jaringan komputer teknologi',
+  'ai': 'kecerdasan buatan machine learning',
+  'ml': 'machine learning kecerdasan buatan',
+  'database': 'basis data pemrograman',
+
+  'gabut': 'sastra fiksi novel hiburan',
+  'bosen': 'sastra fiksi novel hiburan',
+  'galau': 'novel roman psikologi',
+  'healing': 'psikologi pengembangan diri wisata',
+  'cuan': 'bisnis kewirausahaan keuangan',
+  'pr': 'pelajaran sekolah referensi',
+  'tugas': 'pelajaran sekolah referensi',
+  'keren': 'pengembangan diri',
   'masak': 'kuliner memasak',
   'makanan': 'kuliner pangan tata boga',
+  
+  'science': 'sains alam',
+  'math': 'matematika logika',
+  'history': 'sejarah sosial budaya',
+  'language': 'bahasa komunikasi',
+  'english': 'bahasa inggris',
+  'business': 'kewirausahaan bisnis',
+  'travel': 'pariwisata',
+  'health': 'kesehatan kedokteran',
+  'art': 'seni budaya',
+  'design': 'desain seni',
+
   'hotel': 'perhotelan hospitality',
   'wisata': 'pariwisata',
   'bisnis': 'kewirausahaan bisnis',
@@ -69,81 +75,36 @@ const ALIAS_MAP = {
   'sejarah': 'sejarah sosial budaya',
   'bahasa': 'bahasa komunikasi',
   'inggris': 'bahasa inggris komunikasi',
-  'web': 'pengembangan web pemrograman',
-  'python': 'pemrograman python',
-  'javascript': 'pemrograman javascript web',
-  'jaringan': 'jaringan komputer teknologi',
-  'ai': 'kecerdasan buatan machine learning',
-  'ml': 'machine learning kecerdasan buatan',
-  'database': 'basis data pemrograman',
-};
+};
 
-// ---------------------------------------------------------------------------
-// Query normalization utilities
-// ---------------------------------------------------------------------------
-
-/**
- * Detects rough search intent from the raw query.
- * @param {string} raw
- * @returns {'isbn'|'author'|'topic'|'title'}
- */
 function detectIntent(raw) {
-  const lower = raw.toLowerCase();
-  // ISBN patterns
-  if (/^\d[\d\s-]{8,16}[\dxX]$/.test(raw.replace(/\s/g, ''))) return 'isbn';
-  // Author cues
-  if (/\b(karya|oleh|penulis|pengarang|author)\b/.test(lower)) return 'author';
-  // Topic / semantic query (most common for conversational search)
+  const lower = raw.toLowerCase();
+  if (/^\d[\d\s-]{8,16}[\dxX]$/.test(raw.replace(/\s/g, ''))) return 'isbn';
+  if (/\b(karya|oleh|penulis|pengarang|author)\b/.test(lower)) return 'author';
   if (/\b(tentang|mengenai|soal|topik|tema|berhubungan|berkaitan|membahas)\b/.test(lower)) return 'topic';
   return 'title'; // default
 }
 
-/**
- * Strips stop words, expands aliases, and returns a clean semantic query string.
- * @param {string} raw
- * @returns {string}
- */
 function buildSemanticQuery(raw) {
   const tokens = raw
     .toLowerCase()
     .split(/[\s,.\-!?;:]+/)
-    .filter((w) => w.length >= 2 && !STOP_WORDS.has(w));
-
-  // Expand aliases — replace token with expanded phrase if found
-  const expanded = tokens.flatMap((t) => (ALIAS_MAP[t] ? ALIAS_MAP[t].split(' ') : [t]));
-
-  // De-duplicate while preserving order
+    .filter((w) => w.length >= 2 && !STOP_WORDS.has(w));
+  const expanded = tokens.flatMap((t) => (ALIAS_MAP[t] ? ALIAS_MAP[t].split(' ') : [t]));
   const seen = new Set();
-  const deduped = expanded.filter((w) => (seen.has(w) ? false : seen.add(w)));
-
-  // Always return something — fall back to original if stripping removed everything
+  const deduped = expanded.filter((w) => (seen.has(w) ? false : seen.add(w)));
   return deduped.join(' ') || raw;
 }
 
-/**
- * Extract meaningful lexical keywords for scoring boosts (separate from semantic query).
- * Uses LEXICAL_STOP_WORDS (conservative) so content words like 'novel' are not dropped.
- * @param {string} raw
- * @param {Set<string>} [stopWords]
- * @returns {string[]}
- */
 function extractKeywords(raw, stopWords = LEXICAL_STOP_WORDS) {
   return raw
     .toLowerCase()
     .split(/[\s,.\-!?;:]+/)
     .filter((w) => w.length >= 2 && !stopWords.has(w));
-}
-
-// ---------------------------------------------------------------------------
-// ISBN / bibliographic code check
-// ---------------------------------------------------------------------------
+}
 function isBibliographicCode(q) {
   return /^\d{9,13}[\dxX]?$/.test(q.replace(/[\s-]/g, ''));
-}
-
-// ---------------------------------------------------------------------------
-// Book text for embedding (title + category + synopsis)
-// ---------------------------------------------------------------------------
+}
 function bookEmbedText(book) {
   return [
     book.judul,
@@ -152,33 +113,14 @@ function bookEmbedText(book) {
   ]
     .filter(Boolean)
     .join('. ');
-}
-
-// ---------------------------------------------------------------------------
-// Prisma include block (reused in all queries)
-// ---------------------------------------------------------------------------
+}
 const BOOK_INCLUDE = {
   kategori: { select: { id: true, nama: true } },
   penulis: { select: { id: true, nama: true } },
   penerbit: { select: { id: true, nama: true } },
   _count: { select: { peminjaman: true } },
-};
+};
 
-// ---------------------------------------------------------------------------
-// Main search function
-// ---------------------------------------------------------------------------
-
-/**
- * Hybrid semantic + lexical catalog search.
- *
- * @param {Object} options
- * @param {string} [options.query]
- * @param {number|string|null} [options.kategoriId]
- * @param {number} [options.page=1]
- * @param {number} [options.limit=20]
- * @param {'auto'|'semantic'|'lexical'} [options.searchMode='auto']
- * @returns {Promise<{ data: any[], total: number, page: number, limit: number, mode: string, hasSemanticResults: boolean }>}
- */
 export async function searchCatalog({
   query = '',
   kategoriId = null,
@@ -190,11 +132,7 @@ export async function searchCatalog({
   const parsedKategoriId =
     kategoriId && !isNaN(parseInt(kategoriId, 10)) ? parseInt(kategoriId, 10) : null;
   const skip = (Math.max(1, page) - 1) * limit;
-  const categoryWhere = parsedKategoriId ? { kategoriId: parsedKategoriId } : {};
-
-  // ------------------------------------------------------------------ //
-  // 1. Browse mode — no query
-  // ------------------------------------------------------------------ //
+  const categoryWhere = parsedKategoriId ? { kategoriId: parsedKategoriId } : {};
   if (!raw) {
     const [data, total] = await Promise.all([
       prisma.buku.findMany({
@@ -207,11 +145,7 @@ export async function searchCatalog({
       prisma.buku.count({ where: categoryWhere }),
     ]);
     return { data, total, page: Math.max(1, page), limit, mode: 'browse', hasSemanticResults: false };
-  }
-
-  // ------------------------------------------------------------------ //
-  // 2. ISBN exact match
-  // ------------------------------------------------------------------ //
+  }
   if (isBibliographicCode(raw)) {
     const clean = raw.replace(/[\s-]/g, '');
     const where = {
@@ -225,11 +159,7 @@ export async function searchCatalog({
       prisma.buku.count({ where }),
     ]);
     return { data, total, page: Math.max(1, page), limit, mode: 'exact', hasSemanticResults: false };
-  }
-
-  // ------------------------------------------------------------------ //
-  // 3. Semantic search
-  // ------------------------------------------------------------------ //
+  }
   if (searchMode !== 'lexical') {
     try {
       const intent = detectIntent(raw);
@@ -239,8 +169,7 @@ export async function searchCatalog({
 
       const queryVector = await computeEmbedding(semanticQuery, 'RETRIEVAL_QUERY');
 
-      if (queryVector) {
-        // Fetch all candidates (bounded at 500 to avoid OOM on large libraries)
+      if (queryVector) {
         const candidates = await prisma.buku.findMany({
           where: categoryWhere,
           take: 500,
@@ -281,17 +210,9 @@ export async function searchCatalog({
           let maxSemScore = 0;
           for (const item of candidateData) {
             if (item.semScore > maxSemScore) maxSemScore = item.semScore;
-          }
-
-          // Adaptive Thresholding based on best practices:
-          // We use a relative drop-off (elbow) approach on top of absolute floors.
-          const isJina = queryVector.length === 1024;
-          
-          // Jina Baseline: Relevant matches hover around 0.30 - 0.40 in this dataset
-          // ONNX Baseline: Usually similar ranges
-          const semFloor = isJina ? 0.20 : 0.20;
-          
-          // Relative margin: we accept documents that score within this margin of the top match
+          }
+          const isJina = queryVector.length === 1024;
+          const semFloor = isJina ? 0.20 : 0.20;
           const adaptiveMargin = isJina ? 0.15 : 0.12;
           const semThreshold = Math.max(semFloor, maxSemScore - adaptiveMargin);
 
@@ -302,9 +223,7 @@ export async function searchCatalog({
             const lowerTitle = book.judul.toLowerCase();
             const lowerDesc = (book.deskripsi ?? '').toLowerCase();
             const lowerAuthor = (book.penulis?.nama ?? '').toLowerCase();
-            const lowerCategory = (book.kategori?.nama ?? '').toLowerCase();
-
-            // Lexical scoring boosters (additive on top of semantic)
+            const lowerCategory = (book.kategori?.nama ?? '').toLowerCase();
             const exactTitle = lowerTitle.includes(lowerRaw);
             const titleHits = keywords.filter((w) => lowerTitle.includes(w)).length;
             const descHits = keywords.filter((w) => lowerDesc.includes(w)).length;
@@ -316,12 +235,8 @@ export async function searchCatalog({
             combined += Math.min(0.12, titleHits * 0.04);
             combined += Math.min(0.08, descHits * 0.02);
             combined += Math.min(0.10, authorHits * 0.05);
-            combined += Math.min(0.06, categoryHits * 0.03);
-
-            // For author-intent queries, boost author hits more aggressively
-            if (intent === 'author' && authorHits > 0) combined += 0.20;
-
-            // Acceptance gate: semantic score must be meaningful OR strong lexical signal
+            combined += Math.min(0.06, categoryHits * 0.03);
+            if (intent === 'author' && authorHits > 0) combined += 0.20;
             const accepted =
               semScore >= semThreshold ||
               exactTitle ||
@@ -363,9 +278,7 @@ export async function searchCatalog({
       const isRateLimit = err.message === 'GEMINI_RATE_LIMIT';
       const isConn = /connection|timeout|socket|econnrefused/i.test(err.message ?? '');
 
-      if (isRateLimit) {
-        // Fall through to lexical search — user still gets results, just keyword-based.
-        // Re-throwing a 500 here left users with an empty page, which is worse.
+      if (isRateLimit) {
         console.warn('[SEARCH] Gemini rate-limited, falling back to lexical search.');
       } else if (isConn) {
         throw err;
@@ -373,13 +286,7 @@ export async function searchCatalog({
         console.warn('[SEARCH] Non-fatal semantic error, falling back to lexical:', err.message ?? err);
       }
     }
-  }
-
-  // ------------------------------------------------------------------ //
-  // 4. Lexical fallback — keyword-based DB query
-  // ------------------------------------------------------------------ //
-  // Use raw keywords only (no alias expansion) — expanded terms like 'sains', 'alam'
-  // are too generic for SQL LIKE matching and cause false positives.
+  }
   const keywords = extractKeywords(raw);
 
   const wordConditions = keywords.slice(0, 8).flatMap((tok) => [

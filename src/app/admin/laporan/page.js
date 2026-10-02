@@ -41,7 +41,7 @@ export default function LaporanPage() {
     <>
       <TopBar title="Laporan Peminjaman Buku" subtitle="Rekapitulasi data peminjaman dan pengembalian buku per periode" />
       <div className="p-4 sm:p-6 space-y-6">
-        {/* Controls Bar */}
+        {}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 no-print bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-2.5 flex-1">
             <select
@@ -78,7 +78,7 @@ export default function LaporanPage() {
           </button>
         </div>
 
-        {/* Formal Print Header */}
+        {}
         <div className="hidden print:block mb-6">
           <h1 className="text-2xl font-bold text-slate-900">Perpustakaan Metland School</h1>
           <h2 className="text-lg text-slate-700">Laporan Peminjaman Buku: {MONTHS[bulan - 1]} {tahun}</h2>
@@ -94,7 +94,7 @@ export default function LaporanPage() {
           </div>
         ) : data && (
           <>
-            {/* Period Statistics Summary */}
+            {}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {[
                 {
@@ -137,7 +137,7 @@ export default function LaporanPage() {
               })}
             </div>
 
-            {/* Circulation Detail Table */}
+            {}
             <div className="library-card overflow-hidden">
               <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
                 <h2 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base">
@@ -198,7 +198,7 @@ export default function LaporanPage() {
               </div>
             </div>
 
-            {/* Popular & Most Active Analysis */}
+            {}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="library-card p-5 space-y-3">
                 <h2 className="font-bold text-slate-900 dark:text-slate-100 text-sm sm:text-base border-b border-slate-100 dark:border-slate-800 pb-2">

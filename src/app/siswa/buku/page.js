@@ -3,9 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight, Library } from 'lucide-react';
-import VoiceSearchButton from '@/components/ui/VoiceSearchButton';
-
-// SWR In-Memory Client Cache (persists during active browser session across tab switches)
+import VoiceSearchButton from '@/components/ui/VoiceSearchButton';
 let clientCatalogCache = null;
 let clientKategoriCache = null;
 
@@ -21,9 +19,7 @@ export default function SiswaBukuPage() {
   const [searchMeta, setSearchMeta] = useState({ mode: 'browse', hasSemanticResults: false });
   const limit = 12;
 
-  const isInitialMount = useRef(true);
-
-  // Initialize search query from URL parameter if navigated from dashboard
+  const isInitialMount = useRef(true);
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -43,8 +39,7 @@ export default function SiswaBukuPage() {
   }, [search]);
 
   const fetch_ = useCallback(async () => {
-    const isDefaultBrowse = !debouncedSearch && page === 1 && !kategoriFilter;
-    // Only show full loading skeleton if we don't already have cached browse data
+    const isDefaultBrowse = !debouncedSearch && page === 1 && !kategoriFilter;
     if (!isDefaultBrowse || !clientCatalogCache) {
       setLoading(true);
     }
@@ -100,7 +95,7 @@ export default function SiswaBukuPage() {
 
   return (
     <div className="space-y-6">
-      {/* Catalog Header */}
+      {}
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
           Katalog Koleksi Buku
@@ -110,7 +105,7 @@ export default function SiswaBukuPage() {
         </p>
       </div>
 
-      {/* Search & Category Filter Toolbar */}
+      {}
       <div className="space-y-2">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="relative flex-1">
@@ -154,7 +149,7 @@ export default function SiswaBukuPage() {
           </select>
         </div>
 
-        {/* Semantic Search Context Feedback Bar */}
+        {}
         {debouncedSearch && !loading && (
           <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 pt-0.5">
             <span>
@@ -169,7 +164,7 @@ export default function SiswaBukuPage() {
         )}
       </div>
 
-      {/* Book Grid State */}
+      {}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
           {Array.from({ length: 8 }).map((_, i) => (
@@ -200,7 +195,7 @@ export default function SiswaBukuPage() {
               style={{ animation: `slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.05}s both` }}
               className="library-card p-3.5 sm:p-4 flex flex-col h-full group hover:border-slate-300 dark:hover:border-slate-700 transition-all block focus-visible:outline-2 focus-visible:outline-blue-600"
             >
-              {/* Authentic Book Spine & Cover Container */}
+              {}
               <div className="w-full rounded-lg mb-3 flex items-center justify-center overflow-hidden border border-slate-200/90 dark:border-slate-700/80 bg-slate-100 dark:bg-slate-800 relative h-48 sm:h-52 book-cover-wrap flex-shrink-0">
                 {b.cover ? (
                   <img
@@ -220,7 +215,7 @@ export default function SiswaBukuPage() {
                 )}
               </div>
 
-              {/* Bibliographic Info */}
+              {}
               <div className="flex-1 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
@@ -254,7 +249,7 @@ export default function SiswaBukuPage() {
                   </span>
                 </div>
 
-                {/* Hover Reveal Details (Melebar vertikal kebawah) */}
+                {}
                 <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
                   <div className="overflow-hidden">
                     <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 line-clamp-4">
@@ -268,7 +263,7 @@ export default function SiswaBukuPage() {
         </div>
       )}
 
-      {/* Pagination Controls (44px Minimum Touch Targets) */}
+      {}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-4">
           <button

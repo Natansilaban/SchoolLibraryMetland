@@ -46,9 +46,7 @@ export async function DELETE(req, { params }) {
     const penerbitId = parseInt(id, 10);
     if (!penerbitId || isNaN(penerbitId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
-    }
-
-    // Check if publisher is linked to books
+    }
     const booksCount = await prisma.buku.count({ where: { penerbitId } });
     if (booksCount > 0) {
       return NextResponse.json(

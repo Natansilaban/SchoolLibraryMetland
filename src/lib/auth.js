@@ -10,8 +10,7 @@ export const authOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
-        // 1. Secure Server-Gated Demo Mode Authorization (Zero Passwords on Client)
+      async authorize(credentials) {
         if (credentials?.isDemo === 'true') {
           const isDemoEnabled =
             process.env.ENABLE_DEMO_LOGIN === 'true' ||
@@ -39,9 +38,7 @@ export const authOptions = {
             nis: demoUser.anggota?.nis || null,
             kelas: demoUser.anggota?.kelas || null,
           };
-        }
-
-        // 2. Standard Cryptographic Credentials Authorization
+        }
         if (!credentials?.email || !credentials?.password) return null;
 
         try {

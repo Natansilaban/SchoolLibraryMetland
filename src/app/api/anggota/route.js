@@ -59,9 +59,7 @@ export async function POST(req) {
 
     if (!nama || !nis || !kelas || !email || !password) {
       return NextResponse.json({ error: 'Nama, NIS, Kelas, Email, dan Password wajib diisi' }, { status: 400 });
-    }
-
-    // Email format validation
+    }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return NextResponse.json({ error: 'Format alamat email tidak valid' }, { status: 400 });

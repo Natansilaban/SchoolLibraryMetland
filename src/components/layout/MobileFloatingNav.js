@@ -13,14 +13,6 @@ import {
   BookOpen
 } from 'lucide-react';
 
-/**
- * NAV_ITEMS
- * Hoisted static configuration according to Vercel React Best Practices.
- * Icons strictly match the Dribbble reference:
- * - LayoutGrid (4-dots/grid icon for Overview / Beranda)
- * - BookMarked (Folder / Catalog icon for Insights / Katalog)
- * - BookCopy (Ribbon / Loans icon for Lifeline / Peminjaman)
- */
 const NAV_ITEMS = [
   {
     href: '/siswa/dashboard',
@@ -39,22 +31,9 @@ const NAV_ITEMS = [
   },
 ];
 
-/**
- * MobileFloatingNav
- * High-performance, hardware-accelerated translucent floating navigation bar (Mobile ONLY).
- * Implements the Dribbble capsule + circular action button reference.
- *
- * Performance compliance:
- * - fixing-motion-performance: 0 scroll listeners, composite-only transforms (scale/rotate),
- *   subtle non-animated blur (<=10px) with high-opacity fallback, GPU layer promotion.
- * - performance-optimization & web-perf: 0 layout shifts (CLS=0), <50ms INP, safe tap targets (>=48px).
- * - vercel-react-best-practices: Component memoization, hoisted arrays, direct lucide imports.
- */
 function MobileFloatingNav() {
   const pathname = usePathname();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Auto-close quick action menu on route change
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   useEffect(() => {
     setIsMenuOpen(false);
   }, [pathname]);
@@ -63,7 +42,7 @@ function MobileFloatingNav() {
 
   return (
     <>
-      {/* Fullscreen Backdrop (No full-screen blur to protect GPU fill-rate on mobile) */}
+      {}
       {isMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-950/25 dark:bg-slate-950/50 transition-opacity md:hidden"
@@ -77,7 +56,7 @@ function MobileFloatingNav() {
         className="md:hidden fixed bottom-[max(1rem,env(safe-area-inset-bottom))] inset-x-0 z-50 flex items-center justify-center pointer-events-none px-3 transform-gpu"
       >
         <div className="pointer-events-auto relative flex items-center gap-2 max-w-full">
-          {/* Quick Action Popover Sheet */}
+          {}
           {isMenuOpen && (
             <div
               role="dialog"
@@ -149,7 +128,7 @@ function MobileFloatingNav() {
             </div>
           )}
 
-          {/* Translucent Capsule / Pill Navigation (Dribbble Left Element) */}
+          {}
           <nav
             style={{ contain: 'paint layout' }}
             className="flex items-center gap-1 p-1 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.08),0_1px_3px_rgba(15,23,42,0.04)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.45)] ring-1 ring-black/[0.04] dark:ring-white/[0.08]"
@@ -194,7 +173,7 @@ function MobileFloatingNav() {
             })}
           </nav>
 
-          {/* Circular Action Button (Dribbble Right Element) */}
+          {}
           <div className="relative">
             <button
               type="button"

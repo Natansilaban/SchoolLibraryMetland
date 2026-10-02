@@ -1,12 +1,5 @@
 import { NextResponse } from 'next/server';
 
-/**
- * Parses and bounds pagination parameters to protect against DoS attacks.
- * @param {URLSearchParams} searchParams
- * @param {number} defaultLimit
- * @param {number} maxLimit
- * @returns {{ page: number, limit: number, skip: number }}
- */
 export function getPaginationParams(searchParams, defaultLimit = 20, maxLimit = 100) {
   const rawPage = parseInt(searchParams.get('page') || '1', 10);
   const rawLimit = parseInt(searchParams.get('limit') || String(defaultLimit), 10);
@@ -18,14 +11,7 @@ export function getPaginationParams(searchParams, defaultLimit = 20, maxLimit = 
   return { page, limit, skip };
 }
 
-/**
- * Sanitizes and handles API errors, masking sensitive database/Prisma internals.
- * @param {Error|any} error
- * @param {string} [customMessage]
- * @returns {NextResponse}
- */
-export function handleApiError(error, customMessage) {
-  // Always log the full trace on server-side for maintainers
+export function handleApiError(error, customMessage) {
   console.error('[API Handler Error]:', error);
 
   if (!error) {
@@ -33,9 +19,7 @@ export function handleApiError(error, customMessage) {
       { error: customMessage || 'Terjadi kesalahan internal pada server' },
       { status: 500 }
     );
-  }
-
-  // Handle Prisma-specific codes
+  }
   if (error.code === 'P2002') {
     const target = Array.isArray(error.meta?.target) ? error.meta.target.join(', ') : 'tersebut';
     return NextResponse.json(
@@ -56,9 +40,7 @@ export function handleApiError(error, customMessage) {
       { error: 'Data yang dicari tidak ditemukan.' },
       { status: 404 }
     );
-  }
-
-  // Detect sensitive database/ORM traces in error message
+  }
   const msg = error.message || '';
   const isPrismaOrDbTrace =
     error.code?.startsWith('P') ||
@@ -77,9 +59,7 @@ export function handleApiError(error, customMessage) {
       { error: customMessage || 'Terjadi kendala pada pemrosesan database. Silakan coba beberapa saat lagi.' },
       { status: 500 }
     );
-  }
-
-  // Explicit operational error messages (safe business exceptions)
+  }
   return NextResponse.json(
     { error: msg || customMessage || 'Terjadi kesalahan pada server' },
     { status: error.statusCode || 500 }

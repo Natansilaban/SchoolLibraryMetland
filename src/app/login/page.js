@@ -82,13 +82,13 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center px-4 py-10 bg-[#FBFBF9] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 relative"
       role="main"
     >
-      {/* Theme Switcher in Corner */}
+      {}
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
 
       <div className="w-full max-w-md space-y-6">
-        {/* Scholastic Library Brand Identity */}
+        {}
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs mx-auto p-2">
             <img
@@ -109,7 +109,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Standard Credentials Form */}
+        {}
         <div className="library-card p-6 sm:p-7 space-y-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="border-b border-slate-100 dark:border-slate-800 pb-3">
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -201,7 +201,7 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* 1-Click Demo Quick Login (Server-Gated, Zero Hardcoded Credentials) */}
+          {}
           {process.env.NEXT_PUBLIC_ENABLE_DEMO_LOGIN === "true" && (
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">

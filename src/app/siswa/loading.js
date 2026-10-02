@@ -1,7 +1,7 @@
 export default function SiswaDefaultLoading() {
   return (
     <div className="space-y-6 animate-pulse">
-      {/* Top Banner Skeleton */}
+      {}
       <div className="h-28 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 flex items-center gap-4">
         <div className="w-14 h-14 rounded-xl bg-slate-100 dark:bg-slate-800 flex-shrink-0" />
         <div className="space-y-2 flex-1">
@@ -10,7 +10,7 @@ export default function SiswaDefaultLoading() {
         </div>
       </div>
 
-      {/* Metric Cards Skeleton */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
           <div

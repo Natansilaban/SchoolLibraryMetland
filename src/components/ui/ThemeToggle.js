@@ -17,8 +17,7 @@ export default function ThemeToggle({ className = '' }) {
         } else {
           document.documentElement.classList.remove('dark');
         }
-      } else {
-        // Based on device / OS preference
+      } else {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         setTheme(prefersDark ? 'dark' : 'light');
         if (prefersDark) {
@@ -30,9 +29,7 @@ export default function ThemeToggle({ className = '' }) {
     };
 
     checkTheme();
-    setMounted(true);
-
-    // Listen for OS / device theme changes (when no manual override is set)
+    setMounted(true);
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleSystemChange = (e) => {
       const saved = localStorage.getItem('theme');
@@ -44,9 +41,7 @@ export default function ThemeToggle({ className = '' }) {
           document.documentElement.classList.remove('dark');
         }
       }
-    };
-
-    // Listen for cross-tab theme changes
+    };
     const handleStorageChange = (e) => {
       if (e.key === 'theme') {
         checkTheme();

@@ -30,8 +30,7 @@ const categoriesData = [
 const publishers = ['Gramedia Pustaka Utama', 'Erlangga', 'Mizan Pustaka', 'Andi Publisher', 'Balai Pustaka', 'Elex Media Komputindo', 'Penerbit Buku Kedokteran EGC', 'Informatika Bandung'];
 const authors = ['Andrea Hirata', 'Tere Liye', 'Budi Santoso', 'Joko Widodo', 'Dewi Lestari', 'Eka Kurniawan', 'Chef Juna', 'Chef William Wongso', 'Sandhika Galih', 'Romi Satria Wahono', 'Prof. Dr. B.J. Habibie', 'Prof. Yohanes Surya', 'Dr. Boyke'];
 
-const books = [
-  // 1. Kuliner & Tata Boga (15 Books)
+const books = [
   { t: "Resep Rahasia Masakan Padang", d: "Panduan memasak rendang, gulai, dan sate padang asli dengan bumbu rempah tradisional pilihan." },
   { t: "Seni Plating Fine Dining", d: "Teknik menata makanan di piring untuk restoran bintang lima. Meningkatkan estetika hidangan." },
   { t: "Baking 101: Roti dan Pastry", d: "Buku dasar membuat roti, croissant, dan kue kering dengan teknik fermentasi yang benar." },
@@ -46,9 +45,7 @@ const books = [
   { t: "Hygiene dan Sanitasi Makanan", d: "Standar kebersihan dalam mengolah dan menyajikan makanan agar terhindar dari kontaminasi bakteri." },
   { t: "Masakan Jepang Populer", d: "Resep rumahan ala Jepang: Sushi, Ramen, Takoyaki, dan Chicken Katsu yang mudah dibuat." },
   { t: "Teknik Sous Vide untuk Pemula", d: "Memasak daging steak dengan suhu presisi menggunakan metode sous vide agar empuk sempurna." },
-  { t: "Bisnis Katering Rumahan", d: "Strategi memulai usaha katering dari dapur rumah, menghitung HPP, dan manajemen menu harian." },
-
-  // 2. Perhotelan & Pariwisata (15 Books)
+  { t: "Bisnis Katering Rumahan", d: "Strategi memulai usaha katering dari dapur rumah, menghitung HPP, dan manajemen menu harian." },
   { t: "Manajemen Front Office Hotel", d: "Standar operasional resepsionis, penanganan tamu, dan sistem reservasi kamar hotel." },
   { t: "Housekeeping: Tata Graha Profesional", d: "Teknik membersihkan kamar hotel, penataan tempat tidur, dan penggunaan alat kebersihan industri." },
   { t: "Pemandu Wisata Profesional", d: "Keterampilan public speaking dan pengetahuan lokal untuk menjadi tour guide bersertifikat." },
@@ -63,9 +60,7 @@ const books = [
   { t: "Desain Interior Hotel Butik", d: "Tren arsitektur dan penataan ruang hotel butik untuk memberikan pengalaman menginap yang unik." },
   { t: "Keselamatan Kerja di Perhotelan", d: "SOP penanganan kebakaran, kecelakaan kerja, dan evakuasi darurat di gedung perhotelan." },
   { t: "Manajemen Restoran dan Bar", d: "Mengelola operasional harian restoran, menyusun menu, dan memastikan kualitas layanan." },
-  { t: "Tren Pariwisata Pasca Pandemi", d: "Analisis perubahan perilaku wisatawan yang lebih memilih wisata privat, alam, dan kebersihan tinggi." },
-
-  // 3. Teknologi Informasi & Komputer (15 Books)
+  { t: "Tren Pariwisata Pasca Pandemi", d: "Analisis perubahan perilaku wisatawan yang lebih memilih wisata privat, alam, dan kebersihan tinggi." },
   { t: "Algoritma dan Struktur Data", d: "Konsep dasar pemrograman, array, linked list, tree, dan algoritma sorting untuk mahasiswa Informatika." },
   { t: "Mastering React dan Next.js", d: "Membangun aplikasi web modern dengan Server-Side Rendering, App Router, dan Tailwind CSS." },
   { t: "Pengantar Kecerdasan Buatan (AI)", d: "Buku dasar pengenalan Machine Learning, Neural Networks, dan implementasi AI di dunia nyata." },
@@ -80,9 +75,7 @@ const books = [
   { t: "Cloud Computing dengan AWS", d: "Panduan mendeploy aplikasi ke cloud, mengatur load balancer, dan menggunakan layanan S3 dan EC2." },
   { t: "Blockchain dan Smart Contract", d: "Memahami desentralisasi mata uang kripto dan cara menulis smart contract menggunakan Solidity." },
   { t: "Sistem Operasi Linux", d: "Perintah dasar terminal bash, manajemen user, dan konfigurasi server berbasis Ubuntu Linux." },
-  { t: "Game Development dengan Unity", d: "Membuat game 2D dan 3D interaktif menggunakan bahasa C# dan engine Unity." },
-
-  // 4. Bisnis & Kewirausahaan (15 Books)
+  { t: "Game Development dengan Unity", d: "Membuat game 2D dan 3D interaktif menggunakan bahasa C# dan engine Unity." },
   { t: "Strategi Digital Marketing", d: "Cara mengoptimalkan iklan di Facebook, Instagram, dan Google Ads untuk meningkatkan penjualan UMKM." },
   { t: "Akuntansi untuk Usaha Kecil", d: "Membuat laporan laba rugi, neraca, dan arus kas sederhana tanpa perlu latar belakang akuntansi." },
   { t: "Manajemen SDM Modern", d: "Teknik rekrutmen karyawan, penilaian kinerja, dan menciptakan budaya kerja yang positif di perusahaan." },
@@ -97,9 +90,7 @@ const books = [
   { t: "Pitching ke Investor", d: "Cara membuat presentasi pitch deck yang meyakinkan Venture Capital untuk mendanai startup Anda." },
   { t: "Bisnis Waralaba (Franchise)", d: "Panduan membeli, mengelola, atau menyusun sistem kemitraan franchise restoran dan minimarket." },
   { t: "Manajemen Risiko Perusahaan", d: "Cara mengidentifikasi, mengukur, dan memitigasi risiko kerugian dalam ekspansi bisnis besar." },
-  { t: "Customer Relationship Management", d: "Menjaga loyalitas pelanggan dengan program membership, layanan purna jual, dan software CRM." },
-
-  // 5. Sastra & Fiksi (15 Books)
+  { t: "Customer Relationship Management", d: "Menjaga loyalitas pelanggan dengan program membership, layanan purna jual, dan software CRM." },
   { t: "Bumi Manusia", d: "Kisah cinta dan perlawanan Minke di era kolonial Hindia Belanda. Sebuah mahakarya sastra Indonesia." },
   { t: "Laskar Pelangi", d: "Perjuangan 10 anak desa di Belitung untuk mendapatkan pendidikan yang layak meski di tengah kemiskinan." },
   { t: "Cantik Itu Luka", d: "Kisah epik magis realisme tentang kutukan kecantikan sebuah keluarga di kota fiksi Halimunda." },
@@ -114,9 +105,7 @@ const books = [
   { t: "Negeri 5 Menara", d: "Perjuangan santri di pondok pesantren Madani untuk menggapai mimpi berkeliling dunia lewat pepatah Man Jadda Wajada." },
   { t: "Aroma Karsa", d: "Petualangan pencarian bunga langka beraroma magis yang menyimpan rahasia kutukan kuno dari zaman Majapahit." },
   { t: "Bidadari-Bidadari Surga", d: "Kisah pengorbanan seorang kakak perempuan yang rela menunda kebahagiaannya demi menyekolahkan adik-adiknya." },
-  { t: "Marmut Merah Jambu", d: "Kumpulan cerita komedi romantis tentang pengalaman cinta masa sekolah yang konyol dan tak terlupakan." },
-
-  // 6. Sains Alam & Matematika (15 Books)
+  { t: "Marmut Merah Jambu", d: "Kumpulan cerita komedi romantis tentang pengalaman cinta masa sekolah yang konyol dan tak terlupakan." },
   { t: "Kalkulus Edisi Kesembilan", d: "Buku referensi wajib mahasiswa teknik untuk memahami limit, turunan, dan integral secara mendalam." },
   { t: "Fisika Dasar Universitas", d: "Mekanika klasik, termodinamika, elektromagnetisme, dan optik dengan pendekatan problem-solving." },
   { t: "Biologi Molekuler Sel", d: "Struktur DNA, pembelahan sel, sintesis protein, dan mekanisme genetik makhluk hidup tingkat seluler." },
@@ -131,9 +120,7 @@ const books = [
   { t: "Fisika Kuantum untuk Pemula", d: "Pengenalan dunia sub-atomik, prinsip ketidakpastian Heisenberg, dan dualitas gelombang-partikel cahaya." },
   { t: "Kimia Lingkungan", d: "Analisis dampak polusi logam berat, efek rumah kaca, dan solusi energi terbarukan secara kimiawi." },
   { t: "Botani Tumbuhan Berpembuluh", d: "Morfologi, anatomi, dan taksonomi tumbuhan tingkat tinggi serta siklus fotosintesis fotosistem." },
-  { t: "Kalkulus Multivariabel", d: "Perluasan ilmu kalkulus untuk ruang tiga dimensi, turunan parsial, dan integral lipat ganda." },
-
-  // 7. Sejarah & Sosial Budaya (15 Books)
+  { t: "Kalkulus Multivariabel", d: "Perluasan ilmu kalkulus untuk ruang tiga dimensi, turunan parsial, dan integral lipat ganda." },
   { t: "Sejarah Nasional Indonesia Jilid I", d: "Zaman prasejarah dan kerajaan Hindu-Buddha di Nusantara. Menelusuri kejayaan Sriwijaya dan Majapahit." },
   { t: "Sosiologi Suatu Pengantar", d: "Konsep dasar interaksi sosial, stratifikasi masyarakat, konflik kelas, dan perubahan kebudayaan." },
   { t: "Antropologi Budaya", d: "Mempelajari keragaman suku bangsa, adat istiadat, ritual keagamaan, dan bahasa lokal di seluruh dunia." },
@@ -148,9 +135,7 @@ const books = [
   { t: "Dekolonisasi Asia Afrika", d: "Proses runtuhnya imperialisme Eropa dan lahirnya negara-negara merdeka di pertengahan abad ke-20." },
   { t: "Demografi dan Kependudukan", d: "Analisis piramida penduduk, migrasi, urbanisasi, dan ancaman ledakan populasi di negara berkembang." },
   { t: "Feminisme dan Kesetaraan Gender", d: "Sejarah gerakan perempuan menuntut hak pilih, kesetaraan gaji, dan penolakan diskriminasi patriarki." },
-  { t: "Sejarah Perang Dingin", d: "Ketegangan ideologi antara Amerika Serikat dan Uni Soviet, perlombaan senjata nuklir, dan perang proksi." },
-
-  // 8. Bahasa & Komunikasi (15 Books)
+  { t: "Sejarah Perang Dingin", d: "Ketegangan ideologi antara Amerika Serikat dan Uni Soviet, perlombaan senjata nuklir, dan perang proksi." },
   { t: "Tata Bahasa Baku Bahasa Indonesia", d: "Pedoman resmi pembentukan kata, penyusunan kalimat efektif, dan aturan Ejaan Yang Disempurnakan (EYD)." },
   { t: "TOEFL Preparation Guide", d: "Latihan soal listening, reading, dan structure untuk mencapai skor TOEFL iBT di atas 100." },
   { t: "Public Speaking untuk Introvert", d: "Teknik mengatasi grogi, menyusun materi pidato, dan menguasai panggung presentasi dengan percaya diri." },
@@ -191,13 +176,9 @@ async function main() {
   const createdBooks = [];
   
   for (let i = 0; i < books.length; i++) {
-    const b = books[i];
-    
-    // Determine category based on index (15 books per category)
+    const b = books[i];
     const catIndex = Math.floor(i / 15);
-    const catName = categoriesData[catIndex];
-    
-    // Pick random author and publisher
+    const catName = categoriesData[catIndex];
     const authorName = authors[i % authors.length];
     const publisherName = publishers[i % publishers.length];
     

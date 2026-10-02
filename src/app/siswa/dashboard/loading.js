@@ -1,7 +1,7 @@
 export default function SiswaDashboardLoading() {
   return (
     <div className="space-y-6">
-      {/* Kartu Anggota Skeleton */}
+      {}
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -16,7 +16,7 @@ export default function SiswaDashboardLoading() {
         </div>
       </div>
 
-      {/* Circulation Metric Cards Skeleton */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="library-card p-4 sm:p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
@@ -30,7 +30,7 @@ export default function SiswaDashboardLoading() {
         ))}
       </div>
 
-      {/* Actionable Library Gateways Skeleton */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[1, 2].map((i) => (
           <div key={i} className="library-card p-5 flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
@@ -46,7 +46,7 @@ export default function SiswaDashboardLoading() {
         ))}
       </div>
 
-      {/* Featured Books Skeleton */}
+      {}
       <div className="library-card p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="space-y-1">
@@ -66,7 +66,7 @@ export default function SiswaDashboardLoading() {
         </div>
       </div>
 
-      {/* Recent Loans Feed Skeleton */}
+      {}
       <div className="library-card p-5 sm:p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="space-y-1">

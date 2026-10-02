@@ -1,8 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const dotenv = require('dotenv');
-
-// Prioritize .env.local if present, consistent with Next.js environment resolution
+const dotenv = require('dotenv');
 const envLocalPath = path.resolve(process.cwd(), '.env.local');
 if (fs.existsSync(envLocalPath)) {
   dotenv.config({ path: envLocalPath });
@@ -19,9 +17,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  console.log('🌱 Memulai proses seeding data Perpustakaan SMK Pariwisata Metland...');
-
-  // 1. Seed Akun Petugas & Siswa
+  console.log('🌱 Memulai proses seeding data Perpustakaan SMK Pariwisata Metland...');
   const adminHash = await bcrypt.hash('admin123', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'admin@metland.sch.id' },
@@ -53,9 +49,7 @@ async function main() {
       },
     },
   });
-  console.log('✅ Akun Siswa siap:', siswa.email);
-
-  // 2. Seed Kategori Koleksi (Relevan untuk SMK Pariwisata & Umum)
+  console.log('✅ Akun Siswa siap:', siswa.email);
   const categoriesData = [
     { nama: 'Kuliner & Tata Boga', deskripsi: 'Teknik memasak, manajemen dapur, pastry and bakery, serta higienitas sanitasi makanan.' },
     { nama: 'Perhotelan & Pariwisata', deskripsi: 'Operasional kantor depan, tata graha, layanan makanan dan minuman, serta manajemen destinasi wisata.' },
@@ -76,9 +70,7 @@ async function main() {
     });
     categoryMap[c.nama] = record.id;
   }
-  console.log('✅ Kategori terdaftar:', Object.keys(categoryMap).length);
-
-  // 3. Seed Penulis
+  console.log('✅ Kategori terdaftar:', Object.keys(categoryMap).length);
   const authorsData = [
     { nama: 'Pramoedya Ananta Toer', bio: 'Sastrawan terkemuka Indonesia, penulis Tetralogi Buru.' },
     { nama: 'Andrea Hirata', bio: 'Novelis Indonesia, penulis fenomena internasional Laskar Pelangi.' },
@@ -103,9 +95,7 @@ async function main() {
       authorMap[a.nama] = created.id;
     }
   }
-  console.log('✅ Penulis terdaftar:', Object.keys(authorMap).length);
-
-  // 4. Seed Penerbit
+  console.log('✅ Penulis terdaftar:', Object.keys(authorMap).length);
   const publishersData = [
     { nama: 'Gramedia Pustaka Utama', kota: 'Jakarta', website: 'https://gpu.id' },
     { nama: 'Erlangga', kota: 'Jakarta', website: 'https://erlangga.co.id' },
@@ -124,11 +114,8 @@ async function main() {
       publisherMap[p.nama] = created.id;
     }
   }
-  console.log('✅ Penerbit terdaftar:', Object.keys(publisherMap).length);
-
-  // 5. Seed 30 Buku Mockup Kaya Metadata untuk Pengujian Semantic Search
-  const booksCollection = [
-    // Kuliner & Tata Boga
+  console.log('✅ Penerbit terdaftar:', Object.keys(publisherMap).length);
+  const booksCollection = [
     {
       judul: 'Cita Rasa Nusantara: Seni Mengolah Masakan Tradisional Indonesia',
       isbn: '978-602-03-8810-1',
@@ -168,9 +155,7 @@ async function main() {
       penulis: 'Chef William Wongso',
       penerbit: 'Gramedia Pustaka Utama',
       deskripsi: 'Mengenal profil sangrai biji kopi arabika dan robusta, teknik seduh manual brew V60, pengoperasian mesin espresso, latte art, dan kalkulasi modal kedai kopi.',
-    },
-
-    // Perhotelan & Pariwisata
+    },
     {
       judul: 'Manajemen Operasional Front Office Hotel Berbintang',
       isbn: '978-979-01-4412-2',
@@ -210,9 +195,7 @@ async function main() {
       penulis: 'Bambang Hermanto',
       penerbit: 'Erlangga',
       deskripsi: 'Teknik table setting perjamuan formal, etika melayani tamu restoran fine dining (banquet service), pengenalan peralatan makan silverware, dan etiket penyajian hidangan.',
-    },
-
-    // Teknologi Informasi & Komputer
+    },
     {
       judul: 'Pemrograman Web Modern dengan JavaScript dan React',
       isbn: '978-623-01-0982-1',
@@ -252,9 +235,7 @@ async function main() {
       penulis: 'Sandhika Galih',
       penerbit: 'Erlangga',
       deskripsi: 'Konfigurasi routing Mikrotik, pembagian subnetting IP address, pemasangan firewall jaringan, dan teknik pertahanan dasar terhadap serangan peretasan siber.',
-    },
-
-    // Bisnis & Kewirausahaan
+    },
     {
       judul: 'Kewirausahaan Kreatif Generasi Muda: Merintis Startup dari Nol',
       isbn: '978-602-06-4421-6',
@@ -294,9 +275,7 @@ async function main() {
       penulis: 'Philip Kotler',
       penerbit: 'Gramedia Pustaka Utama',
       deskripsi: 'Pentingnya integritas profesional, cara bernegosiasi dengan mitra bisnis lintas negara, etika korespondensi resmi, dan tanggung jawab sosial perusahaan.',
-    },
-
-    // Sastra & Fiksi
+    },
     {
       judul: 'Bumi Manusia',
       isbn: '978-979-973-123-4',
@@ -356,9 +335,7 @@ async function main() {
       penulis: 'Dewi Lestari',
       penerbit: 'Mizan Pustaka',
       deskripsi: 'Sebuah eksplorasi fiksi yang memadukan sains kuantum, filsafat eksistensial, dan jalinan romantisme perkotaan metropolitan Jakarta.',
-    },
-
-    // Sains Alam & Matematika
+    },
     {
       judul: 'Fisika Terapan dan Termodinamika Dapur untuk Kejuruan',
       isbn: '978-979-01-2290-7',
@@ -388,9 +365,7 @@ async function main() {
       penulis: 'Bambang Hermanto',
       penerbit: 'Erlangga',
       deskripsi: 'Statistik peramalan okupansi kamar hotel, kalkulasi food cost percentage resep masakan, analisis titik impas BEP, dan diskon musiman pariwisata.',
-    },
-
-    // Sejarah & Sosial Budaya
+    },
     {
       judul: 'Sejarah Nasional Indonesia: Menelusuri Jalur Rempah Nusantara',
       isbn: '978-602-03-6612-4',
@@ -420,9 +395,7 @@ async function main() {
       penulis: 'Bambang Hermanto',
       penerbit: 'Gramedia Pustaka Utama',
       deskripsi: 'Interaksi sosial antara wisatawan domestik maupun mancanegara dengan warga desa wisata lokal, adaptasi kebudayaan, serta pencegahan komersialisasi berlebihan ritual adat.',
-    },
-
-    // Bahasa & Komunikasi
+    },
     {
       judul: 'Bahasa Inggris Praktis untuk Front Office dan Pramusaji Hotel',
       isbn: '978-979-01-5589-2',
@@ -443,9 +416,7 @@ async function main() {
       penerbit: 'Gramedia Pustaka Utama',
       deskripsi: 'Mengatasi rasa gugup di depan umum, pengaturan bahasa tubuh dan kontak mata, teknik intonasi suara, serta cara menyusun materi tayangan presentasi yang menarik.',
     },
-  ];
-
-  // Import 46 additional highly detailed mock books to reach 72 total
+  ];
   const extraBooks = require('./mock-extra.js');
   
   for (let i = 0; i < extraBooks.length; i++) {

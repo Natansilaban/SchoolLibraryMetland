@@ -46,9 +46,7 @@ export async function DELETE(req, { params }) {
     const kategoriId = parseInt(id, 10);
     if (!kategoriId || isNaN(kategoriId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
-    }
-
-    // Check if category is used by any books before deleting
+    }
     const booksCount = await prisma.buku.count({ where: { kategoriId } });
     if (booksCount > 0) {
       return NextResponse.json(

@@ -6,8 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const startTime = Date.now();
 
-  try {
-    // Perform a lightweight database connectivity check
+  try {
     await prisma.$queryRaw`SELECT 1`;
 
     const responseTimeMs = Date.now() - startTime;

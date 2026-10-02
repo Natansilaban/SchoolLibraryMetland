@@ -65,7 +65,7 @@ export default function SiswaNav() {
           </nav>
 
           <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-            {/* Theme Toggle Button */}
+            {}
             <ThemeToggle />
 
             <Link
@@ -98,7 +98,7 @@ export default function SiswaNav() {
         </div>
       </header>
 
-      {/* Dynamic Translucent Floating Pill Navigation for Mobile */}
+      {}
       <MobileFloatingNav />
     </>
   );

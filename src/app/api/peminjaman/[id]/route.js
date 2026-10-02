@@ -43,9 +43,7 @@ export async function PATCH(req, { params }) {
 
         if (!['DIPINJAM', 'TERLAMBAT'].includes(peminjaman.status)) {
           throw new Error(`Buku ini berstatus ${peminjaman.status} dan tidak sedang aktif dipinjam`);
-        }
-
-        // Root Cause Remediation (SEC-03): Enforce server-side timestamp to prevent client fine forgery
+        }
         const tglAktual = new Date();
         const tglRencana = new Date(peminjaman.tglKembaliRencana);
         tglAktual.setHours(0, 0, 0, 0);
@@ -128,9 +126,7 @@ export async function PATCH(req, { params }) {
             catatan: catatan || peminjaman.catatan,
           },
           include: { anggota: true, buku: true },
-        });
-
-        // Root Cause Remediation (SEC-02): Atomic check-and-decrement prevents approval race conditions
+        });
         const stockUpdate = await tx.buku.updateMany({
           where: { id: peminjaman.bukuId, stok: { gt: 0 } },
           data: { stok: { decrement: 1 } },

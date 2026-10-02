@@ -1,20 +1,20 @@
 export default function PeminjamanLoading() {
   return (
     <div className="space-y-6 animate-pulse">
-      {/* Header Skeleton */}
+      {}
       <div className="space-y-2">
         <div className="h-7 w-52 bg-slate-200 dark:bg-slate-800 rounded-lg" />
         <div className="h-4 w-80 max-w-full bg-slate-100 dark:bg-slate-800/60 rounded" />
       </div>
 
-      {/* Tabs Skeleton */}
+      {}
       <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
         <div className="h-8 w-28 bg-slate-200 dark:bg-slate-800 rounded-lg" />
         <div className="h-8 w-28 bg-slate-100 dark:bg-slate-800/60 rounded-lg" />
         <div className="h-8 w-28 bg-slate-100 dark:bg-slate-800/60 rounded-lg" />
       </div>
 
-      {/* Loan Cards Skeleton */}
+      {}
       <div className="space-y-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div

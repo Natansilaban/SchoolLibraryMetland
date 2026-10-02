@@ -64,7 +64,7 @@ export default async function SiswaProfilPage() {
         </p>
       </div>
 
-      {/* Scholastic Student Member Identity Card */}
+      {}
       <div className="library-card overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
         <div className="bg-slate-900 text-white p-5 flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-3">
@@ -107,7 +107,7 @@ export default async function SiswaProfilPage() {
         </div>
       </div>
 
-      {/* Member Details */}
+      {}
       <div className="library-card p-5 sm:p-6 space-y-4">
         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
           Data Anggota Siswa
@@ -132,7 +132,7 @@ export default async function SiswaProfilPage() {
         </div>
       </div>
 
-      {/* Circulation Statistics */}
+      {}
       <div className="library-card p-5 sm:p-6 space-y-4">
         <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
           Statistik Peminjaman Buku

@@ -76,7 +76,7 @@ export default async function DetailBukuPage({ params }) {
       </Link>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
-        {/* Left Column: Book Physical Representation & Circulation Status */}
+        {}
         <div className="lg:col-span-4 space-y-4">
           <div className="w-full rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 book-cover-wrap relative h-80 sm:h-96 flex items-center justify-center">
             {buku.cover ? (
@@ -108,7 +108,7 @@ export default async function DetailBukuPage({ params }) {
           <PinjamBukuButton buku={buku} existingLoan={existingLoan} isStudent={isStudent} />
         </div>
 
-        {/* Right Column: Bibliographic Details & Description */}
+        {}
         <div className="lg:col-span-8 space-y-5">
           <div className="library-card p-5 sm:p-6 space-y-4">
             <div>

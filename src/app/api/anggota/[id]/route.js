@@ -24,16 +24,12 @@ export async function PUT(req, { params }) {
     }
 
     const body = await req.json();
-    const updateData = {};
-
-    // Only administrators can edit core scholastic identity (nama, nis, kelas)
+    const updateData = {};
     if (isAdmin) {
       if (body.nama !== undefined) updateData.nama = String(body.nama).trim();
       if (body.nis !== undefined) updateData.nis = String(body.nis).trim();
       if (body.kelas !== undefined) updateData.kelas = String(body.kelas).trim();
-    }
-
-    // Both admin and member owner can update personal contact information
+    }
     if (body.alamat !== undefined) updateData.alamat = body.alamat ? String(body.alamat).trim() : null;
     if (body.noHp !== undefined) updateData.noHp = body.noHp ? String(body.noHp).trim() : null;
 

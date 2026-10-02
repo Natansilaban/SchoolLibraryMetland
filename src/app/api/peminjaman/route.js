@@ -11,8 +11,7 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Autentikasi diperlukan' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(req.url);
-    // Root Cause Remediation (SEC-04): Clamp search string length
+    const { searchParams } = new URL(req.url);
     const rawSearch = searchParams.get('search') || '';
     const search = rawSearch.trim().slice(0, 100);
     const status = searchParams.get('status') || '';
@@ -146,8 +145,7 @@ export async function POST(req) {
         },
       });
 
-      if (initialStatus === 'DIPINJAM') {
-        // Root Cause Remediation (SEC-02): Atomic check-and-decrement prevents overselling inventory
+      if (initialStatus === 'DIPINJAM') {
         const stockUpdate = await tx.buku.updateMany({
           where: { id: parseInt(bukuId), stok: { gt: 0 } },
           data: { stok: { decrement: 1 } },

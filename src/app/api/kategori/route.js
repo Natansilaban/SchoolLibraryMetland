@@ -27,8 +27,7 @@ export async function GET() {
         'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
       },
     });
-  } catch (error) {
-    // Resilient fallback: return stale cache during momentary database drops
+  } catch (error) {
     if (kategoriCache) {
       return NextResponse.json(kategoriCache);
     }

@@ -21,8 +21,7 @@ function getPgPool() {
       statement_timeout: 10000,
     });
 
-    globalForPrisma.pgPool.on('error', (err) => {
-      // Gracefully handle severed idle sockets over VPN/WAN without crashing the pool
+    globalForPrisma.pgPool.on('error', (err) => {
       if (err.message?.includes('Connection terminated') || err.message?.includes('timeout')) {
         return;
       }

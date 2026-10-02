@@ -7,9 +7,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from '@/components/ui/Toast';
-import { confirmModal } from '@/components/ui/ConfirmModal';
-
-// SWR In-Memory Client Cache for student loans history
+import { confirmModal } from '@/components/ui/ConfirmModal';
 let clientLoansCache = null;
 
 export default function SiswaPeminjamanPage() {
@@ -229,7 +227,7 @@ export default function SiswaPeminjamanPage() {
                         )}
                       </div>
 
-                      {/* Status Notice Banners */}
+                      {}
                       {p.status === 'MENUNGGU_KONFIRMASI' && (
                         <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                           <div className="flex items-center gap-2">
@@ -285,7 +283,7 @@ export default function SiswaPeminjamanPage() {
         </div>
       )}
 
-      {/* Return Book Confirmation Modal */}
+      {}
       {returnModal && (
         <div
           role="dialog"
