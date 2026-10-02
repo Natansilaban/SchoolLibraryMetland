@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:https": "next dev --experimental-https",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -12,6 +13,7 @@
     "seed": "node prisma/seed.js"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "@tailwindcss/forms": "^0.5.11",
@@ -33,5 +35,11 @@
   "devDependencies": {
     "eslint": "^9",
     "eslint-config-next": "16.3.0"
+  },
+  "allowScripts": {
+    "onnxruntime-node@1.30.0": true,
+    "onnxruntime-node@1.14.0": true,
+    "sharp@0.32.6": true,
+    "sharp@0.35.5": true
   }
 }

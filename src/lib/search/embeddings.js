@@ -1,74 +1,97 @@
 /**
  * Semantic Embedding Service
- * Powered by Google Gemini (text-embedding-004) with local cosine similarity
- * and graceful fallback.
+ *
+ * Primary: Google Gemini API (gemini-embedding-001 or text-embedding-004)
+ * Fallback: Local ONNX via @huggingface/transformers (ONNX Runtime Web — @xenova/transformers is deprecated)
+ *
+ * Key design decisions:
+ * - Gemini 429 (rate limit) throws and causes lexical fallback in catalog-search. It does NOT
+ *   silently fall through to local ONNX, which would mix 768-dim and 384-dim vectors and corrupt scores.
+ * - All other Gemini errors (404, 5xx, network) do fall back to local ONNX, and the same model
+ *   is used for both query and document embeddings, keeping the vector space consistent.
+ * - The in-process LRU cache keeps repeated queries fast without persisting to disk.
  */
 
 const embeddingCache = new Map();
-const MAX_CACHE_SIZE = 2000;
+const MAX_CACHE_SIZE = 3000;
 
-let localExtractor = null;
-let isInitializingLocal = null;
-let warnedApiKey = false;
+/** @type {any} */
+let localPipeline = null;
+let localInitPromise = null;
 
-function cacheVector(key, vector) {
+// Which Gemini model is currently working (avoids repeated 404 retries after model deprecation)
+let activeGeminiModel = 'gemini-embedding-001';
+// When true, all Gemini calls are skipped for this server session (404/5xx, not 429)
+let geminiDisabled = false;
+// Flag to log the disable event once
+let geminiDisableLogged = false;
+
+function lruSet(key, value) {
   if (embeddingCache.size >= MAX_CACHE_SIZE) {
-    const oldestKey = embeddingCache.keys().next().value;
-    embeddingCache.delete(oldestKey);
+    embeddingCache.delete(embeddingCache.keys().next().value);
   }
-  embeddingCache.set(key, vector);
+  embeddingCache.set(key, value);
 }
 
 /**
- * Lazy initializer for fallback local ONNX model (only used if GEMINI_API_KEY is not set)
+ * Lazy-loads the local fallback model once.
+ * Uses @huggingface/transformers (ONNX Runtime Web) — @xenova/transformers is deprecated.
  */
-async function getLocalExtractor() {
-  if (localExtractor) return localExtractor;
-  if (!isInitializingLocal) {
-    isInitializingLocal = (async () => {
-      try {
-        const { pipeline } = await import('@xenova/transformers');
-        localExtractor = await pipeline('feature-extraction', 'Xenova/paraphrase-multilingual-MiniLM-L12-v2', {
-          quantized: true,
-        });
-        return localExtractor;
-      } catch (err) {
-        return null;
-      } finally {
-        isInitializingLocal = null;
-      }
-    })();
-  }
-  return await isInitializingLocal;
+async function getLocalPipeline() {
+  if (localPipeline) return localPipeline;
+  if (localInitPromise) return localInitPromise;
+
+  localInitPromise = (async () => {
+    try {
+      // @huggingface/transformers is the maintained successor to @xenova/transformers
+      const { pipeline } = await import('@huggingface/transformers');
+      localPipeline = await pipeline(
+        'feature-extraction',
+        'Xenova/paraphrase-multilingual-MiniLM-L12-v2',
+        { dtype: 'q8' }
+      );
+      return localPipeline;
+    } catch (err) {
+      console.warn('[EMBEDDINGS] Local ONNX pipeline failed to load:', err?.message ?? err);
+      return null;
+    } finally {
+      localInitPromise = null;
+    }
+  })();
+
+  return localInitPromise;
 }
 
 /**
- * Computes a normalized vector embedding for text using Google Gemini text-embedding-004.
- * @param {string} text - Raw input string
+ * Computes a single normalized embedding via Gemini API.
+ * Throws on 429 so the caller can propagate rate-limit errors without silently mixing vector spaces.
+ * Returns null on 404/5xx/network errors (caller falls back to local ONNX).
+ *
+ * @param {string} text
+ * @param {'RETRIEVAL_QUERY'|'RETRIEVAL_DOCUMENT'} taskType
  * @returns {Promise<Float32Array|null>}
  */
-export async function computeEmbedding(text) {
-  if (!text || typeof text !== 'string') return null;
+async function computeGeminiEmbedding(text, taskType) {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key || geminiDisabled) return null;
 
-  const sanitized = text.trim().slice(0, 500);
-  if (!sanitized) return null;
+  const models = [
+    activeGeminiModel,
+    activeGeminiModel === 'gemini-embedding-001' ? 'text-embedding-004' : 'gemini-embedding-001',
+  ];
 
-  const cacheKey = sanitized.toLowerCase();
-  if (embeddingCache.has(cacheKey)) {
-    return embeddingCache.get(cacheKey);
-  }
-
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (geminiKey) {
+  for (const model of models) {
     try {
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:embedContent?key=${key}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: 'models/text-embedding-004',
-            content: { parts: [{ text: sanitized }] },
+            model: `models/${model}`,
+            content: { parts: [{ text }] },
+            taskType,
+            outputDimensionality: 768,
           }),
         }
       );
@@ -76,49 +99,103 @@ export async function computeEmbedding(text) {
       if (res.ok) {
         const json = await res.json();
         if (json?.embedding?.values) {
-          const vector = new Float32Array(json.embedding.values);
-          cacheVector(cacheKey, vector);
-          return vector;
+          activeGeminiModel = model;
+          return new Float32Array(json.embedding.values);
         }
-      } else {
-        const errBody = await res.text();
-        console.warn('[GEMINI EMBEDDINGS] API response warning:', res.status, errBody);
+        return null;
       }
+
+      if (res.status === 429) {
+        throw new Error('GEMINI_RATE_LIMIT');
+      }
+
+      if (res.status === 404) {
+        // Try the other model
+        continue;
+      }
+
+      // 5xx or other non-retryable error — disable Gemini for the session
+      if (!geminiDisableLogged) {
+        const body = await res.text().catch(() => '');
+        console.warn(`[EMBEDDINGS] Gemini ${model} returned ${res.status}. Switching to local ONNX.`, body.slice(0, 200));
+        geminiDisableLogged = true;
+      }
+      geminiDisabled = true;
+      return null;
     } catch (err) {
-      console.warn('[GEMINI EMBEDDINGS] Request error:', err.message || err);
+      if (err.message === 'GEMINI_RATE_LIMIT') throw err;
+      if (!geminiDisableLogged) {
+        console.warn(`[EMBEDDINGS] Gemini ${model} fetch error. Switching to local ONNX.`, err?.message ?? err);
+        geminiDisableLogged = true;
+      }
+      geminiDisabled = true;
+      return null;
     }
-  } else if (!warnedApiKey) {
-    console.info('[SEARCH] Info: GEMINI_API_KEY is not set. Set GEMINI_API_KEY for cloud Gemini AI semantic search.');
-    warnedApiKey = true;
   }
 
-  // Graceful local fallback if Gemini key is absent
+  // Both models 404'd — disable for session
+  geminiDisabled = true;
+  return null;
+}
+
+/**
+ * Computes a normalized embedding for a single string.
+ * Uses Gemini when available, local ONNX as fallback.
+ * Throws GEMINI_RATE_LIMIT errors so callers can gate on them without mixing vector spaces.
+ *
+ * @param {string} text
+ * @param {'RETRIEVAL_QUERY'|'RETRIEVAL_DOCUMENT'} [taskType='RETRIEVAL_QUERY']
+ * @returns {Promise<Float32Array|null>}
+ */
+export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
+  if (!text || typeof text !== 'string') return null;
+
+  const sanitized = text.trim().slice(0, 512);
+  if (!sanitized) return null;
+
+  const cacheKey = `${taskType}::${sanitized.toLowerCase()}`;
+  if (embeddingCache.has(cacheKey)) return embeddingCache.get(cacheKey);
+
+  // Try Gemini first
+  const geminiVec = await computeGeminiEmbedding(sanitized, taskType);
+  if (geminiVec) {
+    lruSet(cacheKey, geminiVec);
+    return geminiVec;
+  }
+
+  // Local ONNX fallback (only if Gemini did NOT throw 429 — that error propagates up)
   try {
-    const extractor = await getLocalExtractor();
-    if (extractor) {
-      const output = await extractor(sanitized, { pooling: 'mean', normalize: true });
-      const vector = new Float32Array(output.data);
-      cacheVector(cacheKey, vector);
-      return vector;
+    const pipe = await getLocalPipeline();
+    if (pipe) {
+      const out = await pipe(sanitized, { pooling: 'mean', normalize: true });
+      const vec = new Float32Array(out.data);
+      lruSet(cacheKey, vec);
+      return vec;
     }
-  } catch {
-    // Ignore non-fatal local error; catalog search falls back to lexical
+  } catch (err) {
+    console.warn('[EMBEDDINGS] Local ONNX inference failed:', err?.message ?? err);
   }
 
   return null;
 }
 
 /**
- * Computes embeddings in batch for high-speed candidate ranking using Gemini batchEmbedContents.
+ * Batch embedding via Gemini batchEmbedContents. Falls back to sequential computeEmbedding calls
+ * if Gemini is unavailable so the same model is always used for the whole batch.
+ * Throws GEMINI_RATE_LIMIT if rate-limited.
+ *
  * @param {string[]} texts
+ * @param {'RETRIEVAL_DOCUMENT'|'RETRIEVAL_QUERY'} [taskType='RETRIEVAL_DOCUMENT']
  * @returns {Promise<Array<Float32Array|null>>}
  */
-export async function computeBatchEmbeddings(texts) {
+export async function computeBatchEmbeddings(texts, taskType = 'RETRIEVAL_DOCUMENT') {
   if (!Array.isArray(texts) || texts.length === 0) return [];
 
-  const geminiKey = process.env.GEMINI_API_KEY;
-  if (!geminiKey) {
-    return Promise.all(texts.map((t) => computeEmbedding(t)));
+  const key = process.env.GEMINI_API_KEY;
+
+  // No key or Gemini disabled — use local model sequentially for whole batch
+  if (!key || geminiDisabled) {
+    return Promise.all(texts.map((t) => computeEmbedding(t, taskType)));
   }
 
   const results = new Array(texts.length).fill(null);
@@ -126,11 +203,12 @@ export async function computeBatchEmbeddings(texts) {
   const uncachedTexts = [];
 
   for (let i = 0; i < texts.length; i++) {
-    const sanitized = (texts[i] || '').trim().slice(0, 500);
-    const cacheKey = sanitized.toLowerCase();
-    if (sanitized && embeddingCache.has(cacheKey)) {
+    const sanitized = (texts[i] ?? '').trim().slice(0, 512);
+    if (!sanitized) continue;
+    const cacheKey = `${taskType}::${sanitized.toLowerCase()}`;
+    if (embeddingCache.has(cacheKey)) {
       results[i] = embeddingCache.get(cacheKey);
-    } else if (sanitized) {
+    } else {
       uncachedIndices.push(i);
       uncachedTexts.push(sanitized);
     }
@@ -138,51 +216,61 @@ export async function computeBatchEmbeddings(texts) {
 
   if (uncachedTexts.length === 0) return results;
 
+  // Try Gemini batch endpoint
   try {
-    const CHUNK_SIZE = 50;
-    for (let c = 0; c < uncachedTexts.length; c += CHUNK_SIZE) {
-      const chunkTexts = uncachedTexts.slice(c, c + CHUNK_SIZE);
-      const chunkIndices = uncachedIndices.slice(c, c + CHUNK_SIZE);
+    const CHUNK = 50;
+    for (let c = 0; c < uncachedTexts.length; c += CHUNK) {
+      const chunkTexts = uncachedTexts.slice(c, c + CHUNK);
+      const chunkIndices = uncachedIndices.slice(c, c + CHUNK);
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:batchEmbedContents?key=${geminiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${activeGeminiModel}:batchEmbedContents?key=${key}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             requests: chunkTexts.map((text) => ({
-              model: 'models/text-embedding-004',
+              model: `models/${activeGeminiModel}`,
               content: { parts: [{ text }] },
+              taskType,
+              outputDimensionality: 768,
             })),
           }),
         }
       );
 
-      if (res.ok) {
-        const json = await res.json();
-        const embeddings = json?.embeddings || [];
-        embeddings.forEach((emb, idx) => {
-          if (emb?.values) {
-            const vec = new Float32Array(emb.values);
-            const originalIdx = chunkIndices[idx];
-            results[originalIdx] = vec;
-            cacheVector(chunkTexts[idx].toLowerCase(), vec);
-          }
-        });
-      } else {
-        // Fallback for this chunk
-        for (let idx = 0; idx < chunkIndices.length; idx++) {
-          const originalIdx = chunkIndices[idx];
-          results[originalIdx] = await computeEmbedding(chunkTexts[idx]);
-        }
+      if (res.status === 429) {
+        throw new Error('GEMINI_RATE_LIMIT');
       }
+
+      if (!res.ok) {
+        // Non-429 error — disable Gemini and process remaining chunks with local ONNX
+        geminiDisabled = true;
+        for (let i = 0; i < chunkIndices.length; i++) {
+          results[chunkIndices[i]] = await computeEmbedding(chunkTexts[i], taskType);
+        }
+        continue;
+      }
+
+      const json = await res.json();
+      (json?.embeddings ?? []).forEach((emb, idx) => {
+        if (emb?.values) {
+          const vec = new Float32Array(emb.values);
+          results[chunkIndices[idx]] = vec;
+          lruSet(`${taskType}::${chunkTexts[idx].toLowerCase()}`, vec);
+        }
+      });
     }
   } catch (err) {
-    console.warn('[GEMINI BATCH] Batch error, falling back:', err.message);
-    for (let idx = 0; idx < uncachedIndices.length; idx++) {
-      const originalIdx = uncachedIndices[idx];
+    if (err.message === 'GEMINI_RATE_LIMIT') throw err;
+
+    // Network or parse error — process remaining nulls with local ONNX
+    console.warn('[EMBEDDINGS] Gemini batch failed, using local ONNX for remaining items:', err?.message ?? err);
+    geminiDisabled = true;
+    for (let i = 0; i < uncachedIndices.length; i++) {
+      const originalIdx = uncachedIndices[i];
       if (!results[originalIdx]) {
-        results[originalIdx] = await computeEmbedding(uncachedTexts[idx]);
+        results[originalIdx] = await computeEmbedding(uncachedTexts[i], taskType);
       }
     }
   }
@@ -191,24 +279,23 @@ export async function computeBatchEmbeddings(texts) {
 }
 
 /**
- * Calculates cosine similarity between two vector embeddings.
- * @param {Float32Array|Array<number>} vecA
- * @param {Float32Array|Array<number>} vecB
- * @returns {number} Value between -1.0 and 1.0 (typically 0.0 to 1.0 for normalized text)
+ * Cosine similarity between two normalized vectors.
+ * Returns 0 when vectors have mismatched dimensions or are empty (guards against mixed model spaces).
+ *
+ * @param {Float32Array|number[]} vecA
+ * @param {Float32Array|number[]} vecB
+ * @returns {number}
  */
 export function calculateSimilarity(vecA, vecB) {
-  if (!vecA || !vecB || vecA.length !== vecB.length) return 0;
+  if (!vecA || !vecB || vecA.length !== vecB.length || vecA.length === 0) return 0;
 
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-
+  let dot = 0, normA = 0, normB = 0;
   for (let i = 0; i < vecA.length; i++) {
-    dotProduct += vecA[i] * vecB[i];
+    dot += vecA[i] * vecB[i];
     normA += vecA[i] * vecA[i];
     normB += vecB[i] * vecB[i];
   }
 
-  if (normA === 0 || normB === 0) return 0;
-  return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  const denom = Math.sqrt(normA) * Math.sqrt(normB);
+  return denom === 0 ? 0 : dot / denom;
 }

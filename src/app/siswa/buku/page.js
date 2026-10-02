@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight, Library } from 'lucide-react';
+import VoiceSearchButton from '@/components/ui/VoiceSearchButton';
 
 // SWR In-Memory Client Cache (persists during active browser session across tab switches)
 let clientCatalogCache = null;
@@ -21,6 +22,18 @@ export default function SiswaBukuPage() {
   const limit = 12;
 
   const isInitialMount = useRef(true);
+
+  // Initialize search query from URL parameter if navigated from dashboard
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const initialQuery = urlParams.get('search');
+      if (initialQuery) {
+        setSearch(initialQuery);
+        setDebouncedSearch(initialQuery);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -101,18 +114,27 @@ export default function SiswaBukuPage() {
       <div className="space-y-2">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none" />
             <input
               id="search-buku-siswa"
               type="text"
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
-              placeholder="Cari topik pembelajaran, sinopsis, judul buku, atau pengarang..."
+              className="w-full pl-10 pr-12 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+              placeholder="Cari buku, topik pelajaran, atau tanya santai (misal: 'ada buku cara bikin kopi gak')..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 setPage(1);
               }}
             />
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+              <VoiceSearchButton
+                onTranscript={(spokenText) => {
+                  setSearch(spokenText);
+                  setDebouncedSearch(spokenText);
+                  setPage(1);
+                }}
+              />
+            </div>
           </div>
           <select
             id="filter-kategori-siswa"
@@ -225,6 +247,15 @@ export default function SiswaBukuPage() {
                   <span className="text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:text-blue-800 dark:group-hover:text-blue-300 transition-colors">
                     Lihat Detail
                   </span>
+                </div>
+
+                {/* Hover Reveal Details (Melebar vertikal kebawah) */}
+                <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300 ease-in-out">
+                  <div className="overflow-hidden">
+                    <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100 line-clamp-4">
+                      {b.deskripsi || "Tidak ada detail deskripsi yang tersedia untuk buku ini."}
+                    </div>
+                  </div>
                 </div>
               </div>
             </Link>

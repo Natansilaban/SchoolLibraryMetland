@@ -1,28 +1,167 @@
+/**
+ * CatalogSearchService
+ *
+ * A production-grade hybrid search engine:
+ *   1. ISBN/barcode exact match
+ *   2. AI semantic vector search (Gemini or local ONNX via @huggingface/transformers)
+ *   3. Intelligent lexical fallback with Indonesian stopword filtering
+ *
+ * Query intelligence pipeline:
+ *   a. Intent detection  — are we looking for a title, author, topic, or ISBN?
+ *   b. Stopword stripping — remove conversational filler before embedding
+ *   c. Alias expansion   — map common informal terms to canonical library terms
+ *   d. Hybrid scoring    — semantic score + lexical boosters, hard-gated by vector dimensionality
+ */
+
 import { prisma } from '@/lib/prisma';
-import { computeEmbedding, computeBatchEmbeddings, calculateSimilarity } from '@/lib/search/embeddings';
+import {
+  computeEmbedding,
+  computeBatchEmbeddings,
+  calculateSimilarity,
+} from '@/lib/search/embeddings';
+
+// ---------------------------------------------------------------------------
+// Indonesian stopwords and conversational filler for this domain
+// ---------------------------------------------------------------------------
+const STOP_WORDS = new Set([
+  'cariin', 'cari', 'cariakan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
+  'buku', 'judul', 'novel', 'kategori', 'koleksi', 'perpustakaan',
+  'tentang', 'mengenai', 'berkaitan', 'berhubungan', 'soal', 'hal',
+  'yang', 'ada', 'di', 'dan', 'atau', 'dengan', 'untuk', 'buat',
+  'dari', 'ke', 'ini', 'itu', 'juga', 'lebih', 'paling', 'sangat',
+  'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
+  'ingin', 'minta', 'info', 'ada', 'apa', 'itu',
+]);
+
+// Alias map: informal query terms -> canonical library/topic terms for better embedding signal
+const ALIAS_MAP = {
+  'koding': 'pemrograman komputer',
+  'coding': 'pemrograman komputer',
+  'ngoding': 'pemrograman komputer',
+  'programing': 'pemrograman',
+  'masak': 'kuliner memasak',
+  'makanan': 'kuliner pangan tata boga',
+  'hotel': 'perhotelan hospitality',
+  'wisata': 'pariwisata',
+  'bisnis': 'kewirausahaan bisnis',
+  'dagang': 'kewirausahaan perdagangan',
+  'sastra': 'sastra fiksi novel',
+  'novel': 'sastra fiksi novel',
+  'cerpen': 'sastra fiksi cerita pendek',
+  'fisika': 'fisika sains alam',
+  'kimia': 'kimia sains',
+  'biologi': 'biologi sains alam',
+  'matematika': 'matematika logika',
+  'sejarah': 'sejarah sosial budaya',
+  'bahasa': 'bahasa komunikasi',
+  'inggris': 'bahasa inggris komunikasi',
+  'web': 'pengembangan web pemrograman',
+  'python': 'pemrograman python',
+  'javascript': 'pemrograman javascript web',
+  'jaringan': 'jaringan komputer teknologi',
+  'ai': 'kecerdasan buatan machine learning',
+  'ml': 'machine learning kecerdasan buatan',
+  'database': 'basis data pemrograman',
+};
+
+// ---------------------------------------------------------------------------
+// Query normalization utilities
+// ---------------------------------------------------------------------------
 
 /**
- * Normalizes and determines if a query is an exact bibliographic identifier (such as an ISBN).
- * @param {string} q
- * @returns {boolean}
+ * Detects rough search intent from the raw query.
+ * @param {string} raw
+ * @returns {'isbn'|'author'|'topic'|'title'}
  */
-function isBibliographicCode(q) {
-  const clean = q.replace(/[\s-]/g, '');
-  return /^\d{9,13}[\dX]?$/i.test(clean);
+function detectIntent(raw) {
+  const lower = raw.toLowerCase();
+  // ISBN patterns
+  if (/^\d[\d\s-]{8,16}[\dxX]$/.test(raw.replace(/\s/g, ''))) return 'isbn';
+  // Author cues
+  if (/\b(karya|oleh|penulis|pengarang|author)\b/.test(lower)) return 'author';
+  // Topic / semantic query (most common for conversational search)
+  if (/\b(tentang|mengenai|soal|topik|tema|berhubungan|berkaitan|membahas)\b/.test(lower)) return 'topic';
+  return 'title'; // default
 }
 
 /**
- * Deep Module: CatalogSearchService
- * Presents a small, simple interface to callers while encapsulating query intent classification,
- * vector embedding generation, cosine similarity calculation, and hybrid rank fusion.
+ * Strips stop words, expands aliases, and returns a clean semantic query string.
+ * @param {string} raw
+ * @returns {string}
+ */
+function buildSemanticQuery(raw) {
+  const tokens = raw
+    .toLowerCase()
+    .split(/[\s,.\-!?;:]+/)
+    .filter((w) => w.length >= 2 && !STOP_WORDS.has(w));
+
+  // Expand aliases — replace token with expanded phrase if found
+  const expanded = tokens.flatMap((t) => (ALIAS_MAP[t] ? ALIAS_MAP[t].split(' ') : [t]));
+
+  // De-duplicate while preserving order
+  const seen = new Set();
+  const deduped = expanded.filter((w) => (seen.has(w) ? false : seen.add(w)));
+
+  // Always return something — fall back to original if stripping removed everything
+  return deduped.join(' ') || raw;
+}
+
+/**
+ * Extract meaningful lexical keywords for scoring boosts (separate from semantic query).
+ * @param {string} raw
+ * @returns {string[]}
+ */
+function extractKeywords(raw) {
+  return raw
+    .toLowerCase()
+    .split(/[\s,.\-!?;:]+/)
+    .filter((w) => w.length >= 2 && !STOP_WORDS.has(w));
+}
+
+// ---------------------------------------------------------------------------
+// ISBN / bibliographic code check
+// ---------------------------------------------------------------------------
+function isBibliographicCode(q) {
+  return /^\d{9,13}[\dxX]?$/.test(q.replace(/[\s-]/g, ''));
+}
+
+// ---------------------------------------------------------------------------
+// Book text for embedding (title + category + synopsis)
+// ---------------------------------------------------------------------------
+function bookEmbedText(book) {
+  return [
+    book.judul,
+    book.kategori?.nama ? `Kategori: ${book.kategori.nama}` : '',
+    book.deskripsi ?? '',
+  ]
+    .filter(Boolean)
+    .join('. ');
+}
+
+// ---------------------------------------------------------------------------
+// Prisma include block (reused in all queries)
+// ---------------------------------------------------------------------------
+const BOOK_INCLUDE = {
+  kategori: { select: { id: true, nama: true } },
+  penulis: { select: { id: true, nama: true } },
+  penerbit: { select: { id: true, nama: true } },
+  _count: { select: { peminjaman: true } },
+};
+
+// ---------------------------------------------------------------------------
+// Main search function
+// ---------------------------------------------------------------------------
+
+/**
+ * Hybrid semantic + lexical catalog search.
  *
  * @param {Object} options
- * @param {string} [options.query] - Search keywords or natural language query
- * @param {number|string|null} [options.kategoriId] - Optional category filter
- * @param {number} [options.page=1] - 1-indexed page number
- * @param {number} [options.limit=20] - Number of items per page
+ * @param {string} [options.query]
+ * @param {number|string|null} [options.kategoriId]
+ * @param {number} [options.page=1]
+ * @param {number} [options.limit=20]
  * @param {'auto'|'semantic'|'lexical'} [options.searchMode='auto']
- * @returns {Promise<{ data: Array, total: number, page: number, limit: number, mode: string, hasSemanticResults: boolean }>}
+ * @returns {Promise<{ data: any[], total: number, page: number, limit: number, mode: string, hasSemanticResults: boolean }>}
  */
 export async function searchCatalog({
   query = '',
@@ -31,241 +170,177 @@ export async function searchCatalog({
   limit = 20,
   searchMode = 'auto',
 } = {}) {
-  const sanitizedQuery = (query || '').trim().slice(0, 100);
-  const parsedKategoriId = kategoriId && !isNaN(parseInt(kategoriId, 10)) ? parseInt(kategoriId, 10) : null;
+  const raw = (query ?? '').trim().slice(0, 300);
+  const parsedKategoriId =
+    kategoriId && !isNaN(parseInt(kategoriId, 10)) ? parseInt(kategoriId, 10) : null;
   const skip = (Math.max(1, page) - 1) * limit;
+  const categoryWhere = parsedKategoriId ? { kategoriId: parsedKategoriId } : {};
 
-  // 1. Browse Mode: No search keyword supplied
-  if (!sanitizedQuery) {
-    const where = parsedKategoriId ? { kategoriId: parsedKategoriId } : {};
+  // ------------------------------------------------------------------ //
+  // 1. Browse mode — no query
+  // ------------------------------------------------------------------ //
+  if (!raw) {
     const [data, total] = await Promise.all([
       prisma.buku.findMany({
-        where,
+        where: categoryWhere,
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
-        include: {
-          kategori: { select: { id: true, nama: true } },
-          penulis: { select: { id: true, nama: true } },
-          penerbit: { select: { id: true, nama: true } },
-          _count: { select: { peminjaman: true } },
-        },
+        include: BOOK_INCLUDE,
       }),
-      prisma.buku.count({ where }),
+      prisma.buku.count({ where: categoryWhere }),
     ]);
-
-    return {
-      data,
-      total,
-      page: Math.max(1, page),
-      limit,
-      mode: 'browse',
-      hasSemanticResults: false,
-    };
+    return { data, total, page: Math.max(1, page), limit, mode: 'browse', hasSemanticResults: false };
   }
 
-  // 2. Exact Match Mode: User input matches ISBN or barcode pattern
-  if (isBibliographicCode(sanitizedQuery)) {
-    const cleanIsbn = sanitizedQuery.replace(/[\s-]/g, '');
+  // ------------------------------------------------------------------ //
+  // 2. ISBN exact match
+  // ------------------------------------------------------------------ //
+  if (isBibliographicCode(raw)) {
+    const clean = raw.replace(/[\s-]/g, '');
     const where = {
       AND: [
-        {
-          OR: [
-            { isbn: { contains: sanitizedQuery, mode: 'insensitive' } },
-            { isbn: { contains: cleanIsbn, mode: 'insensitive' } },
-            { judul: { contains: sanitizedQuery, mode: 'insensitive' } },
-          ],
-        },
-        parsedKategoriId ? { kategoriId: parsedKategoriId } : {},
+        { OR: [{ isbn: { contains: clean, mode: 'insensitive' } }, { judul: { contains: raw, mode: 'insensitive' } }] },
+        categoryWhere,
       ],
     };
-
     const [data, total] = await Promise.all([
-      prisma.buku.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          kategori: { select: { id: true, nama: true } },
-          penulis: { select: { id: true, nama: true } },
-          penerbit: { select: { id: true, nama: true } },
-          _count: { select: { peminjaman: true } },
-        },
-      }),
+      prisma.buku.findMany({ where, skip, take: limit, orderBy: { createdAt: 'desc' }, include: BOOK_INCLUDE }),
       prisma.buku.count({ where }),
     ]);
-
-    return {
-      data,
-      total,
-      page: Math.max(1, page),
-      limit,
-      mode: 'exact',
-      hasSemanticResults: false,
-    };
+    return { data, total, page: Math.max(1, page), limit, mode: 'exact', hasSemanticResults: false };
   }
 
-  // 3. Hybrid Semantic & Lexical Search
+  // ------------------------------------------------------------------ //
+  // 3. Semantic search
+  // ------------------------------------------------------------------ //
   if (searchMode !== 'lexical') {
     try {
-      const queryVector = await computeEmbedding(sanitizedQuery);
+      const intent = detectIntent(raw);
+      const semanticQuery = buildSemanticQuery(raw);
+      const keywords = extractKeywords(raw);
+      const lowerRaw = raw.toLowerCase();
+
+      const queryVector = await computeEmbedding(semanticQuery, 'RETRIEVAL_QUERY');
 
       if (queryVector) {
-        // Fetch candidate books (up to 200 items for responsive in-memory vector ranking)
+        // Fetch all candidates (bounded at 500 to avoid OOM on large libraries)
         const candidates = await prisma.buku.findMany({
-          where: parsedKategoriId ? { kategoriId: parsedKategoriId } : {},
-          take: 200,
-          include: {
-            kategori: { select: { id: true, nama: true } },
-            penulis: { select: { id: true, nama: true } },
-            penerbit: { select: { id: true, nama: true } },
-            _count: { select: { peminjaman: true } },
-          },
+          where: categoryWhere,
+          take: 500,
+          include: BOOK_INCLUDE,
         });
 
         if (candidates.length > 0) {
-          const lowerQuery = sanitizedQuery.toLowerCase();
-          const INDONESIAN_STOP_WORDS = new Set([
-            'dan', 'atau', 'yang', 'di', 'ke', 'dari', 'pada', 'untuk', 'dengan', 'ini', 'itu',
-            'adalah', 'dalam', 'bisa', 'akan', 'oleh', 'tentang', 'secara', 'karena', 'juga', 'ada',
-            'buku', 'kitab', 'koleksi', 'semua', 'bacaan', 'daftar'
-          ]);
+          const candidateTexts = candidates.map(bookEmbedText);
+          const candidateVectors = await computeBatchEmbeddings(candidateTexts, 'RETRIEVAL_DOCUMENT');
 
-          const queryTokens = lowerQuery
-            .split(/[\s,.-]+/)
-            .filter((w) => w.length >= 3 && !INDONESIAN_STOP_WORDS.has(w));
-
-          // Clean, high-signal semantic text (excluding author to prevent topical dilution)
-          const candidateTexts = candidates.map((book) =>
-            [
-              book.judul,
-              book.kategori?.nama ? `Kategori: ${book.kategori.nama}` : '',
-              book.deskripsi || '',
-            ].filter(Boolean).join('. ')
-          );
-
-          const candidateVectors = await computeBatchEmbeddings(candidateTexts);
-          const rawScoredBooks = [];
-
+          const scored = [];
           for (let i = 0; i < candidates.length; i++) {
             const book = candidates[i];
-            const bookVector = candidateVectors[i];
-            const semanticScore = bookVector ? calculateSimilarity(queryVector, bookVector) : 0;
+            const vec = candidateVectors[i];
+
+            // Dimension mismatch guard — skip if vector spaces are incompatible
+            if (vec && vec.length !== queryVector.length) continue;
+
+            const semScore = vec ? calculateSimilarity(queryVector, vec) : 0;
 
             const lowerTitle = book.judul.toLowerCase();
-            const lowerDesc = (book.deskripsi || '').toLowerCase();
-            const lowerAuthor = (book.penulis?.nama || '').toLowerCase();
-            const lowerCategory = (book.kategori?.nama || '').toLowerCase();
+            const lowerDesc = (book.deskripsi ?? '').toLowerCase();
+            const lowerAuthor = (book.penulis?.nama ?? '').toLowerCase();
+            const lowerCategory = (book.kategori?.nama ?? '').toLowerCase();
 
-            // Compute lexical match indicators
-            const exactTitleMatch = lowerTitle.includes(lowerQuery);
-            const exactDescMatch = lowerDesc.includes(lowerQuery);
-            const authorMatch = lowerAuthor.includes(lowerQuery);
+            // Lexical scoring boosters (additive on top of semantic)
+            const exactTitle = lowerTitle.includes(lowerRaw);
+            const titleHits = keywords.filter((w) => lowerTitle.includes(w)).length;
+            const descHits = keywords.filter((w) => lowerDesc.includes(w)).length;
+            const authorHits = keywords.filter((w) => lowerAuthor.includes(w)).length;
+            const categoryHits = keywords.filter((w) => lowerCategory.includes(w)).length;
 
-            const titleTokenHits = queryTokens.filter((tok) => lowerTitle.includes(tok)).length;
-            const descTokenHits = queryTokens.filter((tok) => lowerDesc.includes(tok)).length;
-            const categoryTokenHits = queryTokens.filter((tok) => lowerCategory.includes(tok)).length;
+            let combined = semScore;
+            if (exactTitle) combined += 0.25;
+            combined += Math.min(0.12, titleHits * 0.04);
+            combined += Math.min(0.08, descHits * 0.02);
+            combined += Math.min(0.10, authorHits * 0.05);
+            combined += Math.min(0.06, categoryHits * 0.03);
 
-            const hasLexicalTitleOrAuthor = exactTitleMatch || authorMatch || titleTokenHits > 0;
-            const hasCategoryHit = categoryTokenHits > 0;
-            const isStrongSemantic = semanticScore >= 0.46;
-            const hasCategoryWithSemantic = hasCategoryHit && semanticScore >= 0.28;
-            const hasDescWithSemantic = (exactDescMatch || descTokenHits > 0) && semanticScore >= 0.32;
+            // For author-intent queries, boost author hits more aggressively
+            if (intent === 'author' && authorHits > 0) combined += 0.20;
 
-            // Strict admission gate: Reject any candidate that lacks lexical title/author match AND lacks strong semantic similarity
-            if (hasLexicalTitleOrAuthor || isStrongSemantic || hasCategoryWithSemantic || hasDescWithSemantic) {
-              let combinedScore = semanticScore;
+            // Acceptance gate: semantic score must be meaningful OR strong lexical signal
+            const accepted =
+              semScore >= 0.18 ||
+              exactTitle ||
+              titleHits >= 1 ||
+              (descHits >= 2 && semScore >= 0.12) ||
+              (authorHits >= 1 && intent === 'author');
 
-              if (exactTitleMatch) combinedScore += 0.50;
-              if (titleTokenHits > 0) combinedScore += Math.min(0.40, titleTokenHits * 0.20);
-              if (authorMatch) combinedScore += 0.35;
-              if (hasCategoryHit) combinedScore += 0.25;
-              if (exactDescMatch) combinedScore += 0.20;
-              if (descTokenHits > 0) combinedScore += Math.min(0.15, descTokenHits * 0.08);
-
-              rawScoredBooks.push({
+            if (accepted) {
+              scored.push({
                 ...book,
                 _relevance: {
-                  score: Math.round(combinedScore * 100) / 100,
-                  semanticScore: Math.round(semanticScore * 100) / 100,
-                  hasDirectMatch: hasLexicalTitleOrAuthor,
-                  exactTitleMatch,
-                  titleTokenHits,
-                  authorMatch,
+                  score: Math.round(combined * 1000) / 1000,
+                  semanticScore: Math.round(semScore * 1000) / 1000,
+                  exactTitle,
+                  titleHits,
+                  descHits,
+                  intent,
+                  isSemanticMatch: semScore >= 0.22 && !exactTitle && titleHits === 0,
                 },
               });
             }
           }
 
-          if (rawScoredBooks.length > 0) {
-            // Sort by combined relevance score descending
-            rawScoredBooks.sort((a, b) => b._relevance.score - a._relevance.score);
-
-            const maxScore = rawScoredBooks[0]._relevance.score;
-
-            // Dynamic elbow cutoff: Discard background noise below 70% of top score
-            const filteredBooks = rawScoredBooks.filter((item) => {
-              if (item._relevance.hasDirectMatch) return true;
-              return item._relevance.score >= Math.max(0.46, maxScore * 0.70);
-            });
-
-            // Mark genuine AI semantic discoveries (high confidence concept match without exact title match)
-            const finalizedBooks = filteredBooks.map((item) => {
-              const isDiscovery =
-                item._relevance.semanticScore >= 0.48 &&
-                !item._relevance.exactTitleMatch &&
-                item._relevance.titleTokenHits === 0 &&
-                !item._relevance.authorMatch &&
-                item._relevance.score >= maxScore * 0.80;
-
-              return {
-                ...item,
-                _relevance: {
-                  ...item._relevance,
-                  isSemanticMatch: isDiscovery,
-                },
-              };
-            });
-
-            if (finalizedBooks.length > 0) {
-              const paginatedData = finalizedBooks.slice(skip, skip + limit);
-              const hasSemanticDiscoveries = paginatedData.some((b) => b._relevance?.isSemanticMatch);
-
-              return {
-                data: paginatedData,
-                total: finalizedBooks.length,
-                page: Math.max(1, page),
-                limit,
-                mode: 'semantic',
-                hasSemanticResults: hasSemanticDiscoveries,
-              };
-            }
+          if (scored.length > 0) {
+            scored.sort((a, b) => b._relevance.score - a._relevance.score);
+            const paged = scored.slice(skip, skip + limit);
+            return {
+              data: paged,
+              total: scored.length,
+              page: Math.max(1, page),
+              limit,
+              mode: 'semantic',
+              hasSemanticResults: paged.some((b) => b._relevance?.isSemanticMatch),
+            };
           }
         }
       }
     } catch (err) {
-      const isConnError = /connection|timeout|socket|econn/i.test(err.message || '');
-      if (isConnError) {
-        throw err;
+      const isRateLimit = err.message === 'GEMINI_RATE_LIMIT';
+      const isConn = /connection|timeout|socket|econnrefused/i.test(err.message ?? '');
+
+      if (isRateLimit) {
+        // Re-throw so the API route can return a 429-aware response
+        throw Object.assign(new Error('Terlalu banyak permintaan ke AI. Silakan coba lagi dalam beberapa detik.'), { code: 'RATE_LIMIT' });
       }
-      console.warn('[SEARCH] Semantic search encountered non-fatal model error, falling back to lexical:', err.message || err);
+      if (isConn) throw err;
+
+      console.warn('[SEARCH] Non-fatal semantic error, falling back to lexical:', err.message ?? err);
     }
   }
 
-  // 4. Lexical Fallback Search (PostgreSQL Substring Matching)
+  // ------------------------------------------------------------------ //
+  // 4. Lexical fallback — keyword-based DB query
+  // ------------------------------------------------------------------ //
+  const keywords = extractKeywords(raw);
+  // Also expand aliases in fallback so "koding" matches "pemrograman"
+  const expandedKeywords = [
+    ...new Set(keywords.flatMap((k) => (ALIAS_MAP[k] ? [...ALIAS_MAP[k].split(' '), k] : [k]))),
+  ];
+
+  const wordConditions = expandedKeywords.slice(0, 8).flatMap((tok) => [
+    { judul: { contains: tok, mode: 'insensitive' } },
+    { deskripsi: { contains: tok, mode: 'insensitive' } },
+    { penulis: { nama: { contains: tok, mode: 'insensitive' } } },
+    { kategori: { nama: { contains: tok, mode: 'insensitive' } } },
+  ]);
+
   const where = {
     AND: [
-      {
-        OR: [
-          { judul: { contains: sanitizedQuery, mode: 'insensitive' } },
-          { isbn: { contains: sanitizedQuery, mode: 'insensitive' } },
-          { deskripsi: { contains: sanitizedQuery, mode: 'insensitive' } },
-          { penulis: { nama: { contains: sanitizedQuery, mode: 'insensitive' } } },
-          { kategori: { nama: { contains: sanitizedQuery, mode: 'insensitive' } } },
-        ],
-      },
-      parsedKategoriId ? { kategoriId: parsedKategoriId } : {},
+      wordConditions.length > 0
+        ? { OR: wordConditions }
+        : { judul: { contains: raw, mode: 'insensitive' } },
+      categoryWhere,
     ],
   };
 
@@ -275,12 +350,7 @@ export async function searchCatalog({
       skip,
       take: limit,
       orderBy: { createdAt: 'desc' },
-      include: {
-        kategori: { select: { id: true, nama: true } },
-        penulis: { select: { id: true, nama: true } },
-        penerbit: { select: { id: true, nama: true } },
-        _count: { select: { peminjaman: true } },
-      },
+      include: BOOK_INCLUDE,
     }),
     prisma.buku.count({ where }),
   ]);

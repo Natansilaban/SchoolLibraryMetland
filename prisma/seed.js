@@ -445,6 +445,19 @@ async function main() {
     },
   ];
 
+  // Import 46 additional highly detailed mock books to reach 72 total
+  const extraBooks = require('./mock-extra.js');
+  
+  for (let i = 0; i < extraBooks.length; i++) {
+    const b = extraBooks[i];
+    booksCollection.push({
+      ...b,
+      isbn: `978-600-99-${2000 + i}-X`,
+      tahunTerbit: 2018 + (i % 7),
+      stok: (i % 8) + 1,
+    });
+  }
+
   for (const b of booksCollection) {
     const existing = await prisma.buku.findFirst({ where: { judul: b.judul } });
     if (!existing) {
