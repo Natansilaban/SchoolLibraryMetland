@@ -5,7 +5,10 @@ import {
   computeEmbedding,
   computeBatchEmbeddings,
   calculateSimilarity,
-} from '@/lib/search/embeddings';
+} from '@/lib/search/embeddings';
+
+
+
 const STOP_WORDS = new Set([
   'cariin', 'cari', 'cariakan', 'carikan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
   'buku', 'judul', 'novel', 'kategori', 'koleksi', 'perpustakaan',
@@ -15,7 +18,12 @@ const STOP_WORDS = new Set([
   'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
   'ingin', 'minta', 'info', 'ada', 'apa', 'itu',
   'ga', 'ngga', 'nggak', 'kalo', 'kalau', 'bisa'
-]);
+]);
+
+
+
+
+
 const LEXICAL_STOP_WORDS = new Set([
   'cariin', 'cari', 'cariakan', 'carikan', 'kasih', 'tolong', 'dong', 'deh', 'nih',
   'buku', 'tentang', 'mengenai', 'soal', 'hal', 'berkaitan', 'berhubungan', 'bikin', 'cara',
@@ -24,7 +32,8 @@ const LEXICAL_STOP_WORDS = new Set([
   'gak', 'enggak', 'tidak', 'gw', 'aku', 'saya', 'mau', 'pengen',
   'ingin', 'minta', 'info', 'apa',
   'ga', 'ngga', 'nggak', 'kalo', 'kalau', 'bisa'
-]);
+]);
+
 const ALIAS_MAP = {
   'koding': 'pemrograman komputer',
   'coding': 'pemrograman komputer',
@@ -38,16 +47,20 @@ const ALIAS_MAP = {
   'ai': 'kecerdasan buatan machine learning',
   'ml': 'machine learning kecerdasan buatan',
   'database': 'basis data pemrograman',
+  'sql': 'basis data database relational',
 
-  'gabut': 'sastra fiksi novel hiburan',
-  'bosen': 'sastra fiksi novel hiburan',
-  'galau': 'novel roman psikologi',
-  'healing': 'psikologi pengembangan diri wisata',
-  'cuan': 'bisnis kewirausahaan keuangan',
-  'pr': 'pelajaran sekolah referensi',
-  'tugas': 'pelajaran sekolah referensi',
-  'keren': 'pengembangan diri',
-  'masak': 'kuliner memasak',
+  'gabut': 'sastra fiksi novel hiburan kumpulan cerita',
+  'bosen': 'sastra fiksi novel hiburan komik',
+  'galau': 'novel roman percintaan psikologi emosi',
+  'healing': 'psikologi pengembangan diri self improvement motivasi',
+  'sedih': 'psikologi motivasi hiburan self help',
+  'stres': 'psikologi kesehatan mental self help',
+  'cuan': 'bisnis kewirausahaan keuangan investasi saham uang',
+  'pr': 'pelajaran sekolah referensi edukasi ujian',
+  'tugas': 'pelajaran sekolah referensi edukasi kuliah akademi',
+  'skripsi': 'metodologi penelitian jurnal referensi ilmiah',
+  'keren': 'pengembangan diri tokoh inspiratif',
+  'masak': 'kuliner memasak resep makanan',
   'makanan': 'kuliner pangan tata boga',
   
   'science': 'sains alam',
@@ -56,10 +69,10 @@ const ALIAS_MAP = {
   'language': 'bahasa komunikasi',
   'english': 'bahasa inggris',
   'business': 'kewirausahaan bisnis',
-  'travel': 'pariwisata',
-  'health': 'kesehatan kedokteran',
+  'travel': 'pariwisata jurnal perjalanan',
+  'health': 'kesehatan kedokteran medis',
   'art': 'seni budaya',
-  'design': 'desain seni',
+  'design': 'desain seni arsitektur',
 
   'hotel': 'perhotelan hospitality',
   'wisata': 'pariwisata',
@@ -75,25 +88,40 @@ const ALIAS_MAP = {
   'sejarah': 'sejarah sosial budaya',
   'bahasa': 'bahasa komunikasi',
   'inggris': 'bahasa inggris komunikasi',
-};
+  'politik': 'politik pemerintahan sosial tata negara',
+  'hukum': 'hukum perundang-undangan regulasi',
+};
+
+
+
 
 function detectIntent(raw) {
-  const lower = raw.toLowerCase();
-  if (/^\d[\d\s-]{8,16}[\dxX]$/.test(raw.replace(/\s/g, ''))) return 'isbn';
-  if (/\b(karya|oleh|penulis|pengarang|author)\b/.test(lower)) return 'author';
+  const lower = raw.toLowerCase();
+
+  if (/^\d[\d\s-]{8,16}[\dxX]$/.test(raw.replace(/\s/g, ''))) return 'isbn';
+
+  if (/\b(karya|oleh|penulis|pengarang|author)\b/.test(lower)) return 'author';
+
   if (/\b(tentang|mengenai|soal|topik|tema|berhubungan|berkaitan|membahas)\b/.test(lower)) return 'topic';
   return 'title'; // default
 }
 
 function buildSemanticQuery(raw) {
-  const tokens = raw
-    .toLowerCase()
-    .split(/[\s,.\-!?;:]+/)
-    .filter((w) => w.length >= 2 && !STOP_WORDS.has(w));
-  const expanded = tokens.flatMap((t) => (ALIAS_MAP[t] ? ALIAS_MAP[t].split(' ') : [t]));
-  const seen = new Set();
-  const deduped = expanded.filter((w) => (seen.has(w) ? false : seen.add(w)));
-  return deduped.join(' ') || raw;
+  const tokens = raw.toLowerCase().split(/[\s,.\-!?;:]+/);
+  const aliases = [];
+  
+  for (const t of tokens) {
+    if (ALIAS_MAP[t]) {
+      aliases.push(ALIAS_MAP[t]);
+    }
+  }
+
+  if (aliases.length > 0) {
+    const uniqueAliases = [...new Set(aliases)].join(' ');
+    return ${raw} ;
+  }
+
+  return raw;
 }
 
 function extractKeywords(raw, stopWords = LEXICAL_STOP_WORDS) {
@@ -101,10 +129,16 @@ function extractKeywords(raw, stopWords = LEXICAL_STOP_WORDS) {
     .toLowerCase()
     .split(/[\s,.\-!?;:]+/)
     .filter((w) => w.length >= 2 && !stopWords.has(w));
-}
+}
+
+
+
 function isBibliographicCode(q) {
   return /^\d{9,13}[\dxX]?$/.test(q.replace(/[\s-]/g, ''));
-}
+}
+
+
+
 function bookEmbedText(book) {
   return [
     book.judul,
@@ -113,13 +147,19 @@ function bookEmbedText(book) {
   ]
     .filter(Boolean)
     .join('. ');
-}
+}
+
+
+
 const BOOK_INCLUDE = {
   kategori: { select: { id: true, nama: true } },
   penulis: { select: { id: true, nama: true } },
   penerbit: { select: { id: true, nama: true } },
   _count: { select: { peminjaman: true } },
-};
+};
+
+
+
 
 export async function searchCatalog({
   query = '',
@@ -132,7 +172,10 @@ export async function searchCatalog({
   const parsedKategoriId =
     kategoriId && !isNaN(parseInt(kategoriId, 10)) ? parseInt(kategoriId, 10) : null;
   const skip = (Math.max(1, page) - 1) * limit;
-  const categoryWhere = parsedKategoriId ? { kategoriId: parsedKategoriId } : {};
+  const categoryWhere = parsedKategoriId ? { kategoriId: parsedKategoriId } : {};
+
+
+
   if (!raw) {
     const [data, total] = await Promise.all([
       prisma.buku.findMany({
@@ -145,7 +188,10 @@ export async function searchCatalog({
       prisma.buku.count({ where: categoryWhere }),
     ]);
     return { data, total, page: Math.max(1, page), limit, mode: 'browse', hasSemanticResults: false };
-  }
+  }
+
+
+
   if (isBibliographicCode(raw)) {
     const clean = raw.replace(/[\s-]/g, '');
     const where = {
@@ -159,7 +205,10 @@ export async function searchCatalog({
       prisma.buku.count({ where }),
     ]);
     return { data, total, page: Math.max(1, page), limit, mode: 'exact', hasSemanticResults: false };
-  }
+  }
+
+
+
   if (searchMode !== 'lexical') {
     try {
       const intent = detectIntent(raw);
@@ -169,7 +218,8 @@ export async function searchCatalog({
 
       const queryVector = await computeEmbedding(semanticQuery, 'RETRIEVAL_QUERY');
 
-      if (queryVector) {
+      if (queryVector) {
+
         const candidates = await prisma.buku.findMany({
           where: categoryWhere,
           take: 500,
@@ -210,9 +260,14 @@ export async function searchCatalog({
           let maxSemScore = 0;
           for (const item of candidateData) {
             if (item.semScore > maxSemScore) maxSemScore = item.semScore;
-          }
-          const isJina = queryVector.length === 1024;
-          const semFloor = isJina ? 0.20 : 0.20;
+          }
+
+
+          const isJina = queryVector.length === 1024;
+
+
+          const semFloor = isJina ? 0.35 : 0.20;
+
           const adaptiveMargin = isJina ? 0.15 : 0.12;
           const semThreshold = Math.max(semFloor, maxSemScore - adaptiveMargin);
 
@@ -223,7 +278,8 @@ export async function searchCatalog({
             const lowerTitle = book.judul.toLowerCase();
             const lowerDesc = (book.deskripsi ?? '').toLowerCase();
             const lowerAuthor = (book.penulis?.nama ?? '').toLowerCase();
-            const lowerCategory = (book.kategori?.nama ?? '').toLowerCase();
+            const lowerCategory = (book.kategori?.nama ?? '').toLowerCase();
+
             const exactTitle = lowerTitle.includes(lowerRaw);
             const titleHits = keywords.filter((w) => lowerTitle.includes(w)).length;
             const descHits = keywords.filter((w) => lowerDesc.includes(w)).length;
@@ -235,8 +291,10 @@ export async function searchCatalog({
             combined += Math.min(0.12, titleHits * 0.04);
             combined += Math.min(0.08, descHits * 0.02);
             combined += Math.min(0.10, authorHits * 0.05);
-            combined += Math.min(0.06, categoryHits * 0.03);
-            if (intent === 'author' && authorHits > 0) combined += 0.20;
+            combined += Math.min(0.06, categoryHits * 0.03);
+
+            if (intent === 'author' && authorHits > 0) combined += 0.20;
+
             const accepted =
               semScore >= semThreshold ||
               exactTitle ||
@@ -278,7 +336,9 @@ export async function searchCatalog({
       const isRateLimit = err.message === 'GEMINI_RATE_LIMIT';
       const isConn = /connection|timeout|socket|econnrefused/i.test(err.message ?? '');
 
-      if (isRateLimit) {
+      if (isRateLimit) {
+
+
         console.warn('[SEARCH] Gemini rate-limited, falling back to lexical search.');
       } else if (isConn) {
         throw err;
@@ -286,7 +346,12 @@ export async function searchCatalog({
         console.warn('[SEARCH] Non-fatal semantic error, falling back to lexical:', err.message ?? err);
       }
     }
-  }
+  }
+
+
+
+
+
   const keywords = extractKeywords(raw);
 
   const wordConditions = keywords.slice(0, 8).flatMap((tok) => [
