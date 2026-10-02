@@ -82,3 +82,6 @@ certificates
 # Test Scripts & Results
 test-*.js
 result*.json
+
+setup-pgvector.js
+probe-ssh.js

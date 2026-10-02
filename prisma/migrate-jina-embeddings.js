@@ -41,11 +41,12 @@ async function migrate() {
     const vector = newVectors[i];
     if (vector && vector.length === 1024) {
       const f32 = new Float32Array(vector);
-      const buffer = Buffer.from(f32.buffer);
-      await prisma.buku.update({
-        where: { id: books[i].id },
-        data: { embedding: buffer }
-      });
+      const vectorStr = `[${f32.join(',')}]`;
+      await prisma.$executeRaw`
+        UPDATE buku 
+        SET embedding = ${vectorStr}::vector 
+        WHERE id = ${books[i].id}
+      `;
       successCount++;
     }
   }

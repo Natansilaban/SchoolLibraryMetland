@@ -219,43 +219,41 @@ export async function searchCatalog({
       const queryVector = await computeEmbedding(semanticQuery, 'RETRIEVAL_QUERY');
 
       if (queryVector) {
+        const vectorStr = `[${Array.from(queryVector).join(',')}]`;
 
-        const candidates = await prisma.buku.findMany({
-          where: categoryWhere,
-          take: 500,
-          include: BOOK_INCLUDE,
-        });
+        let candidateIdsQuery;
+        if (options.kategoriId) {
+          candidateIdsQuery = prisma.$queryRaw`
+            SELECT id, 1 - (embedding <=> ${vectorStr}::vector) as "semScore"
+            FROM buku
+            WHERE "kategori_id" = ${options.kategoriId} AND embedding IS NOT NULL
+            ORDER BY embedding <=> ${vectorStr}::vector
+            LIMIT 500
+          `;
+        } else {
+          candidateIdsQuery = prisma.$queryRaw`
+            SELECT id, 1 - (embedding <=> ${vectorStr}::vector) as "semScore"
+            FROM buku
+            WHERE embedding IS NOT NULL
+            ORDER BY embedding <=> ${vectorStr}::vector
+            LIMIT 500
+          `;
+        }
 
-        if (candidates.length > 0) {
-          const candidateData = [];
-          const missingEmbeddings = [];
+        const vectorMatches = await candidateIdsQuery;
+        const candidateIds = vectorMatches.map((m) => m.id);
 
-          for (const book of candidates) {
-            let vec = null;
-            if (book.embedding) {
-               vec = new Float32Array(book.embedding.buffer, book.embedding.byteOffset, book.embedding.byteLength / Float32Array.BYTES_PER_ELEMENT);
-               if (vec.length !== queryVector.length) vec = null; // dimension mismatch
-            }
-            
-            if (!vec) {
-               missingEmbeddings.push(book);
-            } else {
-               candidateData.push({ book, vec, semScore: calculateSimilarity(queryVector, vec) });
-            }
-          }
-          
-          if (missingEmbeddings.length > 0) {
-            const candidateTexts = missingEmbeddings.map(bookEmbedText);
-            const computedVectors = await computeBatchEmbeddings(candidateTexts, 'RETRIEVAL_DOCUMENT');
-            
-            for (let i = 0; i < missingEmbeddings.length; i++) {
-              const book = missingEmbeddings[i];
-              const vec = computedVectors[i];
-              const isValid = vec && vec.length === queryVector.length;
-              const semScore = isValid ? calculateSimilarity(queryVector, vec) : 0;
-              candidateData.push({ book, vec, semScore });
-            }
-          }
+        if (candidateIds.length > 0) {
+          const candidates = await prisma.buku.findMany({
+            where: { id: { in: candidateIds } },
+            include: BOOK_INCLUDE,
+          });
+
+          const semScoreMap = new Map(vectorMatches.map((m) => [m.id, m.semScore]));
+          const candidateData = candidates.map((book) => ({
+            book,
+            semScore: semScoreMap.get(book.id) || 0,
+          }));
 
           let maxSemScore = 0;
           for (const item of candidateData) {
