@@ -83,7 +83,7 @@ function MobileFloatingNav() {
               role="dialog"
               aria-modal="true"
               aria-label="Menu Aksi Cepat"
-              className="absolute bottom-full right-0 mb-3 w-64 rounded-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/90 dark:border-slate-800/90 shadow-[0_16px_40px_rgba(0,0,0,0.18)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.6)] p-2 z-50 transform-gpu animate-in fade-in slide-in-from-bottom-2 duration-150"
+              className="absolute bottom-full right-0 mb-3 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-2 z-50 transform-gpu animate-in fade-in slide-in-from-bottom-2 duration-150"
             >
               <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
@@ -148,7 +148,8 @@ function MobileFloatingNav() {
 
           {/* Translucent Capsule / Pill Navigation (Dribbble Left Element) */}
           <nav
-            className="flex items-center gap-1 p-1 rounded-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-white/60 dark:border-slate-800/80 shadow-[0_8px_32px_rgba(15,23,42,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] ring-1 ring-black/5 dark:ring-white/10"
+            style={{ contain: 'paint layout' }}
+            className="flex items-center gap-1 p-1 rounded-full bg-white/95 dark:bg-slate-900/95 border border-slate-200/90 dark:border-slate-800 shadow-[0_4px_20px_rgba(15,23,42,0.08),0_1px_3px_rgba(15,23,42,0.04)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.45)] ring-1 ring-black/[0.04] dark:ring-white/[0.08]"
             aria-label="Navigasi Utama Siswa"
           >
             {NAV_ITEMS.map((item) => {
@@ -165,7 +166,7 @@ function MobileFloatingNav() {
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex flex-col items-center justify-center min-w-[68px] sm:min-w-[76px] py-1.5 px-3 rounded-full transition-all duration-150 select-none min-h-[48px] active:scale-95 ${
                     isActive
-                      ? 'bg-slate-100/90 dark:bg-slate-800/90 text-slate-900 dark:text-white font-bold shadow-xs border border-slate-200/60 dark:border-slate-700/60'
+                      ? 'bg-slate-100/95 dark:bg-slate-800/95 text-slate-900 dark:text-white font-bold shadow-xs border border-slate-200/60 dark:border-slate-700/60'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50/50 dark:hover:bg-slate-800/50'
                   }`}
                 >
@@ -197,7 +198,8 @@ function MobileFloatingNav() {
               aria-expanded={isMenuOpen}
               aria-haspopup="dialog"
               aria-label="Menu Aksi Cepat Siswa"
-              className={`w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all duration-150 active:scale-95 select-none shadow-[0_8px_32px_rgba(15,23,42,0.18)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.6)] ${
+              style={{ contain: 'paint layout' }}
+              className={`w-[52px] h-[52px] rounded-full flex items-center justify-center transition-all duration-150 active:scale-95 select-none shadow-[0_4px_16px_rgba(15,23,42,0.15)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.45)] ${
                 isMenuOpen
                   ? 'bg-rose-600 text-white ring-4 ring-rose-500/20'
                   : isProfilActive

@@ -41,7 +41,6 @@ export default async function RootLayout({ children }) {
     <html
       lang="id"
       className={`${plusJakartaSans.variable} ${newsreader.variable}`}
-      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <head>
