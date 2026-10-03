@@ -79,6 +79,15 @@ const LOCAL_TERM_MAP = {
   publis: 'public',
   nangis: 'novel fiksi sedih',
   males: 'motivasi',
+  bujng: 'bujang',
+  hrta: 'hirata',
+  kngen: 'rindu',
+  kpl: 'kapal',
+  noll: 'zero',
+  sru: 'satu',
+  olshop: 'pemasaran digital bisnis',
+  piten: 'python',
+  psika: 'fisika',
 };
 
 // High-frequency library catalog terms for fuzzy typo auto-correction
