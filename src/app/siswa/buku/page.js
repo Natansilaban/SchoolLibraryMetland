@@ -118,7 +118,7 @@ export default function SiswaBukuPage() {
             <input
               id="search-buku-siswa"
               type="text"
-              className="w-full pl-10 pr-12 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
+              className="w-full pl-10 pr-12 h-11 sm:h-10 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               placeholder="Cari buku, topik pelajaran, atau tanya santai (misal: 'ada buku cara bikin kopi gak')..."
               value={search}
               onChange={(e) => {
@@ -126,7 +126,7 @@ export default function SiswaBukuPage() {
                 setPage(1);
               }}
             />
-            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+            <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center">
               <VoiceSearchButton
                 onTranscript={(spokenText) => {
                   setSearch(spokenText);
@@ -138,7 +138,7 @@ export default function SiswaBukuPage() {
           </div>
           <select
             id="filter-kategori-siswa"
-            className="sm:w-56 px-3 py-2 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-700 dark:text-slate-200"
+            className="sm:w-56 h-11 sm:h-10 px-3 text-xs sm:text-sm bg-slate-50 hover:bg-white focus:bg-white dark:bg-slate-950 dark:hover:bg-slate-900 dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:border-blue-600 dark:focus:border-blue-500 rounded-lg outline-none transition-colors text-slate-700 dark:text-slate-200"
             value={kategoriFilter}
             onChange={(e) => {
               setKategoriFilter(e.target.value);
