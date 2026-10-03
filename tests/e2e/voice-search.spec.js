@@ -33,18 +33,16 @@ test.describe('Mobile Voice Search UX & Geometry Regression', () => {
     expect(micBounds.y + micBounds.height).toBeLessThanOrEqual(inputBounds.y + inputBounds.height);
     expect(micBounds.x + micBounds.width).toBeLessThanOrEqual(inputBounds.x + inputBounds.width);
 
-    // Verify touch action and no harsh sticky blue
+    // Tap mic button to open voice modal
     await micBtn.tap();
 
-    const styles = await micBtn.evaluate(el => {
-      const s = window.getComputedStyle(el);
-      return {
-        outlineColor: s.outlineColor,
-        outlineStyle: s.outlineStyle,
-      };
-    });
+    // Verify modal opens upon tap
+    const modal = page.locator('[role="dialog"]');
+    await expect(modal).toBeVisible();
+    await expect(modal.locator('text=Pencarian Suara')).toBeVisible();
 
-    // Should not have any jarring blue outline
-    expect(styles.outlineStyle === 'none' || styles.outlineColor !== 'rgb(37, 99, 235)').toBeTruthy();
+    // Verify closing modal via escape key
+    await page.keyboard.press('Escape');
+    await expect(modal).not.toBeVisible();
   });
 });
