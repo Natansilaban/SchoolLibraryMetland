@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { searchCatalog } from "@/lib/search/catalog-search";
+import { computeEmbedding } from "@/lib/search/embeddings";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -101,6 +102,20 @@ export async function POST(req) {
     });
 
     invalidateCatalogCache();
+
+    // Asynchronously compute & save embedding so the book is immediately searchable
+    const embedText = `${buku.judul} ${buku.penulis?.nama ?? ''} ${buku.kategori?.nama ?? ''} ${buku.deskripsi ?? ''}`.trim();
+    computeEmbedding(embedText, 'RETRIEVAL_DOCUMENT').then(async (vec) => {
+      if (vec && vec.length) {
+        const vectorStr = `[${Array.from(vec).join(',')}]`;
+        await prisma.$executeRaw`
+          UPDATE buku 
+          SET embedding = ${vectorStr}::vector 
+          WHERE id = ${buku.id}
+        `.catch((e) => console.warn('[EMBEDDING] Failed to save vector for new book:', e.message));
+      }
+    }).catch((e) => console.warn('[EMBEDDING] Failed to compute vector for new book:', e.message));
+
     return NextResponse.json(buku, { status: 201 });
   } catch (error) {
     if (error.code === "P2002") {

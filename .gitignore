@@ -85,3 +85,7 @@ result*.json
 
 setup-pgvector.js
 probe-ssh.js
+# AI agent files
+.claude/
+CLAUDE.md
+AGENTS.md

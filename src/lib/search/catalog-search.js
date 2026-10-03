@@ -4,6 +4,8 @@ import {
   computeBatchEmbeddings,
   calculateSimilarity,
 } from "@/lib/search/embeddings";
+import { transformQuery } from "@/lib/search/query-transform";
+import { rerankCandidates } from "@/lib/search/reranker";
 
 const STOP_WORDS = new Set([
   "cariin",
@@ -311,163 +313,186 @@ export async function searchCatalog({
     };
   }
 
+  // 1. Query Transformation (LLM Layer / Typo Correction)
+  const cleanQuery = await transformQuery(raw);
+
   if (searchMode !== "lexical") {
     try {
-      const intent = detectIntent(raw);
-      const semanticQuery = buildSemanticQuery(raw);
-      const keywords = extractKeywords(raw);
-      const lowerRaw = raw.toLowerCase();
+      const intent = detectIntent(cleanQuery);
+      const semanticQuery = buildSemanticQuery(cleanQuery);
 
-      const queryVector = await computeEmbedding(
-        semanticQuery,
-        "RETRIEVAL_QUERY",
-      );
+      // 2a. Parallel Pipeline: Launch Lexical FTS concurrently with Vector Embedding!
+      const lexicalPromise = (async () => {
+        try {
+          return parsedKategoriId
+            ? await prisma.$queryRaw`
+                SELECT id, ts_rank_cd(
+                  to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')),
+                  plainto_tsquery('simple', ${cleanQuery})
+                ) as "lexScore"
+                FROM buku
+                WHERE "kategori_id" = ${parsedKategoriId}
+                  AND to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')) @@ plainto_tsquery('simple', ${cleanQuery})
+                ORDER BY "lexScore" DESC
+                LIMIT 35
+              `
+            : await prisma.$queryRaw`
+                SELECT id, ts_rank_cd(
+                  to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')),
+                  plainto_tsquery('simple', ${cleanQuery})
+                ) as "lexScore"
+                FROM buku
+                WHERE to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')) @@ plainto_tsquery('simple', ${cleanQuery})
+                ORDER BY "lexScore" DESC
+                LIMIT 35
+              `;
+        } catch (ftsErr) {
+          console.warn("[SEARCH] FTS query error, proceeding with vector:", ftsErr.message);
+          return [];
+        }
+      })();
 
+      const [queryVector, lexicalMatches] = await Promise.all([
+        computeEmbedding(semanticQuery, "RETRIEVAL_QUERY"),
+        lexicalPromise,
+      ]);
+
+      let denseMatches = [];
       if (queryVector) {
         const vectorStr = `[${Array.from(queryVector).join(",")}]`;
 
-        let candidateIdsQuery;
-        if (options.kategoriId) {
-          candidateIdsQuery = prisma.$queryRaw`
-            SELECT id, 1 - (embedding <=> ${vectorStr}::vector) as "semScore"
-            FROM buku
-            WHERE "kategori_id" = ${options.kategoriId} AND embedding IS NOT NULL
-            ORDER BY embedding <=> ${vectorStr}::vector
-            LIMIT 500
-          `;
-        } else {
-          candidateIdsQuery = prisma.$queryRaw`
-            SELECT id, 1 - (embedding <=> ${vectorStr}::vector) as "semScore"
-            FROM buku
-            WHERE embedding IS NOT NULL
-            ORDER BY embedding <=> ${vectorStr}::vector
-            LIMIT 500
-          `;
-        }
+        denseMatches = parsedKategoriId
+          ? await prisma.$queryRaw`
+              SELECT id, 1 - (embedding <=> ${vectorStr}::vector) as "semScore"
+              FROM buku
+              WHERE "kategori_id" = ${parsedKategoriId} AND embedding IS NOT NULL
+              ORDER BY embedding <=> ${vectorStr}::vector
+              LIMIT 35
+            `
+          : await prisma.$queryRaw`
+              SELECT id, 1 - (embedding <=> ${vectorStr}::vector) as "semScore"
+              FROM buku
+              WHERE embedding IS NOT NULL
+              ORDER BY embedding <=> ${vectorStr}::vector
+              LIMIT 35
+            `;
+      }
 
-        const vectorMatches = await candidateIdsQuery;
-        const candidateIds = vectorMatches.map((m) => m.id);
+      if (denseMatches.length > 0 || lexicalMatches.length > 0) {
+        // 2c. Reciprocal Rank Fusion (RRF) with Adaptive Semantic Thresholding
+        const topSemScore = (denseMatches && denseMatches[0]?.semScore) ? Number(denseMatches[0].semScore) : 0;
+        // Require at least 0.28 or within 0.08 of top score to eliminate random library books
+        const semThreshold = Math.max(0.27, topSemScore - 0.08);
+        const qualifiedDense = (denseMatches || []).filter((m) => Number(m.semScore) >= semThreshold);
 
-        if (candidateIds.length > 0) {
+        const rrfScores = new Map();
+        const k = 60; // Standard RRF smoothing constant
+
+        qualifiedDense.forEach((m, rank) => {
+          const score = 1 / (k + rank + 1);
+          rrfScores.set(m.id, (rrfScores.get(m.id) || 0) + score);
+        });
+
+        (lexicalMatches || []).forEach((m, rank) => {
+          // Boost exact lexical token matches so exact keywords always rank high
+          const score = 1.5 / (k + rank + 1);
+          rrfScores.set(m.id, (rrfScores.get(m.id) || 0) + score);
+        });
+
+        const fusedIds = Array.from(rrfScores.entries())
+          .sort((a, b) => b[1] - a[1])
+          .map(([id]) => id)
+          .slice(0, 25);
+
+        if (fusedIds.length > 0) {
           const candidates = await prisma.buku.findMany({
-            where: { id: { in: candidateIds } },
+            where: { id: { in: fusedIds } },
             include: BOOK_INCLUDE,
           });
 
-          const semScoreMap = new Map(
-            vectorMatches.map((m) => [m.id, m.semScore]),
-          );
-          const candidateData = candidates.map((book) => ({
-            book,
-            semScore: semScoreMap.get(book.id) || 0,
-          }));
+          const bookMap = new Map(candidates.map((b) => [b.id, b]));
+          let orderedBooks = fusedIds
+            .map((id) => bookMap.get(id))
+            .filter(Boolean);
 
-          let maxSemScore = 0;
-          for (const item of candidateData) {
-            if (item.semScore > maxSemScore) maxSemScore = item.semScore;
-          }
+          // 3. Stage 2: Reranking Node (Jina Reranker v3 / v3.5)
+          const isRerankerEnabled = process.env.ENABLE_RERANKER === "true";
+          if (isRerankerEnabled && orderedBooks.length > 1 && process.env.JINA_RERANKER_URL) {
+            // High-Confidence Stage 1 Short-Circuit:
+            // If top candidate has an exact lexical match or strong dense match,
+            // Stage 1 is already conclusive. Skip slow CPU reranker!
+            const topLexScore = lexicalMatches[0]?.id === orderedBooks[0]?.id ? Number(lexicalMatches[0].lexScore) : 0;
+            const topDenseScore = qualifiedDense[0]?.id === orderedBooks[0]?.id ? Number(qualifiedDense[0].semScore) : 0;
+            const isDecisiveMatch = topLexScore > 0.4 || topDenseScore > 0.88;
 
-          const isJina = queryVector.length === 1024;
+            if (!isDecisiveMatch) {
+              try {
+                // Rerank top 3 candidates (concise format) to keep CPU cross-attention fast
+                const rerankSlice = orderedBooks.slice(0, 3);
+                const remainingSlice = orderedBooks.slice(3);
+                const docStrings = rerankSlice.map((b) => `${b.judul}. Kategori: ${b.kategori?.nama || ''}`);
 
-          const semFloor = isJina ? 0.35 : 0.2;
+                const rerankResults = await rerankCandidates({
+                  query: cleanQuery,
+                  documents: docStrings,
+                  topN: 3,
+                  timeoutMs: parseInt(process.env.JINA_RERANKER_TIMEOUT_MS, 10) || 2500,
+                });
 
-          const adaptiveMargin = isJina ? 0.15 : 0.12;
-          const semThreshold = Math.max(semFloor, maxSemScore - adaptiveMargin);
+                if (rerankResults && rerankResults.length > 0) {
+                  const rerankedBooks = [];
+                  for (const item of rerankResults) {
+                    // Prune negative scores (Jina v3 scores < 0 mean irrelevant)
+                    if (item.score > -0.02 && rerankSlice[item.index]) {
+                      const b = rerankSlice[item.index];
+                      rerankedBooks.push({
+                        ...b,
+                        _relevance: {
+                          score: item.score,
+                          isReranked: true,
+                          isSemanticMatch: true,
+                        },
+                      });
+                    }
+                  }
 
-          const scored = [];
-          for (const { book, vec, semScore } of candidateData) {
-            if (!vec || vec.length !== queryVector.length) continue;
-
-            const lowerTitle = book.judul.toLowerCase();
-            const lowerDesc = (book.deskripsi ?? "").toLowerCase();
-            const lowerAuthor = (book.penulis?.nama ?? "").toLowerCase();
-            const lowerCategory = (book.kategori?.nama ?? "").toLowerCase();
-
-            const exactTitle = lowerTitle.includes(lowerRaw);
-            const titleHits = keywords.filter((w) =>
-              lowerTitle.includes(w),
-            ).length;
-            const descHits = keywords.filter((w) =>
-              lowerDesc.includes(w),
-            ).length;
-            const authorHits = keywords.filter((w) =>
-              lowerAuthor.includes(w),
-            ).length;
-            const categoryHits = keywords.filter((w) =>
-              lowerCategory.includes(w),
-            ).length;
-
-            let combined = semScore;
-            if (exactTitle) combined += 0.25;
-            combined += Math.min(0.12, titleHits * 0.04);
-            combined += Math.min(0.08, descHits * 0.02);
-            combined += Math.min(0.1, authorHits * 0.05);
-            combined += Math.min(0.06, categoryHits * 0.03);
-
-            if (intent === "author" && authorHits > 0) combined += 0.2;
-
-            const accepted =
-              semScore >= semThreshold ||
-              exactTitle ||
-              titleHits >= 1 ||
-              (descHits >= 2 && semScore >= semThreshold * 0.6) ||
-              (authorHits >= 1 && intent === "author");
-
-            if (accepted) {
-              scored.push({
-                ...book,
-                _relevance: {
-                  score: Math.round(combined * 1000) / 1000,
-                  semanticScore: Math.round(semScore * 1000) / 1000,
-                  exactTitle,
-                  titleHits,
-                  descHits,
-                  intent,
-                  isSemanticMatch:
-                    semScore >= 0.22 && !exactTitle && titleHits === 0,
-                },
-              });
+                  if (rerankedBooks.length > 0) {
+                    orderedBooks = [...rerankedBooks, ...remainingSlice];
+                  }
+                }
+              } catch (rerankErr) {
+                console.warn(
+                  "[SEARCH] Reranker failed, keeping Stage 1 RRF order:",
+                  rerankErr.message || rerankErr,
+                );
+              }
             }
           }
 
-          if (scored.length > 0) {
-            scored.sort((a, b) => b._relevance.score - a._relevance.score);
-            const paged = scored.slice(skip, skip + limit);
+
+          if (orderedBooks.length > 0) {
+            const paged = orderedBooks.slice(skip, skip + limit);
             return {
               data: paged,
-              total: scored.length,
+              total: orderedBooks.length,
               page: Math.max(1, page),
               limit,
-              mode: "semantic",
-              hasSemanticResults: paged.some(
-                (b) => b._relevance?.isSemanticMatch,
-              ),
+              mode: "hybrid",
+              hasSemanticResults: true,
             };
           }
         }
       }
     } catch (err) {
-      const isRateLimit = err.message === "GEMINI_RATE_LIMIT";
-      const isConn = /connection|timeout|socket|econnrefused/i.test(
-        err.message ?? "",
+      console.warn(
+        "[SEARCH] Non-fatal semantic error, falling back to lexical:",
+        err.message ?? err,
       );
-
-      if (isRateLimit) {
-        console.warn(
-          "[SEARCH] Gemini rate-limited, falling back to lexical search.",
-        );
-      } else if (isConn) {
-        throw err;
-      } else {
-        console.warn(
-          "[SEARCH] Non-fatal semantic error, falling back to lexical:",
-          err.message ?? err,
-        );
-      }
     }
   }
 
-  const keywords = extractKeywords(raw);
+  // 4. Fallback: Word token search
+  const keywords = extractKeywords(cleanQuery || raw);
 
   const wordConditions = keywords
     .slice(0, 8)
@@ -507,3 +532,4 @@ export async function searchCatalog({
     hasSemanticResults: false,
   };
 }
+

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { computeEmbedding } from "@/lib/search/embeddings";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -88,6 +89,20 @@ export async function PUT(req, { params }) {
       include: { kategori: true, penulis: true, penerbit: true },
     });
     invalidateCatalogCache();
+
+    // Asynchronously update embedding with new metadata
+    const embedText = `${buku.judul} ${buku.penulis?.nama ?? ''} ${buku.kategori?.nama ?? ''} ${buku.deskripsi ?? ''}`.trim();
+    computeEmbedding(embedText, 'RETRIEVAL_DOCUMENT').then(async (vec) => {
+      if (vec && vec.length) {
+        const vectorStr = `[${Array.from(vec).join(',')}]`;
+        await prisma.$executeRaw`
+          UPDATE buku 
+          SET embedding = ${vectorStr}::vector 
+          WHERE id = ${buku.id}
+        `.catch((e) => console.warn('[EMBEDDING] Failed to update vector for book:', e.message));
+      }
+    }).catch((e) => console.warn('[EMBEDDING] Failed to compute updated vector for book:', e.message));
+
     return NextResponse.json(buku);
   } catch (error) {
     if (error.code === "P2002") {

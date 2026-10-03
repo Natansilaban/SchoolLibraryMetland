@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight, Library } from 'lucide-react';
 import VoiceSearchButton from '@/components/ui/VoiceSearchButton';
@@ -38,8 +38,9 @@ export default function SiswaBukuPage() {
     return () => clearTimeout(timer);
   }, [search]);
 
-  const fetch_ = useCallback(async () => {
-    const isDefaultBrowse = !debouncedSearch && page === 1 && !kategoriFilter;
+  useEffect(() => {
+    const controller = new AbortController();
+    const isDefaultBrowse = !debouncedSearch && page === 1 && !kategoriFilter;
     if (!isDefaultBrowse || !clientCatalogCache) {
       setLoading(true);
     }
@@ -50,33 +51,37 @@ export default function SiswaBukuPage() {
       limit: limit.toString(),
       ...(kategoriFilter ? { kategoriId: kategoriFilter } : {}),
     });
-    try {
-      const res = await fetch(`/api/buku?${params}`);
-      const json = await res.json();
-      const items = json.data || [];
-      setBuku(items);
-      setTotal(json.total || 0);
-      setSearchMeta({
-        mode: json.mode || 'browse',
-        hasSemanticResults: !!json.hasSemanticResults,
-      });
-      if (isDefaultBrowse) {
-        clientCatalogCache = json;
-      }
-    } catch {
-      if (!isDefaultBrowse) {
-        setBuku([]);
-        setTotal(0);
-      }
-      setSearchMeta({ mode: 'browse', hasSemanticResults: false });
-    } finally {
-      setLoading(false);
-    }
-  }, [debouncedSearch, page, kategoriFilter]);
 
-  useEffect(() => {
-    fetch_();
-  }, [fetch_]);
+    fetch(`/api/buku?${params}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((json) => {
+        const items = json.data || [];
+        setBuku(items);
+        setTotal(json.total || 0);
+        setSearchMeta({
+          mode: json.mode || 'browse',
+          hasSemanticResults: !!json.hasSemanticResults,
+        });
+        if (isDefaultBrowse) {
+          clientCatalogCache = json;
+        }
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        if (!isDefaultBrowse) {
+          setBuku([]);
+          setTotal(0);
+        }
+        setSearchMeta({ mode: 'browse', hasSemanticResults: false });
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [debouncedSearch, page, kategoriFilter]);
 
   useEffect(() => {
     if (!clientKategoriCache) {
@@ -155,9 +160,10 @@ export default function SiswaBukuPage() {
             <span>
               Menampilkan {total} hasil untuk &quot;{debouncedSearch}&quot;
             </span>
-            {searchMeta.mode === 'semantic' && (
-              <span className="text-[11px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
-                Pencarian berbasis makna &amp; konteks
+            {(searchMeta.mode === 'hybrid' || searchMeta.mode === 'semantic') && (
+              <span className="text-[11px] font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-full border border-blue-200 dark:border-blue-800 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                Pencarian Cerdas (Hybrid AI &amp; Reranked)
               </span>
             )}
           </div>

@@ -46,16 +46,30 @@ async function computeJinaEmbedding(text, taskType) {
   if (jinaDisabled) return null;
 
   try {
-    const jinaApiUrl = process.env.JINA_API_URL || 'https://jina.r1fikri.dev/v1/embeddings';
+    const jinaApiUrl = process.env.JINA_API_URL;
+    if (!jinaApiUrl) return null;
+
     const jinaApiKey = process.env.JINA_API_KEY || '';
+    const cfClientId = process.env.CF_ACCESS_CLIENT_ID || '';
+    const cfClientSecret = process.env.CF_ACCESS_CLIENT_SECRET || '';
+
     const headers = { 'Content-Type': 'application/json' };
     if (jinaApiKey) headers['Authorization'] = `Bearer ${jinaApiKey}`;
+    if (cfClientId && cfClientSecret) {
+      headers['CF-Access-Client-Id'] = cfClientId;
+      headers['CF-Access-Client-Secret'] = cfClientSecret;
+    }
+
+    const jinaTask = taskType === 'RETRIEVAL_DOCUMENT' || taskType === 'retrieval.passage'
+      ? 'retrieval.passage'
+      : 'retrieval.query';
 
     const res = await fetch(jinaApiUrl, {
       method: 'POST',
       headers,
       body: JSON.stringify({
         model: 'jina-embeddings-v5-text-small',
+        task: jinaTask,
         input: [text],
       }),
     });
@@ -145,16 +159,35 @@ export async function computeBatchEmbeddings(texts, taskType = 'RETRIEVAL_DOCUME
       const chunkTexts = uncachedTexts.slice(c, c + CHUNK);
       const chunkIndices = uncachedIndices.slice(c, c + CHUNK);
 
-      const jinaApiUrl = process.env.JINA_API_URL || 'https://jina.r1fikri.dev/v1/embeddings';
+      const jinaApiUrl = process.env.JINA_API_URL;
+      if (!jinaApiUrl) {
+        for (const idx of chunkIndices) {
+          results[idx] = await computeEmbedding(texts[idx], taskType);
+        }
+        continue;
+      }
+
       const jinaApiKey = process.env.JINA_API_KEY || '';
+      const cfClientId = process.env.CF_ACCESS_CLIENT_ID || '';
+      const cfClientSecret = process.env.CF_ACCESS_CLIENT_SECRET || '';
+
       const headers = { 'Content-Type': 'application/json' };
       if (jinaApiKey) headers['Authorization'] = `Bearer ${jinaApiKey}`;
+      if (cfClientId && cfClientSecret) {
+        headers['CF-Access-Client-Id'] = cfClientId;
+        headers['CF-Access-Client-Secret'] = cfClientSecret;
+      }
+
+      const jinaTask = taskType === 'RETRIEVAL_DOCUMENT' || taskType === 'retrieval.passage'
+        ? 'retrieval.passage'
+        : 'retrieval.query';
 
       const res = await fetch(jinaApiUrl, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           model: 'jina-embeddings-v5-text-small',
+          task: jinaTask,
           input: chunkTexts,
         }),
       });
