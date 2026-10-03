@@ -4,6 +4,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getPaginationParams, handleApiError } from '@/lib/api-error';
 
+// Idempotency / In-flight request lock to prevent double-entries
+const inFlightRequests = new Set();
+
 export async function GET(req) {
   try {
     const session = await getServerSession(authOptions);
@@ -79,7 +82,17 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Data peminjaman tidak lengkap' }, { status: 400 });
     }
 
-    const parsedDate = new Date(tglKembaliRencana);
+    const lockKey = `${targetAnggotaId}-${bukuId}`;
+    if (inFlightRequests.has(lockKey)) {
+      return NextResponse.json(
+        { error: 'Permintaan Anda sedang diproses. Mohon jangan menekan tombol berulang kali.' },
+        { status: 429 }
+      );
+    }
+    inFlightRequests.add(lockKey);
+
+    try {
+      const parsedDate = new Date(tglKembaliRencana);
     if (isNaN(parsedDate.getTime())) {
       return NextResponse.json({ error: 'Format tanggal rencana pengembalian tidak valid' }, { status: 400 });
     }
@@ -160,6 +173,9 @@ export async function POST(req) {
     });
 
     return NextResponse.json(result, { status: 201 });
+    } finally {
+      inFlightRequests.delete(lockKey);
+    }
   } catch (error) {
     return handleApiError(error, 'Gagal memproses peminjaman buku');
   }
