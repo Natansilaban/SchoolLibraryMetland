@@ -6,7 +6,7 @@ import { handleApiError } from '@/lib/api-error';
 
 let kategoriCache = null;
 let lastFetchTime = 0;
-const CACHE_TTL = 60000; // 60s in-memory cache
+const CACHE_TTL = 60000;
 
 export async function GET() {
   const now = Date.now();

@@ -90,7 +90,6 @@ export async function PUT(req, { params }) {
     });
     invalidateCatalogCache();
 
-    // Asynchronously update embedding with new metadata
     const embedText = `${buku.judul} ${buku.penulis?.nama ?? ''} ${buku.kategori?.nama ?? ''} ${buku.deskripsi ?? ''}`.trim();
     computeEmbedding(embedText, 'RETRIEVAL_DOCUMENT').then(async (vec) => {
       if (vec && vec.length) {

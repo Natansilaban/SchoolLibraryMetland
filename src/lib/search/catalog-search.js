@@ -1,11 +1,11 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../prisma.js";
 import {
   computeEmbedding,
   computeBatchEmbeddings,
   calculateSimilarity,
-} from "@/lib/search/embeddings";
-import { transformQuery } from "@/lib/search/query-transform";
-import { rerankCandidates } from "@/lib/search/reranker";
+} from "./embeddings.js";
+import { transformQuery } from "./query-transform.js";
+import { rerankCandidates } from "./reranker.js";
 
 const STOP_WORDS = new Set([
   "cariin",
@@ -193,7 +193,7 @@ function detectIntent(raw) {
     )
   )
     return "topic";
-  return "title"; // default
+  return "title";
 }
 
 function buildSemanticQuery(raw) {
@@ -249,6 +249,7 @@ export async function searchCatalog({
   limit = 20,
   searchMode = "auto",
 } = {}) {
+  const isJunk = (query ?? "").trim().length > 250 || /^[^a-zA-Z0-9]+$/.test((query ?? "").trim());
   const raw = (query ?? "").trim().slice(0, 300);
   const parsedKategoriId =
     kategoriId && !isNaN(parseInt(kategoriId, 10))
@@ -259,7 +260,7 @@ export async function searchCatalog({
     ? { kategoriId: parsedKategoriId }
     : {};
 
-  if (!raw) {
+  if (!raw || isJunk) {
     const [data, total] = await Promise.all([
       prisma.buku.findMany({
         where: categoryWhere,
@@ -313,52 +314,49 @@ export async function searchCatalog({
     };
   }
 
-  // 1. Query Transformation (LLM Layer / Typo Correction)
-  const cleanQuery = await transformQuery(raw);
+  const transformPromise = transformQuery(raw);
 
   if (searchMode !== "lexical") {
     try {
-      const intent = detectIntent(cleanQuery);
-      const semanticQuery = buildSemanticQuery(cleanQuery);
+      const semanticQueryInitial = buildSemanticQuery(raw);
 
-      // 2a. Parallel Pipeline: Launch Lexical FTS concurrently with Vector Embedding!
-      const lexicalPromise = (async () => {
-        try {
-          return parsedKategoriId
-            ? await prisma.$queryRaw`
-                SELECT id, ts_rank_cd(
-                  to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')),
-                  plainto_tsquery('simple', ${cleanQuery})
-                ) as "lexScore"
-                FROM buku
-                WHERE "kategori_id" = ${parsedKategoriId}
-                  AND to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')) @@ plainto_tsquery('simple', ${cleanQuery})
-                ORDER BY "lexScore" DESC
-                LIMIT 35
-              `
-            : await prisma.$queryRaw`
-                SELECT id, ts_rank_cd(
-                  to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')),
-                  plainto_tsquery('simple', ${cleanQuery})
-                ) as "lexScore"
-                FROM buku
-                WHERE to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')) @@ plainto_tsquery('simple', ${cleanQuery})
-                ORDER BY "lexScore" DESC
-                LIMIT 35
-              `;
-        } catch (ftsErr) {
-          console.warn("[SEARCH] FTS query error, proceeding with vector:", ftsErr.message);
-          return [];
-        }
-      })();
+      const runFts = (q) => parsedKategoriId
+        ? prisma.$queryRaw`
+            SELECT id, ts_rank_cd(
+              to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')),
+              plainto_tsquery('simple', ${q})
+            ) as "lexScore"
+            FROM buku
+            WHERE "kategori_id" = ${parsedKategoriId}
+              AND to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')) @@ plainto_tsquery('simple', ${q})
+            ORDER BY "lexScore" DESC
+            LIMIT 35
+          `.catch((e) => { console.warn("[SEARCH] FTS error:", e.message); return []; })
+        : prisma.$queryRaw`
+            SELECT id, ts_rank_cd(
+              to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')),
+              plainto_tsquery('simple', ${q})
+            ) as "lexScore"
+            FROM buku
+            WHERE to_tsvector('simple', coalesce(judul, '') || ' ' || coalesce(deskripsi, '')) @@ plainto_tsquery('simple', ${q})
+            ORDER BY "lexScore" DESC
+            LIMIT 35
+          `.catch((e) => { console.warn("[SEARCH] FTS error:", e.message); return []; });
 
-      const [queryVector, lexicalMatches] = await Promise.all([
-        computeEmbedding(semanticQuery, "RETRIEVAL_QUERY"),
-        lexicalPromise,
+      const [queryVector, rawLexical, cleanQuery] = await Promise.all([
+        computeEmbedding(semanticQueryInitial, "RETRIEVAL_QUERY"),
+        runFts(raw),
+        transformPromise,
       ]);
 
+      const lexicalMatches = (cleanQuery && cleanQuery !== raw)
+        ? await runFts(cleanQuery)
+        : rawLexical;
+
+      const intent = detectIntent(cleanQuery || raw);
+
       let denseMatches = [];
-      if (queryVector) {
+      if (queryVector && queryVector.length === 1024) {
         const vectorStr = `[${Array.from(queryVector).join(",")}]`;
 
         denseMatches = parsedKategoriId
@@ -379,14 +377,12 @@ export async function searchCatalog({
       }
 
       if (denseMatches.length > 0 || lexicalMatches.length > 0) {
-        // 2c. Reciprocal Rank Fusion (RRF) with Adaptive Semantic Thresholding
         const topSemScore = (denseMatches && denseMatches[0]?.semScore) ? Number(denseMatches[0].semScore) : 0;
-        // Require at least 0.28 or within 0.08 of top score to eliminate random library books
-        const semThreshold = Math.max(0.27, topSemScore - 0.08);
+        const semThreshold = Math.max(0.18, topSemScore - 0.12);
         const qualifiedDense = (denseMatches || []).filter((m) => Number(m.semScore) >= semThreshold);
 
         const rrfScores = new Map();
-        const k = 60; // Standard RRF smoothing constant
+        const k = 60;
 
         qualifiedDense.forEach((m, rank) => {
           const score = 1 / (k + rank + 1);
@@ -394,7 +390,6 @@ export async function searchCatalog({
         });
 
         (lexicalMatches || []).forEach((m, rank) => {
-          // Boost exact lexical token matches so exact keywords always rank high
           const score = 1.5 / (k + rank + 1);
           rrfScores.set(m.id, (rrfScores.get(m.id) || 0) + score);
         });
@@ -415,46 +410,60 @@ export async function searchCatalog({
             .map((id) => bookMap.get(id))
             .filter(Boolean);
 
-          // 3. Stage 2: Reranking Node (Jina Reranker v3 / v3.5)
           const isRerankerEnabled = process.env.ENABLE_RERANKER === "true";
           if (isRerankerEnabled && orderedBooks.length > 1 && process.env.JINA_RERANKER_URL) {
-            // High-Confidence Stage 1 Short-Circuit:
-            // If top candidate has an exact lexical match or strong dense match,
-            // Stage 1 is already conclusive. Skip slow CPU reranker!
             const topLexScore = lexicalMatches[0]?.id === orderedBooks[0]?.id ? Number(lexicalMatches[0].lexScore) : 0;
             const topDenseScore = qualifiedDense[0]?.id === orderedBooks[0]?.id ? Number(qualifiedDense[0].semScore) : 0;
-            const isDecisiveMatch = topLexScore > 0.4 || topDenseScore > 0.88;
+            const secondDenseScore = (qualifiedDense.length > 1 && qualifiedDense[1]?.id === orderedBooks[1]?.id)
+              ? Number(qualifiedDense[1].semScore)
+              : 0;
+            const denseMargin = topDenseScore - secondDenseScore;
+
+            const isExactTitle =
+              orderedBooks[0]?.judul?.toLowerCase() === raw.toLowerCase() ||
+              orderedBooks[0]?.judul?.toLowerCase() === cleanQuery.toLowerCase();
+            const isDecisiveMatch = isExactTitle || topDenseScore >= 0.88;
 
             if (!isDecisiveMatch) {
               try {
-                // Rerank top 3 candidates (concise format) to keep CPU cross-attention fast
-                const rerankSlice = orderedBooks.slice(0, 3);
-                const remainingSlice = orderedBooks.slice(3);
-                const docStrings = rerankSlice.map((b) => `${b.judul}. Kategori: ${b.kategori?.nama || ''}`);
+                const rrfEntries = Array.from(rrfScores.entries()).sort((a, b) => b[1] - a[1]);
+                const topRrfScore = rrfEntries[0]?.[1] ?? 0;
+                const secondRrfScore = rrfEntries[1]?.[1] ?? 0;
+                const rrfMargin = topRrfScore - secondRrfScore;
+                const sliceSize = rrfMargin > 0.03 ? 3 : 6;
 
+                const rerankSlice = orderedBooks.slice(0, sliceSize);
+                const remainingSlice = orderedBooks.slice(sliceSize);
+                const docStrings = rerankSlice.map((b) => {
+                  const cat = b.kategori?.nama ? `Kategori: ${b.kategori.nama}. ` : '';
+                  const desc = b.deskripsi ? b.deskripsi.slice(0, 280) : '';
+                  return `${b.judul}. ${cat}${desc}`.trim();
+                });
+
+                const rerankQuery = raw.length > (cleanQuery || '').length ? raw : (cleanQuery || raw);
                 const rerankResults = await rerankCandidates({
-                  query: cleanQuery,
+                  query: rerankQuery,
                   documents: docStrings,
-                  topN: 3,
+                  topN: Math.min(sliceSize, rerankSlice.length),
                   timeoutMs: parseInt(process.env.JINA_RERANKER_TIMEOUT_MS, 10) || 2500,
                 });
 
                 if (rerankResults && rerankResults.length > 0) {
-                  const rerankedBooks = [];
-                  for (const item of rerankResults) {
-                    // Prune negative scores (Jina v3 scores < 0 mean irrelevant)
-                    if (item.score > -0.02 && rerankSlice[item.index]) {
+                  const rerankedBooks = rerankResults
+                    .filter((item) => item.score > 0.08)
+                    .map((item) => {
                       const b = rerankSlice[item.index];
-                      rerankedBooks.push({
+                      if (!b) return null;
+                      return {
                         ...b,
                         _relevance: {
                           score: item.score,
                           isReranked: true,
                           isSemanticMatch: true,
                         },
-                      });
-                    }
-                  }
+                      };
+                    })
+                    .filter(Boolean);
 
                   if (rerankedBooks.length > 0) {
                     orderedBooks = [...rerankedBooks, ...remainingSlice];
@@ -468,7 +477,6 @@ export async function searchCatalog({
               }
             }
           }
-
 
           if (orderedBooks.length > 0) {
             const paged = orderedBooks.slice(skip, skip + limit);
@@ -491,7 +499,7 @@ export async function searchCatalog({
     }
   }
 
-  // 4. Fallback: Word token search
+  const cleanQuery = await transformPromise;
   const keywords = extractKeywords(cleanQuery || raw);
 
   const wordConditions = keywords

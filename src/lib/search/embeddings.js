@@ -1,12 +1,10 @@
-
-
 const embeddingCache = new Map();
 const MAX_CACHE_SIZE = 3000;
 
 let localPipeline = null;
-let localInitPromise = null;
+let localInitPromise = null;
 let jinaDisabled = false;
-let jinaDisableLogged = false;
+let jinaDisableLogged = false;
 let lastProvider = 'unknown';
 
 export function getActiveProvider() { return lastProvider; }
@@ -42,37 +40,51 @@ async function getLocalPipeline() {
   return localInitPromise;
 }
 
+let _jinaConfig = null;
+function getJinaConfig() {
+  if (_jinaConfig) return _jinaConfig;
+  const jinaApiUrl = process.env.JINA_API_URL;
+  const model = process.env.JINA_EMBEDDING_MODEL || process.env.JINA_MODEL;
+  if (!jinaApiUrl || !model) return null;
+
+  const jinaApiKey = process.env.JINA_API_KEY || '';
+  const cfClientId = process.env.CF_ACCESS_CLIENT_ID || '';
+  const cfClientSecret = process.env.CF_ACCESS_CLIENT_SECRET || '';
+
+  const headers = { 'Content-Type': 'application/json', 'Connection': 'keep-alive' };
+  if (jinaApiKey) headers['Authorization'] = `Bearer ${jinaApiKey}`;
+  if (cfClientId && cfClientSecret) {
+    headers['CF-Access-Client-Id'] = cfClientId;
+    headers['CF-Access-Client-Secret'] = cfClientSecret;
+  }
+
+  _jinaConfig = { jinaApiUrl, model, headers };
+  return _jinaConfig;
+}
+
 async function computeJinaEmbedding(text, taskType) {
   if (jinaDisabled) return null;
 
+  const cfg = getJinaConfig();
+  if (!cfg) return null;
+
+  const jinaTask = taskType === 'RETRIEVAL_DOCUMENT' || taskType === 'retrieval.passage'
+    ? 'retrieval.passage'
+    : 'retrieval.query';
+
   try {
-    const jinaApiUrl = process.env.JINA_API_URL;
-    if (!jinaApiUrl) return null;
+    const controller = new AbortController();
+    const timeoutMs = parseInt(process.env.JINA_EMBEDDING_TIMEOUT_MS, 10) || 3000;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-    const jinaApiKey = process.env.JINA_API_KEY || '';
-    const cfClientId = process.env.CF_ACCESS_CLIENT_ID || '';
-    const cfClientSecret = process.env.CF_ACCESS_CLIENT_SECRET || '';
-
-    const headers = { 'Content-Type': 'application/json' };
-    if (jinaApiKey) headers['Authorization'] = `Bearer ${jinaApiKey}`;
-    if (cfClientId && cfClientSecret) {
-      headers['CF-Access-Client-Id'] = cfClientId;
-      headers['CF-Access-Client-Secret'] = cfClientSecret;
-    }
-
-    const jinaTask = taskType === 'RETRIEVAL_DOCUMENT' || taskType === 'retrieval.passage'
-      ? 'retrieval.passage'
-      : 'retrieval.query';
-
-    const res = await fetch(jinaApiUrl, {
+    const res = await fetch(cfg.jinaApiUrl, {
       method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: 'jina-embeddings-v5-text-small',
-        task: jinaTask,
-        input: [text],
-      }),
+      headers: cfg.headers,
+      body: JSON.stringify({ model: cfg.model, task: jinaTask, input: [text] }),
+      signal: controller.signal,
     });
+    
+    clearTimeout(timer);
 
     if (res.ok) {
       const json = await res.json();
@@ -90,7 +102,9 @@ async function computeJinaEmbedding(text, taskType) {
     jinaDisabled = true;
     return null;
   } catch (err) {
-    if (!jinaDisableLogged) {
+    if (err.name === 'AbortError') {
+      console.warn(`[EMBEDDINGS] Jina API timed out. Switching to local ONNX.`);
+    } else if (!jinaDisableLogged) {
       console.warn(`[EMBEDDINGS] Jina API fetch error. Switching to local ONNX.`, err?.message ?? err);
       jinaDisableLogged = true;
     }
@@ -106,13 +120,13 @@ export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
   if (!sanitized) return null;
 
   const cacheKey = `${taskType}::${sanitized.toLowerCase()}`;
-  if (embeddingCache.has(cacheKey)) return embeddingCache.get(cacheKey);
+  if (embeddingCache.has(cacheKey)) return embeddingCache.get(cacheKey);
   const jinaVec = await computeJinaEmbedding(sanitized, taskType);
   if (jinaVec) {
     lastProvider = 'jina';
     lruSet(cacheKey, jinaVec);
     return jinaVec;
-  }
+  }
   try {
     const pipe = await getLocalPipeline();
     if (pipe) {
@@ -130,7 +144,7 @@ export async function computeEmbedding(text, taskType = 'RETRIEVAL_QUERY') {
 }
 
 export async function computeBatchEmbeddings(texts, taskType = 'RETRIEVAL_DOCUMENT') {
-  if (!Array.isArray(texts) || texts.length === 0) return [];
+  if (!Array.isArray(texts) || texts.length === 0) return [];
   if (jinaDisabled) {
     return Promise.all(texts.map((t) => computeEmbedding(t, taskType)));
   }
@@ -159,38 +173,30 @@ export async function computeBatchEmbeddings(texts, taskType = 'RETRIEVAL_DOCUME
       const chunkTexts = uncachedTexts.slice(c, c + CHUNK);
       const chunkIndices = uncachedIndices.slice(c, c + CHUNK);
 
-      const jinaApiUrl = process.env.JINA_API_URL;
-      if (!jinaApiUrl) {
+      const cfg = getJinaConfig();
+      if (!cfg) {
         for (const idx of chunkIndices) {
           results[idx] = await computeEmbedding(texts[idx], taskType);
         }
         continue;
       }
 
-      const jinaApiKey = process.env.JINA_API_KEY || '';
-      const cfClientId = process.env.CF_ACCESS_CLIENT_ID || '';
-      const cfClientSecret = process.env.CF_ACCESS_CLIENT_SECRET || '';
-
-      const headers = { 'Content-Type': 'application/json' };
-      if (jinaApiKey) headers['Authorization'] = `Bearer ${jinaApiKey}`;
-      if (cfClientId && cfClientSecret) {
-        headers['CF-Access-Client-Id'] = cfClientId;
-        headers['CF-Access-Client-Secret'] = cfClientSecret;
-      }
-
       const jinaTask = taskType === 'RETRIEVAL_DOCUMENT' || taskType === 'retrieval.passage'
         ? 'retrieval.passage'
         : 'retrieval.query';
 
-      const res = await fetch(jinaApiUrl, {
+      const controller = new AbortController();
+      const timeoutMs = parseInt(process.env.JINA_EMBEDDING_BATCH_TIMEOUT_MS, 10) || 15000;
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+      const res = await fetch(cfg.jinaApiUrl, {
         method: 'POST',
-        headers,
-        body: JSON.stringify({
-          model: 'jina-embeddings-v5-text-small',
-          task: jinaTask,
-          input: chunkTexts,
-        }),
+        headers: cfg.headers,
+        body: JSON.stringify({ model: cfg.model, task: jinaTask, input: chunkTexts }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timer);
 
       if (!res.ok) {
         jinaDisabled = true;

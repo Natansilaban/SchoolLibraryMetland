@@ -35,7 +35,7 @@ export async function GET(req) {
     ] = await Promise.all([
       prisma.peminjaman.findMany({
         where: periodFilter,
-        take: 500, // Bound maximum records retrieved for a single month's export
+        take: 500,
         include: {
           anggota: { select: { nama: true, nis: true, kelas: true } },
           buku: { select: { judul: true } },

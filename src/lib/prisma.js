@@ -13,8 +13,8 @@ function getPgPool() {
     globalForPrisma.pgPool = new Pool({
       connectionString,
       max: 10,
-      min: 1, // Keep 1 warm connection active to eliminate cold-start handshake latency
-      idleTimeoutMillis: 300000, // 5 minutes idle timeout so testing doesn't drop connections every 10s
+      min: 1,
+      idleTimeoutMillis: 300000,
       connectionTimeoutMillis: 8000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 2000,

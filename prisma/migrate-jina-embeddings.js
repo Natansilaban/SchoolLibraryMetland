@@ -7,7 +7,7 @@ const { computeBatchEmbeddings } = require('../src/lib/search/embeddings');
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   connectionTimeoutMillis: 30000,
-  statement_timeout: 120000, // 2 minutes
+  statement_timeout: 120000,
 });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
@@ -33,7 +33,7 @@ async function migrate() {
     newVectors = await computeBatchEmbeddings(texts, 'RETRIEVAL_DOCUMENT');
   } catch (err) {
     console.error('FAILED to generate embeddings:', err.message);
-    console.log('Hint: Ensure your Jina API at jina.r1fikri.dev is running with the `--embeddings` flag enabled!');
+    console.log('Hint: Ensure your Jina API at ' + (process.env.JINA_API_URL || 'JINA_API_URL') + ' is reachable and running!');
     process.exit(1);
   }
   let successCount = 0;

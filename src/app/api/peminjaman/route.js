@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getPaginationParams, handleApiError } from '@/lib/api-error';
 
-// Idempotency / In-flight request lock to prevent double-entries
 const inFlightRequests = new Set();
 
 export async function GET(req) {

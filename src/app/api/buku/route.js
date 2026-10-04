@@ -103,7 +103,6 @@ export async function POST(req) {
 
     invalidateCatalogCache();
 
-    // Asynchronously compute & save embedding so the book is immediately searchable
     const embedText = `${buku.judul} ${buku.penulis?.nama ?? ''} ${buku.kategori?.nama ?? ''} ${buku.deskripsi ?? ''}`.trim();
     computeEmbedding(embedText, 'RETRIEVAL_DOCUMENT').then(async (vec) => {
       if (vec && vec.length) {

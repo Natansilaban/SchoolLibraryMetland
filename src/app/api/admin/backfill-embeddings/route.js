@@ -4,11 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { computeBatchEmbeddings } from '@/lib/search/embeddings';
 
-// Only ADMIN can trigger this endpoint
-// GET /api/admin/backfill-embeddings         → status (how many books have null embedding)
-// POST /api/admin/backfill-embeddings        → start backfill (streams progress as JSON lines)
-
-const BATCH = 15; // Books per Jina API call per round
+const BATCH = parseInt(process.env.EMBEDDING_BATCH_SIZE, 10) || 15;
 
 async function requireAdmin(req) {
   const session = await getServerSession(authOptions);
@@ -42,7 +38,6 @@ export async function POST(req) {
   const deny = await requireAdmin(req);
   if (deny) return deny;
 
-  // Stream progress back using a ReadableStream (works in Next.js App Router)
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
@@ -52,7 +47,6 @@ export async function POST(req) {
       };
 
       try {
-        // Fetch books needing backfill using raw SQL for penulis/kategori names
         const books = await prisma.$queryRaw`
           SELECT
             b.id,
@@ -111,7 +105,6 @@ export async function POST(req) {
             send({ type: 'batch_error', message: batchErr.message, batch: i });
           }
 
-          // Small pause between batches to avoid overwhelming Jina API
           await new Promise(r => setTimeout(r, 200));
         }
 
