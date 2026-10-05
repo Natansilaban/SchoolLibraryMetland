@@ -103,7 +103,7 @@ export const authOptions = {
     maxAge: 30 * 24 * 60 * 60,
   },
   trustHost: true,
-  useSecureCookies: process.env.NODE_ENV === 'production',
+  useSecureCookies: Boolean(process.env.NEXTAUTH_URL?.startsWith('https://') && !process.env.NEXTAUTH_URL?.includes('localhost')),
   secret: (() => {
     const s = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET || process.env.BETTER_AUTH_SECRET;
     if (!s || s.length < 32) throw new Error('NEXTAUTH_SECRET / AUTH_SECRET harus di-set (min 32 karakter). Generate: openssl rand -base64 32');
