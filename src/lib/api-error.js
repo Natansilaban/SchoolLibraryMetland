@@ -12,7 +12,11 @@ export function getPaginationParams(searchParams, defaultLimit = 20, maxLimit = 
 }
 
 export function handleApiError(error, customMessage) {
-  console.error('[API Handler Error]:', error);
+  if (error?.code !== 'P2025') {
+    console.error('[API Handler Error]:', error);
+  } else {
+    console.warn('[API Handler Notice]: Record not found (P2025)');
+  }
 
   if (!error) {
     return NextResponse.json(

@@ -47,10 +47,25 @@ export async function DELETE(req, { params }) {
     if (!penulisId || isNaN(penulisId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
-    const booksCount = await prisma.buku.count({ where: { penulisId } });
-    if (booksCount > 0) {
+    const existing = await prisma.penulis.findUnique({
+      where: { id: penulisId },
+      include: {
+        _count: {
+          select: { buku: true },
+        },
+      },
+    });
+
+    if (!existing) {
       return NextResponse.json(
-        { error: `Penulis tidak dapat dihapus karena masih terkait dengan ${booksCount} buku.` },
+        { error: 'Penulis tidak ditemukan atau sudah dihapus' },
+        { status: 404 }
+      );
+    }
+
+    if (existing._count.buku > 0) {
+      return NextResponse.json(
+        { error: `Penulis tidak dapat dihapus karena masih terkait dengan ${existing._count.buku} buku.` },
         { status: 409 }
       );
     }
@@ -58,6 +73,12 @@ export async function DELETE(req, { params }) {
     await prisma.penulis.delete({ where: { id: penulisId } });
     return NextResponse.json({ message: 'Penulis berhasil dihapus' });
   } catch (e) {
+    if (e.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Penulis tidak ditemukan atau sudah dihapus' },
+        { status: 404 }
+      );
+    }
     return handleApiError(e, 'Gagal menghapus data penulis');
   }
 }

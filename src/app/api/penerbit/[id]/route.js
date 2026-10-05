@@ -47,10 +47,25 @@ export async function DELETE(req, { params }) {
     if (!penerbitId || isNaN(penerbitId)) {
       return NextResponse.json({ error: 'ID tidak valid' }, { status: 400 });
     }
-    const booksCount = await prisma.buku.count({ where: { penerbitId } });
-    if (booksCount > 0) {
+    const existing = await prisma.penerbit.findUnique({
+      where: { id: penerbitId },
+      include: {
+        _count: {
+          select: { buku: true },
+        },
+      },
+    });
+
+    if (!existing) {
       return NextResponse.json(
-        { error: `Penerbit tidak dapat dihapus karena masih terkait dengan ${booksCount} buku.` },
+        { error: 'Penerbit tidak ditemukan atau sudah dihapus' },
+        { status: 404 }
+      );
+    }
+
+    if (existing._count.buku > 0) {
+      return NextResponse.json(
+        { error: `Penerbit tidak dapat dihapus karena masih terkait dengan ${existing._count.buku} buku.` },
         { status: 409 }
       );
     }
@@ -58,6 +73,12 @@ export async function DELETE(req, { params }) {
     await prisma.penerbit.delete({ where: { id: penerbitId } });
     return NextResponse.json({ message: 'Penerbit berhasil dihapus' });
   } catch (e) {
+    if (e.code === 'P2025') {
+      return NextResponse.json(
+        { error: 'Penerbit tidak ditemukan atau sudah dihapus' },
+        { status: 404 }
+      );
+    }
     return handleApiError(e, 'Gagal menghapus data penerbit');
   }
 }
