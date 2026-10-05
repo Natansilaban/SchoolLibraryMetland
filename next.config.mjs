@@ -5,9 +5,6 @@ const nextConfig = {
   compress: true,
   reactStrictMode: true,
   allowedDevOrigins: ['*.ngrok-free.app', 'http://localhost:3000'],
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   experimental: {
     optimizePackageImports: ['lucide-react', 'recharts', 'bcryptjs'],
   },
