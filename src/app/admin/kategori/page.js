@@ -15,20 +15,22 @@ export default function KategoriPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const fetch_ = useCallback(async () => {
-    setLoading(true);
+  const fetch_ = useCallback(async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
-      const res = await fetch('/api/kategori');
+      const res = await fetch(`/api/kategori?_t=${Date.now()}`, { cache: 'no-store' });
       const json = await res.json();
-      setData(json);
+      if (Array.isArray(json)) {
+        setData(json);
+      }
     } catch {
-      setData([]);
+      if (isInitial) setData([]);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   }, []);
 
-  useEffect(() => { fetch_(); }, [fetch_]);
+  useEffect(() => { fetch_(true); }, [fetch_]);
 
   const filteredData = data.filter(d =>
     d.nama.toLowerCase().includes(search.toLowerCase()) ||
@@ -45,11 +47,24 @@ export default function KategoriPage() {
     try {
       const url = modal === 'add' ? '/api/kategori' : `/api/kategori/${selected.id}`;
       const method = modal === 'add' ? 'POST' : 'PUT';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
       const json = await res.json();
       if (!res.ok) { setError(json.error); setSaving(false); return; }
+
+      // Immediate state update
+      if (modal === 'add') {
+        setData(prev => [...prev, json].sort((a, b) => a.nama.localeCompare(b.nama)));
+      } else {
+        setData(prev => prev.map(item => item.id === selected.id ? { ...item, ...json } : item));
+      }
+
       toast.success(modal === 'add' ? 'Kategori berhasil ditambahkan' : 'Kategori berhasil diperbarui');
-      setModal(null); fetch_();
+      setModal(null);
+      fetch_();
     } catch {
       setError('Terjadi kesalahan koneksi');
       toast.error('Terjadi kesalahan koneksi');
@@ -63,8 +78,10 @@ export default function KategoriPage() {
     try {
       const res = await fetch(`/api/kategori/${selected.id}`, { method: 'DELETE' });
       if (!res.ok) {
-        toast.error('Gagal menghapus kategori');
+        const json = await res.json().catch(() => ({}));
+        toast.error(json.error || 'Gagal menghapus kategori');
       } else {
+        setData(prev => prev.filter(item => item.id !== selected.id));
         toast.success('Kategori berhasil dihapus');
         setModal(null);
         fetch_();

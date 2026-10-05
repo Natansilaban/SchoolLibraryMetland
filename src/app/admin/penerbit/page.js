@@ -15,21 +15,21 @@ export default function PenerbitPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const fetch_ = useCallback(async () => {
-    setLoading(true);
+  const fetch_ = useCallback(async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     try {
-      const res = await fetch('/api/penerbit');
+      const res = await fetch(`/api/penerbit?_t=${Date.now()}`, { cache: 'no-store' });
       const json = await res.json();
       setData(Array.isArray(json) ? json : []);
     } catch {
-      setData([]);
+      if (isInitial) setData([]);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetch_();
+    fetch_(true);
   }, [fetch_]);
 
   const filteredData = data.filter(d =>
@@ -71,12 +71,20 @@ export default function PenerbitPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       });
+      const json = await res.json();
       if (!res.ok) {
-        const j = await res.json();
-        setError(j.error || 'Terjadi kesalahan');
+        setError(json.error || 'Terjadi kesalahan');
         setSaving(false);
         return;
       }
+
+      // Immediate state update
+      if (modal === 'add') {
+        setData(prev => [...prev, json].sort((a, b) => a.nama.localeCompare(b.nama)));
+      } else {
+        setData(prev => prev.map(item => item.id === selected.id ? { ...item, ...json } : item));
+      }
+
       toast.success(modal === 'add' ? 'Penerbit berhasil ditambahkan' : 'Penerbit berhasil diperbarui');
       setModal(null);
       fetch_();
@@ -93,9 +101,10 @@ export default function PenerbitPage() {
     try {
       const res = await fetch(`/api/penerbit/${selected.id}`, { method: 'DELETE' });
       if (!res.ok) {
-        const j = await res.json();
+        const j = await res.json().catch(() => ({}));
         toast.error(j.error || 'Gagal menghapus penerbit');
       } else {
+        setData(prev => prev.filter(item => item.id !== selected.id));
         toast.success('Penerbit berhasil dihapus');
         setModal(null);
         fetch_();

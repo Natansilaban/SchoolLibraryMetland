@@ -4,33 +4,17 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error';
 
-let kategoriCache = null;
-let lastFetchTime = 0;
-const CACHE_TTL = 60000;
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const now = Date.now();
-  if (kategoriCache && now - lastFetchTime < CACHE_TTL) {
-    return NextResponse.json(kategoriCache, {
-      headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
-      },
-    });
-  }
-
   try {
     const data = await prisma.kategori.findMany({ orderBy: { nama: 'asc' } });
-    kategoriCache = data;
-    lastFetchTime = now;
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       },
     });
-  } catch (error) {
-    if (kategoriCache) {
-      return NextResponse.json(kategoriCache);
-    }
+  } catch (error) {
     return handleApiError(error, 'Gagal memuat kategori');
   }
 }
@@ -43,13 +27,22 @@ export async function POST(req) {
     }
 
     const { nama, deskripsi } = await req.json();
-    if (!nama || !nama.trim()) return NextResponse.json({ error: 'Nama kategori wajib diisi' }, { status: 400 });
-    const data = await prisma.kategori.create({ data: { nama: nama.trim(), deskripsi: deskripsi?.trim() || null } });
-    kategoriCache = null;
-    return NextResponse.json(data, { status: 201 });
+    if (!nama || !nama.trim()) {
+      return NextResponse.json({ error: 'Nama kategori wajib diisi' }, { status: 400 });
+    }
+    const data = await prisma.kategori.create({
+      data: { nama: nama.trim(), deskripsi: deskripsi?.trim() || null },
+    });
+    return NextResponse.json(data, {
+      status: 201,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    });
   } catch (error) {
-    if (error.code === 'P2002') return NextResponse.json({ error: 'Nama kategori sudah digunakan' }, { status: 409 });
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'Nama kategori sudah digunakan' }, { status: 409 });
+    }
     return handleApiError(error, 'Gagal menambahkan kategori');
   }
 }
-

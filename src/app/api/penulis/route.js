@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { handleApiError } from '@/lib/api-error';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const data = await prisma.penulis.findMany({
@@ -15,7 +17,7 @@ export async function GET() {
     });
     return NextResponse.json(data, {
       headers: {
-        'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=120',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       },
     });
   } catch (error) {
@@ -33,10 +35,14 @@ export async function POST(req) {
     const { nama, bio } = await req.json();
     if (!nama || !nama.trim()) return NextResponse.json({ error: 'Nama penulis wajib diisi' }, { status: 400 });
     const data = await prisma.penulis.create({ data: { nama: nama.trim(), bio: bio?.trim() || null } });
-    return NextResponse.json(data, { status: 201 });
+    return NextResponse.json(data, {
+      status: 201,
+      headers: {
+        'Cache-Control': 'no-store',
+      },
+    });
   } catch (error) {
     if (error.code === 'P2002') return NextResponse.json({ error: 'Nama penulis sudah terdaftar' }, { status: 409 });
     return handleApiError(error, 'Gagal menambahkan penulis');
   }
 }
-
