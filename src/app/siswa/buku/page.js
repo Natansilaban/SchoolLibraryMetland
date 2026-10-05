@@ -102,14 +102,14 @@ export default function SiswaBukuPage() {
     <div className="relative min-h-[80vh] space-y-8 pb-10">
       {/* Background Orbs - GPU Optimized: Removed mix-blend and added translate-z-0 for hardware acceleration */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10 transform-gpu">
-        <div className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-[100px] sm:blur-[120px] transform-gpu" />
-        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 dark:bg-indigo-600/10 blur-[100px] sm:blur-[120px] transform-gpu" />
-        <div className="absolute -bottom-[20%] left-[20%] w-[60%] h-[60%] rounded-full bg-sky-400/20 dark:bg-sky-600/10 blur-[100px] sm:blur-[120px] transform-gpu" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-400/20 dark:bg-blue-600/10 blur-[100px] sm:blur-[120px] transform-gpu" />
+        <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] rounded-full bg-indigo-400/20 dark:bg-indigo-600/10 blur-[100px] sm:blur-[120px] transform-gpu" />
+        <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[60%] rounded-full bg-sky-400/20 dark:bg-sky-600/10 blur-[100px] sm:blur-[120px] transform-gpu" />
       </div>
 
       {/* Header */}
       <div className="relative z-10 text-center sm:text-left pt-2 sm:pt-4">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 drop-shadow-sm pb-1">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 drop-shadow-sm pb-1">
           Katalog Koleksi Buku
         </h1>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2 font-medium max-w-2xl">
@@ -222,11 +222,11 @@ export default function SiswaBukuPage() {
               <div className="absolute inset-0 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/90 dark:border-slate-700/50 rounded-2xl transition-colors duration-300 group-hover:bg-white/95 dark:group-hover:bg-slate-800/90 shadow-[0_4px_24px_rgba(0,0,0,0.03)] group-hover:shadow-[0_16px_48px_rgba(0,0,0,0.1)] z-0" />
               
               {/* Glare effect - Optimized */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-gradient-to-tr from-transparent via-white/30 to-transparent dark:via-white/5 transition-opacity duration-500 pointer-events-none z-10" />
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 bg-linear-to-tr from-transparent via-white/30 to-transparent dark:via-white/5 transition-opacity duration-500 pointer-events-none z-10" />
               
               <div className="relative z-20 p-3 sm:p-4 flex flex-col h-full">
                 {/* Image */}
-                <div className="w-full rounded-xl mb-4 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-slate-700/60 bg-slate-100/50 dark:bg-slate-800/50 relative h-44 sm:h-56 flex-shrink-0 shadow-inner">
+                <div className="w-full rounded-xl mb-4 flex items-center justify-center overflow-hidden border border-slate-200/60 dark:border-slate-700/60 bg-slate-100/50 dark:bg-slate-800/50 relative h-44 sm:h-56 shrink-0 shadow-inner">
                   {b.cover ? (
                     <img
                       src={b.cover}
@@ -244,7 +244,7 @@ export default function SiswaBukuPage() {
                     </div>
                   )}
                   {/* Image overlay gradient for depth */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                  <div className="absolute inset-0 bg-linear-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 </div>
                 
                 {/* Content */}

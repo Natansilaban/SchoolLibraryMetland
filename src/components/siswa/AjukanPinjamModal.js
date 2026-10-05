@@ -71,7 +71,7 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
         className="glass-modal p-5 sm:p-6 max-w-md w-full overscroll-contain"
       >
         <div className="flex items-center gap-2.5 mb-4">
-          <BookMarked size={22} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+          <BookMarked size={22} className="text-blue-600 dark:text-blue-400 shrink-0" />
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Ajukan Peminjaman Buku</h2>
         </div>
 
@@ -84,7 +84,7 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
 
         {error && (
           <div className="mb-4 p-3 rounded-xl text-xs font-medium bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-200 flex items-center gap-2">
-            <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 flex-shrink-0" />
+            <AlertCircle size={16} className="text-rose-600 dark:text-rose-400 shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -118,7 +118,7 @@ export default function AjukanPinjamModal({ buku, isOpen, onClose, onSuccess }) 
           </div>
 
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs leading-relaxed font-medium flex items-start gap-2">
-            <Info size={16} className="text-amber-700 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <Info size={16} className="text-amber-700 dark:text-amber-400 shrink-0 mt-0.5" />
             <span>
               Pengajuan akan diverifikasi oleh petugas perpustakaan. Setelah disetujui, kamu bisa langsung mengambil buku fisik di perpustakaan.
             </span>

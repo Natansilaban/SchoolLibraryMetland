@@ -33,7 +33,7 @@ export default function TopBar({ title, subtitle }) {
       <div className="flex items-center gap-3.5 flex-1 min-w-0">
         <button
           onClick={toggle}
-          className="p-2.5 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 lg:hidden flex-shrink-0 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
+          className="p-2.5 -ml-1 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 lg:hidden shrink-0 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 min-h-[44px] min-w-[44px] flex items-center justify-center"
           aria-label="Buka Menu Navigasi"
         >
           <Menu size={22} />
@@ -53,7 +53,7 @@ export default function TopBar({ title, subtitle }) {
       </div>
 
       {}
-      <div className="flex items-center gap-2.5 sm:gap-3.5 flex-shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
         {}
         {currentDate && (
           <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 text-xs font-medium text-slate-600 dark:text-slate-300">
@@ -82,14 +82,14 @@ export default function TopBar({ title, subtitle }) {
           aria-label="Informasi pengguna aktif"
         >
           <div className="relative">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-700 to-indigo-800 text-white flex items-center justify-center text-sm font-bold shadow-sm shadow-blue-900/10 border border-blue-600/30 flex-shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-linear-to-br from-blue-700 to-indigo-800 text-white flex items-center justify-center text-sm font-bold shadow-sm shadow-blue-900/10 border border-blue-600/30 shrink-0">
               {userInitial}
             </div>
             <span
               className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900 flex items-center justify-center text-white"
               title="Terverifikasi & Aktif"
             >
-              <ShieldCheck size={9} className="stroke-[3]" />
+              <ShieldCheck size={9} className="stroke-3" />
             </span>
           </div>
 

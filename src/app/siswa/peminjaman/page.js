@@ -181,7 +181,7 @@ export default function SiswaPeminjamanPage() {
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex items-start gap-3.5 min-w-0 flex-1">
-                    <div className="w-12 h-16 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+                    <div className="w-12 h-16 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden shrink-0 flex items-center justify-center shadow-xs">
                       {p.buku?.cover ? (
                         <img src={p.buku.cover} alt={p.buku.judul} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       ) : (
@@ -231,7 +231,7 @@ export default function SiswaPeminjamanPage() {
                       {p.status === 'MENUNGGU_KONFIRMASI' && (
                         <div className="mt-3 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                           <div className="flex items-center gap-2">
-                            <Clock size={15} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                            <Clock size={15} className="text-amber-600 dark:text-amber-400 shrink-0" />
                             <span>Pengajuan menunggu persetujuan petugas. Jika berubah pikiran, kamu dapat membatalkannya.</span>
                           </div>
                           <button
@@ -260,7 +260,7 @@ export default function SiswaPeminjamanPage() {
                           </div>
                           <button
                             onClick={() => openReturnModal(p)}
-                            className="btn-primary py-1 px-3.5 text-xs font-semibold self-start sm:self-auto min-h-[34px] flex-shrink-0"
+                            className="btn-primary py-1 px-3.5 text-xs font-semibold self-start sm:self-auto min-h-[34px] shrink-0"
                           >
                             <RotateCcw size={14} />
                             Kembalikan Buku
@@ -270,7 +270,7 @@ export default function SiswaPeminjamanPage() {
 
                       {hasRequestedReturn && p.status !== 'DIKEMBALIKAN' && (
                         <div className="mt-3 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-2">
-                          <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                          <CheckCircle2 size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>Pengembalian telah diajukan. Silakan serahkan buku fisik ke meja petugas perpustakaan untuk diverifikasi.</span>
                         </div>
                       )}

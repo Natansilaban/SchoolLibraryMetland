@@ -63,7 +63,7 @@ export default function AdminSidebar() {
       >
         <div className="p-5 pb-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Link href="/admin/dashboard" className="flex items-center gap-2.5 group" onClick={close}>
-            <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shadow-xs flex-shrink-0 overflow-hidden">
+            <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shadow-xs shrink-0 overflow-hidden">
               <img src="/logo.png" alt="Logo Metland School" width={36} height={36} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div>

@@ -298,7 +298,7 @@ export default function PengembalianPage() {
 
               {isEarlyReturn() && (
                 <div className="p-2.5 rounded-lg flex items-center gap-2 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-blue-900 dark:text-blue-300 text-xs font-medium">
-                  <CheckCircle2 size={15} className="text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <CheckCircle2 size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
                   <span>Pengembalian lebih awal dari jadwal: bebas denda keterlambatan.</span>
                 </div>
               )}
@@ -323,7 +323,7 @@ export default function PengembalianPage() {
 
               {parseInt(form.denda) > 0 && (
                 <div className="p-3 rounded-lg flex items-center gap-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50">
-                  <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400 flex-shrink-0" />
+                  <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400 shrink-0" />
                   <div>
                     <div className="text-xs font-bold text-rose-900 dark:text-rose-200">Total Denda Yang Harus Diterima:</div>
                     <div className="text-base font-bold text-rose-600 dark:text-rose-400">Rp {parseInt(form.denda).toLocaleString('id')}</div>

@@ -43,18 +43,18 @@ export default async function DetailBukuPage({ params }) {
   const anggotaId = rawAnggotaId ? parseInt(rawAnggotaId) : null;
   const isStudent = session?.user?.role === 'SISWA';
 
-  const [buku, existingLoan] = await Promise.all([
-    getBukuCached(id),
-    (anggotaId && !isNaN(anggotaId) && id)
-      ? prisma.peminjaman.findFirst({
-          where: {
-            anggotaId: anggotaId,
-            bukuId: id,
-            status: { in: ['MENUNGGU_KONFIRMASI', 'DIPINJAM', 'TERLAMBAT'] },
-          },
-        }).catch(() => null)
-      : Promise.resolve(null),
-  ]);
+  const buku = await getBukuCached(id);
+  
+  let existingLoan = null;
+  if (anggotaId && !isNaN(anggotaId) && id) {
+    existingLoan = await prisma.peminjaman.findFirst({
+      where: {
+        anggotaId: anggotaId,
+        bukuId: id,
+        status: { in: ['MENUNGGU_KONFIRMASI', 'DIPINJAM', 'TERLAMBAT'] },
+      },
+    }).catch(() => null);
+  }
 
   if (!buku) notFound();
 
@@ -138,7 +138,7 @@ export default async function DetailBukuPage({ params }) {
                   const Icon = item.icon;
                   return (
                     <div key={item.label} className="flex items-start gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60">
-                      <Icon size={16} className="text-slate-400 dark:text-slate-500 mt-0.5 flex-shrink-0" />
+                      <Icon size={16} className="text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                       <div className="min-w-0">
                         <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{item.label}</div>
                         <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 mt-0.5 truncate">

@@ -30,39 +30,41 @@ export default async function SiswaDashboardPage() {
   try {
     const needsAnggotaFetch = anggotaId && (!anggota.nis || !anggota.kelas);
 
-    const [anggotaRes, allLoans, booksRes] = await Promise.all([
-      needsAnggotaFetch
-        ? prisma.anggota.findUnique({
-            where: { id: anggotaId },
-            select: { nama: true, nis: true, kelas: true },
-          }).catch(() => null)
-        : Promise.resolve(null),
-      anggotaId
-        ? prisma.peminjaman.findMany({
-            where: { anggotaId },
-            orderBy: { createdAt: 'desc' },
-            select: {
-              id: true,
-              status: true,
-              tglPinjam: true,
-              tglKembaliRencana: true,
-              buku: { select: { id: true, judul: true, cover: true } },
-            },
-          }).catch(() => [])
-        : Promise.resolve([]),
-      prisma.buku.findMany({
-        take: 4,
+    let anggotaRes = null;
+    if (needsAnggotaFetch) {
+      anggotaRes = await prisma.anggota.findUnique({
+        where: { id: anggotaId },
+        select: { nama: true, nis: true, kelas: true },
+      }).catch(() => null);
+    }
+
+    let allLoans = [];
+    if (anggotaId) {
+      allLoans = await prisma.peminjaman.findMany({
+        where: { anggotaId },
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
-          judul: true,
-          cover: true,
-          stok: true,
-          kategori: { select: { nama: true } },
-          penulis: { select: { nama: true } },
+          status: true,
+          tglPinjam: true,
+          tglKembaliRencana: true,
+          buku: { select: { id: true, judul: true, cover: true } },
         },
-      }).catch(() => []),
-    ]);
+      }).catch(() => []);
+    }
+
+    const booksRes = await prisma.buku.findMany({
+      take: 4,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        judul: true,
+        cover: true,
+        stok: true,
+        kategori: { select: { nama: true } },
+        penulis: { select: { nama: true } },
+      },
+    }).catch(() => []);
 
     if (anggotaRes) anggota = anggotaRes;
     featuredBooks = booksRes || [];
@@ -105,7 +107,7 @@ export default async function SiswaDashboardPage() {
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 shadow-xs transition-colors">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-2.5 shadow-xs flex-shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-2.5 shadow-xs shrink-0">
               <img src="/logo.png" alt="Logo SMK Pariwisata Metland" width={64} height={64} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div className="min-w-0">
@@ -180,7 +182,7 @@ export default async function SiswaDashboardPage() {
           className="library-card p-5 flex items-center justify-between group hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
         >
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+            <div className="w-11 h-11 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
               <BookMarked size={20} />
             </div>
             <div className="min-w-0">
@@ -192,7 +194,7 @@ export default async function SiswaDashboardPage() {
               </p>
             </div>
           </div>
-          <ChevronRight size={18} className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          <ChevronRight size={18} className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0" />
         </Link>
 
         <Link
@@ -200,7 +202,7 @@ export default async function SiswaDashboardPage() {
           className="library-card p-5 flex items-center justify-between group hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-xs transition-all duration-200 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
         >
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center flex-shrink-0">
+            <div className="w-11 h-11 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0">
               <BookCopy size={20} />
             </div>
             <div className="min-w-0">
@@ -212,7 +214,7 @@ export default async function SiswaDashboardPage() {
               </p>
             </div>
           </div>
-          <ChevronRight size={18} className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          <ChevronRight size={18} className="text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-all shrink-0" />
         </Link>
       </div>
 
@@ -242,7 +244,7 @@ export default async function SiswaDashboardPage() {
                 href={`/siswa/buku/${buku.id}`}
                 className="group flex flex-col p-3 rounded-xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 hover:bg-white dark:hover:bg-slate-800 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200"
               >
-                <div className="aspect-[3/4] w-full rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden relative mb-2.5 shadow-xs">
+                <div className="aspect-3/4 w-full rounded-lg bg-slate-200 dark:bg-slate-700 overflow-hidden relative mb-2.5 shadow-xs">
                   {buku.cover ? (
                     <img src={buku.cover} alt={buku.judul} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                   ) : (
@@ -306,7 +308,7 @@ export default async function SiswaDashboardPage() {
                 className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 hover:bg-white dark:hover:bg-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-13 rounded-md bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-xs">
+                  <div className="w-10 h-13 rounded-md bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
                     {p.buku?.cover ? (
                       <img src={p.buku.cover} alt={p.buku.judul} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                     ) : (
@@ -326,7 +328,7 @@ export default async function SiswaDashboardPage() {
                   </div>
                 </div>
 
-                <div className="flex-shrink-0 self-start sm:self-center">
+                <div className="shrink-0 self-start sm:self-center">
                   {statusBadge(p.status)}
                 </div>
               </div>

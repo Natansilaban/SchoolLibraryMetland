@@ -27,10 +27,10 @@ export default function SiswaNav() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link
             href="/siswa/dashboard"
-            className="flex items-center gap-2.5 flex-shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-blue-600"
+            className="flex items-center gap-2.5 shrink-0 rounded-lg focus-visible:outline-2 focus-visible:outline-blue-600"
             aria-label="Beranda Siswa Perpustakaan Metland"
           >
-            <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shadow-xs flex-shrink-0 overflow-hidden">
+            <div className="w-9 h-9 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1 shadow-xs shrink-0 overflow-hidden">
               <img src="/logo.png" alt="Logo Metland School" width={36} height={36} decoding="async" className="w-full h-full object-contain" />
             </div>
             <div>
@@ -64,7 +64,7 @@ export default function SiswaNav() {
             })}
           </nav>
 
-          <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {}
             <ThemeToggle />
 
@@ -73,7 +73,7 @@ export default function SiswaNav() {
               className="flex items-center gap-2.5 p-1 sm:p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Buka profil siswa"
             >
-              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 flex items-center justify-center text-xs font-bold shrink-0">
                 {userInitial}
               </div>
               <div className="hidden sm:block text-left">

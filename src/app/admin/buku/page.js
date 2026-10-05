@@ -190,7 +190,7 @@ export default function BukuPage() {
             />
           </div>
           <div className="flex items-center gap-2">
-            <button id="refresh-buku" onClick={fetchBuku} className="btn-glass flex-shrink-0" style={{ padding: '10px' }}>
+            <button id="refresh-buku" onClick={fetchBuku} className="btn-glass shrink-0" style={{ padding: '10px' }}>
               <RefreshCw size={15} />
             </button>
             <button id="add-buku" onClick={openAdd} className="btn-primary flex-1 sm:flex-initial justify-center">
@@ -238,7 +238,7 @@ export default function BukuPage() {
                     <tr key={b.id}>
                       <td className="text-slate-500 dark:text-slate-400 font-medium">{(page - 1) * limit + i + 1}</td>
                       <td>
-                        <div className="w-10 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-sm flex-shrink-0">
+                        <div className="w-10 h-14 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shadow-sm shrink-0">
                           {b.cover ? (
                             <img src={b.cover} alt={b.judul} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                           ) : (
@@ -335,7 +335,7 @@ export default function BukuPage() {
                 </label>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-22 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 shadow-xs">
+                  <div className="w-16 h-22 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0 shadow-xs">
                     {form.cover ? (
                       <img src={form.cover} alt="Preview" decoding="async" className="w-full h-full object-cover" />
                     ) : (

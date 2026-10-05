@@ -252,7 +252,7 @@ export async function callLlmTransform(rawQuery) {
   const timer = setTimeout(() => controller.abort(), cfg.timeoutMs);
 
   const systemPrompt =
-    'Ekstrak 1-4 kata kunci subjek atau topik utama buku (bidang ilmu, keahlian, objek spesifik, atau genre). Buang kata umum seperti panduan, cara, buku, dasar, tips. HANYA kata kunci dipisah spasi, huruf kecil:';
+    'Ekstrak 1-4 kata kunci subjek atau topik utama buku (bidang ilmu, keahlian, objek spesifik, atau genre). Buang kata umum seperti panduan, cara, buku, dasar, tips. HANYA kata kunci dipisah spasi, huruf kecil.';
 
   try {
     const res = await fetch(cfg.chatUrl, {
@@ -265,7 +265,10 @@ export async function callLlmTransform(rawQuery) {
           { role: 'user', content: rawQuery },
         ],
         chat_template_kwargs: { enable_thinking: false },
-        temperature: 0.0,
+        temperature: 0.7,
+        top_p: 0.8,
+        top_k: 20,
+        presence_penalty: 1.5,
         max_tokens: 24,
       }),
       signal: controller.signal,
@@ -295,8 +298,16 @@ export async function callLlmTransform(rawQuery) {
           { role: 'system', content: systemPrompt },
           { role: 'user', content: rawQuery },
         ],
+        chat_template_kwargs: { enable_thinking: false },
         stream: false,
-        options: { num_ctx: 256, num_predict: 24, temperature: 0.0 },
+        options: {
+          num_ctx: 256,
+          num_predict: 24,
+          temperature: 0.7,
+          top_p: 0.8,
+          top_k: 20,
+          presence_penalty: 1.5
+        },
       }),
       signal: controller.signal,
     });

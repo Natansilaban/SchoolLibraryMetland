@@ -205,7 +205,7 @@ export default function VoiceSearchButton({
           role="dialog"
           aria-modal="true"
           aria-labelledby="voice-search-title"
-          className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-999 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
           onClick={closeModal}
         >
           <div
@@ -272,7 +272,7 @@ export default function VoiceSearchButton({
                     <span className="w-2 h-2 rounded-full bg-rose-600 animate-ping" />
                     Mendengarkan...
                   </p>
-                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100 italic break-words">
+                  <p className="text-sm font-bold text-slate-900 dark:text-slate-100 italic wrap-break-word">
                     {transcript ? `"${transcript}"` : 'Silakan bicara sekarang...'}
                   </p>
                 </div>
@@ -291,7 +291,7 @@ export default function VoiceSearchButton({
 
               {status === 'error' && (
                 <div className="flex items-start gap-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 p-2.5 rounded-lg text-left">
-                  <AlertCircle size={15} className="text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                  <AlertCircle size={15} className="text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                   <p className="text-xs text-rose-700 dark:text-rose-300 leading-snug">
                     {errorMessage || 'Pengenalan suara terhenti. Coba lagi.'}
                   </p>

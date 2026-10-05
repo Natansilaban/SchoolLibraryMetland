@@ -152,7 +152,7 @@ export default async function DashboardPage() {
         {stats.terlambat > 0 && (
           <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-700 dark:text-rose-300 flex items-center justify-center shrink-0">
                 <AlertTriangle size={18} />
               </div>
               <div>
@@ -229,7 +229,7 @@ export default async function DashboardPage() {
                         {p.anggota.nama} · Kelas {p.anggota.kelas}
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       {statusBadge(p.status)}
                     </div>
                   </div>
@@ -265,7 +265,7 @@ export default async function DashboardPage() {
                     key={buku.id}
                     className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200/80 dark:border-slate-800"
                   >
-                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    <span className="w-6 h-6 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center shrink-0">
                       {idx + 1}
                     </span>
                     <div className="min-w-0 flex-1">
@@ -289,7 +289,7 @@ export default async function DashboardPage() {
         {}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 pt-2">
           <div className="library-card p-4 flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
               <TrendingUp size={18} />
             </div>
             <div>
@@ -299,7 +299,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="library-card p-4 flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0">
               <CheckCircle2 size={18} />
             </div>
             <div>
@@ -309,7 +309,7 @@ export default async function DashboardPage() {
           </div>
 
           <div className="library-card p-4 flex items-center gap-3.5">
-            <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0">
               <Clock size={18} />
             </div>
             <div>

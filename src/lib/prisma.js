@@ -12,13 +12,14 @@ function getPgPool() {
     }
     globalForPrisma.pgPool = new Pool({
       connectionString,
-      max: 10,
+      max: 5,
       min: 1,
-      idleTimeoutMillis: 300000,
-      connectionTimeoutMillis: 8000,
+      idleTimeoutMillis: 60000,
+      connectionTimeoutMillis: 15000,
       keepAlive: true,
       keepAliveInitialDelayMillis: 2000,
       statement_timeout: 10000,
+      query_timeout: 10000,
     });
 
     globalForPrisma.pgPool.on('error', (err) => {

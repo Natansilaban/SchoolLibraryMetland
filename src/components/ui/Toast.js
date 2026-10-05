@@ -50,7 +50,7 @@ export default function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[99999] flex flex-col items-center gap-2.5 w-full max-w-sm px-4 pointer-events-none">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-99999 flex flex-col items-center gap-2.5 w-full max-w-sm px-4 pointer-events-none">
       {toasts.map((t) => {
         let bgClass = 'bg-white/95 dark:bg-slate-900/95 border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 shadow-lg';
         let Icon = Info;
@@ -76,8 +76,8 @@ export default function ToastContainer() {
             onClick={() => removeToast(t.id)}
             className={`pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200 transform animate-slideUp w-full cursor-pointer active:scale-[0.98] ${bgClass}`}
           >
-            <Icon size={20} className={`${iconColor} flex-shrink-0`} />
-            <div className="text-xs sm:text-sm font-semibold flex-1 leading-snug break-words">
+            <Icon size={20} className={`${iconColor} shrink-0`} />
+            <div className="text-xs sm:text-sm font-semibold flex-1 leading-snug wrap-break-word">
               {t.message}
             </div>
             <button
@@ -85,7 +85,7 @@ export default function ToastContainer() {
                 e.stopPropagation();
                 removeToast(t.id);
               }}
-              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-lg transition-colors flex-shrink-0"
+              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5 rounded-lg transition-colors shrink-0"
             >
               <X size={15} />
             </button>

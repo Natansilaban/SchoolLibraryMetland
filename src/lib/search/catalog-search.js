@@ -422,7 +422,7 @@ export async function searchCatalog({
             const isExactTitle =
               orderedBooks[0]?.judul?.toLowerCase() === raw.toLowerCase() ||
               orderedBooks[0]?.judul?.toLowerCase() === cleanQuery.toLowerCase();
-            const isDecisiveMatch = isExactTitle || topDenseScore >= 0.88;
+            const isDecisiveMatch = isExactTitle || topDenseScore >= 0.83;
 
             if (!isDecisiveMatch) {
               try {
@@ -430,13 +430,15 @@ export async function searchCatalog({
                 const topRrfScore = rrfEntries[0]?.[1] ?? 0;
                 const secondRrfScore = rrfEntries[1]?.[1] ?? 0;
                 const rrfMargin = topRrfScore - secondRrfScore;
-                const sliceSize = rrfMargin > 0.03 ? 3 : 6;
+                // Optimize payload size: send max 8 items
+                const sliceSize = rrfMargin > 0.04 ? 4 : 8;
 
                 const rerankSlice = orderedBooks.slice(0, sliceSize);
                 const remainingSlice = orderedBooks.slice(sliceSize);
                 const docStrings = rerankSlice.map((b) => {
                   const cat = b.kategori?.nama ? `Kategori: ${b.kategori.nama}. ` : '';
-                  const desc = b.deskripsi ? b.deskripsi.slice(0, 280) : '';
+                  // Kurangi deskripsi dari 400 jadi 250 char biar upload ke Jina lebih cepet
+                  const desc = b.deskripsi ? b.deskripsi.slice(0, 250) : '';
                   return `${b.judul}. ${cat}${desc}`.trim();
                 });
 
@@ -450,7 +452,7 @@ export async function searchCatalog({
 
                 if (rerankResults && rerankResults.length > 0) {
                   const rerankedBooks = rerankResults
-                    .filter((item) => item.score > 0.08)
+                    .filter((item) => item.score > 0.25)
                     .map((item) => {
                       const b = rerankSlice[item.index];
                       if (!b) return null;

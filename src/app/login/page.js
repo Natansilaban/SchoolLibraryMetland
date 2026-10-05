@@ -128,7 +128,7 @@ export default function LoginPage() {
             >
               <AlertCircle
                 size={16}
-                className="text-rose-600 dark:text-rose-400 flex-shrink-0"
+                className="text-rose-600 dark:text-rose-400 shrink-0"
               />
               <span>{error}</span>
             </div>
