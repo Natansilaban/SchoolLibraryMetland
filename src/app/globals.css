@@ -14,13 +14,19 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    html:focus-within {
+    html[data-scroll-behavior="smooth"]:focus-within,
+    html[data-scroll-behavior="smooth"] {
       scroll-behavior: smooth;
     }
   }
 
+  :root {
+    --dropdown-solid-bg: #FFFFFF;
+  }
+
   html.dark {
     color-scheme: dark;
+    --dropdown-solid-bg: #0F172A;
   }
 
   body {

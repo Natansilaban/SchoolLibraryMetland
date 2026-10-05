@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, BookMarked, ChevronLeft, ChevronRight, Library } from 'lucide-react';
-import VoiceSearchButton from '@/components/ui/VoiceSearchButton';
+import VoiceSearchButton from '@/components/ui/VoiceSearchButton';
+import CustomSelect from '@/components/ui/CustomSelect';
 let clientCatalogCache = null;
 let clientKategoriCache = null;
 
@@ -16,10 +17,9 @@ export default function SiswaBukuPage() {
   const [loading, setLoading] = useState(() => !clientCatalogCache);
   const [kategori, setKategori] = useState(() => clientKategoriCache || []);
   const [kategoriFilter, setKategoriFilter] = useState('');
-  const [searchMeta, setSearchMeta] = useState({ mode: 'browse', hasSemanticResults: false });
   const limit = 12;
 
-  const isInitialMount = useRef(true);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -58,10 +58,6 @@ export default function SiswaBukuPage() {
         const items = json.data || [];
         setBuku(items);
         setTotal(json.total || 0);
-        setSearchMeta({
-          mode: json.mode || 'browse',
-          hasSemanticResults: !!json.hasSemanticResults,
-        });
         if (isDefaultBrowse) {
           clientCatalogCache = json;
         }
@@ -72,7 +68,6 @@ export default function SiswaBukuPage() {
           setBuku([]);
           setTotal(0);
         }
-        setSearchMeta({ mode: 'browse', hasSemanticResults: false });
       })
       .finally(() => {
         if (!controller.signal.aborted) {
@@ -110,15 +105,15 @@ export default function SiswaBukuPage() {
       {/* Header */}
       <div className="relative z-10 text-center sm:text-left pt-2 sm:pt-4">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-transparent bg-clip-text bg-linear-to-r from-blue-700 to-indigo-600 dark:from-blue-400 dark:to-indigo-300 drop-shadow-sm pb-1">
-          Katalog Koleksi Buku
+          Katalog Buku
         </h1>
         <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2 font-medium max-w-2xl">
-          Temukan buku teks pelajaran, referensi ilmiah, karya sastra, dan bacaan kejuruan dengan mudah.
+          Koleksi buku pelajaran, referensi kejuruan, dan bacaan literasi SMK Metland.
         </p>
       </div>
 
       {/* Search Bar - Liquid Glass Pill */}
-      <div className="relative z-10 space-y-3 transform-gpu">
+      <div className="relative z-30 space-y-3">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-2 sm:p-2.5 rounded-2xl sm:rounded-full border border-white/80 dark:border-slate-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)]">
           <div className="relative flex-1 group">
             <div className="absolute inset-0 bg-blue-50/50 dark:bg-blue-900/20 rounded-xl sm:rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none" />
@@ -127,7 +122,7 @@ export default function SiswaBukuPage() {
               id="search-buku-siswa"
               type="text"
               className="relative z-10 w-full pl-11 pr-14 h-12 sm:h-11 text-sm bg-transparent border-none rounded-xl sm:rounded-full outline-none text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-0"
-              placeholder="Cari buku, topik, atau tanya santai (misal: 'ada buku cara bikin kopi gak')..."
+              placeholder="Cari judul buku, penulis, kategori, atau topik..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -147,40 +142,25 @@ export default function SiswaBukuPage() {
           
           <div className="w-px h-8 bg-slate-200/80 dark:bg-slate-700/80 hidden sm:block" />
           
-          <select
+          <CustomSelect
             id="filter-kategori-siswa"
-            className="sm:w-56 h-12 sm:h-11 px-4 text-sm font-medium bg-transparent hover:bg-slate-50/50 dark:hover:bg-slate-800/50 rounded-xl sm:rounded-full outline-none transition-colors text-slate-700 dark:text-slate-200 border-none focus:ring-0 cursor-pointer appearance-none"
-            style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\' stroke=\'%2364748b\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3E%3C/svg%3E")', backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em 1.2em' }}
+            className="sm:w-60"
             value={kategoriFilter}
-            onChange={(e) => {
-              setKategoriFilter(e.target.value);
+            onChange={(val) => {
+              setKategoriFilter(val);
               setPage(1);
             }}
-          >
-            <option value="" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">Semua Kategori</option>
-            {kategori.map((k) => (
-              <option key={k.id} value={k.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
-                {k.nama}
-              </option>
-            ))}
-          </select>
+            options={kategori}
+            placeholder="Semua Kategori"
+          />
         </div>
 
         {/* Results Meta */}
         {debouncedSearch && !loading && (
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-2 pt-2 gap-2">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-2 pt-2">
             <span className="font-medium bg-white/40 dark:bg-slate-900/40 px-3 py-1.5 rounded-full border border-white/60 dark:border-slate-800/60 backdrop-blur-sm inline-block">
               Menampilkan <strong className="text-slate-700 dark:text-slate-200">{total}</strong> hasil untuk &quot;<strong className="text-slate-700 dark:text-slate-200">{debouncedSearch}</strong>&quot;
             </span>
-            {(searchMeta.mode === 'hybrid' || searchMeta.mode === 'semantic') && (
-              <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-white/60 dark:bg-slate-900/60 px-3 py-1.5 rounded-full border border-blue-200/60 dark:border-blue-800/40 shadow-sm flex items-center gap-2 backdrop-blur-md self-start sm:self-auto transform-gpu">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 dark:bg-blue-400"></span>
-                </span>
-                Pencarian AI &amp; Reranked
-              </span>
-            )}
           </div>
         )}
       </div>

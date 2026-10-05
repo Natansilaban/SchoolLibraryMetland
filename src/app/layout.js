@@ -40,6 +40,7 @@ export default async function RootLayout({ children }) {
   return (
     <html
       lang="id"
+      data-scroll-behavior="smooth"
       className={`${plusJakartaSans.variable} ${newsreader.variable}`}
       suppressHydrationWarning
     >
